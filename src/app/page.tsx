@@ -1,11 +1,12 @@
 import { MetallicIconBrowser } from "@/components/icons/metallic-icon-browser";
 import { searchIcons, getTotalIconCount, getIconCountBySource } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
+// Revalidate every 1 hour (ISR)
+export const revalidate = 3600;
 
 export default async function Home() {
   const [icons, totalCount, countBySource] = await Promise.all([
-    searchIcons({ limit: 500 }),
+    searchIcons({ limit: 200 }),
     getTotalIconCount(),
     getIconCountBySource(),
   ]);

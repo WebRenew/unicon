@@ -1,12 +1,10 @@
 "use client";
 
 import Lenis from "lenis";
-import { useEffect, useState, useMemo } from "react";
-import { Search, Github, Copy, Check, RefreshCw } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Search, Github, Copy, Check, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { StyledIcon, ICON_STYLES, type IconStyle } from "./styled-icon";
-import { useIconSearch } from "@/hooks/use-icon-search";
 import type { IconData, IconLibrary } from "@/types/icon";
 
 interface MetallicIconBrowserProps {
@@ -21,6 +19,8 @@ const SOURCE_COLORS: Record<string, string> = {
   hugeicons: "bg-violet-500",
 };
 
+const ICONS_PER_PAGE = 100;
+
 export function MetallicIconBrowser({
   initialIcons,
   totalCount,
@@ -29,24 +29,80 @@ export function MetallicIconBrowser({
   const [activeStyle, setActiveStyle] = useState<IconStyle>("metal");
   const [styleCopied, setStyleCopied] = useState(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
+  const [icons, setIcons] = useState<IconData[]>(initialIcons);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(initialIcons.length >= ICONS_PER_PAGE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  const { icons, isSearching, searchType } = useIconSearch({ initialIcons });
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  // Filter icons based on search and source
-  const filteredIcons = useMemo(() => {
-    return icons.filter((icon) => {
-      const matchesSearch =
-        search === "" ||
-        icon.normalizedName.toLowerCase().includes(search.toLowerCase()) ||
-        icon.name.toLowerCase().includes(search.toLowerCase()) ||
-        icon.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
+  // Fetch icons when search or source changes
+  const fetchIcons = useCallback(
+    async (offset = 0, append = false) => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          limit: String(ICONS_PER_PAGE),
+          offset: String(offset),
+        });
+        if (debouncedSearch) params.set("q", debouncedSearch);
+        if (selectedSource !== "all") params.set("source", selectedSource);
 
-      const matchesSource = selectedSource === "all" || icon.sourceId === selectedSource;
+        const res = await fetch(`/api/icons?${params}`);
+        const data = await res.json();
 
-      return matchesSearch && matchesSource;
-    });
-  }, [icons, search, selectedSource]);
+        if (append) {
+          setIcons((prev) => [...prev, ...data.icons]);
+        } else {
+          setIcons(data.icons);
+        }
+        setHasMore(data.hasMore);
+      } catch (error) {
+        console.error("Failed to fetch icons:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [debouncedSearch, selectedSource]
+  );
+
+  // Refetch when filters change
+  useEffect(() => {
+    fetchIcons(0, false);
+  }, [debouncedSearch, selectedSource, fetchIcons]);
+
+  // Load more icons
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      fetchIcons(icons.length, true);
+    }
+  }, [isLoading, hasMore, icons.length, fetchIcons]);
+
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !isLoading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, loadMore]);
 
   const handleCopyStyle = async () => {
     await navigator.clipboard.writeText(ICON_STYLES[activeStyle].css);
@@ -122,8 +178,8 @@ export function MetallicIconBrowser({
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/20 focus:bg-white/[0.07] transition-colors"
         />
-        {isSearching && (
-          <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 animate-spin" />
+        {isLoading && search && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 animate-spin" />
         )}
       </div>
 
@@ -142,11 +198,6 @@ export function MetallicIconBrowser({
             {source === "all" ? "All" : source}
           </button>
         ))}
-        {search.length >= 3 && (
-          <Badge variant="outline" className="text-[10px] border-white/20 text-white/50">
-            {searchType === "semantic" ? "🧠 AI Search" : "📝 Text Search"}
-          </Badge>
-        )}
       </div>
 
       {/* Style tabs and copy button */}
@@ -184,23 +235,48 @@ export function MetallicIconBrowser({
 
       {/* Results count */}
       <p className="text-white/40 text-xs mb-4">
-        {filteredIcons.length === icons.length
-          ? `${icons.length.toLocaleString()} icons`
-          : `${filteredIcons.length.toLocaleString()} of ${icons.length.toLocaleString()} icons`}
+        {icons.length.toLocaleString()} of {totalCount.toLocaleString()} icons
+        {isLoading && <Loader2 className="inline ml-2 w-3 h-3 animate-spin" />}
       </p>
 
       {/* Icon Grid */}
-      {filteredIcons.length > 0 ? (
-        <div className="flex flex-wrap gap-4 justify-start">
-          {filteredIcons.map((icon) => (
-            <StyledIcon key={icon.id} icon={icon} style={activeStyle} />
-          ))}
-        </div>
+      {icons.length > 0 ? (
+        <>
+          <div className="flex flex-wrap gap-4 justify-start">
+            {icons.map((icon) => (
+              <StyledIcon key={icon.id} icon={icon} style={activeStyle} />
+            ))}
+          </div>
+
+          {/* Load more trigger */}
+          <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-8">
+            {isLoading && (
+              <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
+            )}
+            {!isLoading && hasMore && (
+              <button
+                onClick={loadMore}
+                className="px-4 py-2 text-sm font-mono text-white/50 hover:text-white/80 transition-colors"
+              >
+                Load more icons
+              </button>
+            )}
+            {!hasMore && icons.length > 0 && (
+              <p className="text-xs text-white/30">All icons loaded</p>
+            )}
+          </div>
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="text-6xl mb-4 opacity-50">🔍</div>
-          <h3 className="text-lg font-medium text-white/60">No icons found</h3>
-          <p className="text-sm text-white/40 mt-1">Try adjusting your search or filters</p>
+          {isLoading ? (
+            <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
+          ) : (
+            <>
+              <div className="text-6xl mb-4 opacity-50">🔍</div>
+              <h3 className="text-lg font-medium text-white/60">No icons found</h3>
+              <p className="text-sm text-white/40 mt-1">Try adjusting your search or filters</p>
+            </>
+          )}
         </div>
       )}
     </div>

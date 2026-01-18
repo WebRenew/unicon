@@ -20,6 +20,7 @@ export async function getSources(): Promise<SourceData[]> {
 
 /**
  * Search icons with optional filters.
+ * Uses a lightweight select to avoid fetching embeddings and pathData.
  */
 export async function searchIcons(params: {
   query?: string;
@@ -29,8 +30,6 @@ export async function searchIcons(params: {
   offset?: number;
 }): Promise<IconData[]> {
   const { query, sourceId, category, limit = 100, offset = 0 } = params;
-
-  let baseQuery = db.select().from(icons);
 
   const conditions = [];
 
@@ -53,15 +52,41 @@ export async function searchIcons(params: {
     );
   }
 
+  // Select only the fields needed for display (skip embedding, pathData)
   const results = await db
-    .select()
+    .select({
+      id: icons.id,
+      name: icons.name,
+      normalizedName: icons.normalizedName,
+      sourceId: icons.sourceId,
+      category: icons.category,
+      tags: icons.tags,
+      viewBox: icons.viewBox,
+      content: icons.content,
+      defaultStroke: icons.defaultStroke,
+      defaultFill: icons.defaultFill,
+      strokeWidth: icons.strokeWidth,
+    })
     .from(icons)
     .where(conditions.length > 0 ? sql`${sql.join(conditions, sql` AND `)}` : undefined)
     .orderBy(asc(icons.normalizedName))
     .limit(limit)
     .offset(offset);
 
-  return results.map(mapIconRow);
+  return results.map((row) => ({
+    id: row.id,
+    name: row.name,
+    normalizedName: row.normalizedName,
+    sourceId: row.sourceId,
+    category: row.category,
+    tags: (row.tags as string[]) ?? [],
+    viewBox: row.viewBox,
+    content: row.content,
+    pathData: null,
+    defaultStroke: row.defaultStroke ?? false,
+    defaultFill: row.defaultFill ?? false,
+    strokeWidth: row.strokeWidth,
+  }));
 }
 
 /**
