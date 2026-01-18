@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package } from "lucide-react";
+import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink } from "lucide-react";
 import type { IconData } from "@/types/icon";
 
 interface IconCartProps {
@@ -136,6 +136,21 @@ ${components.join("\n\n")}
     URL.revokeObjectURL(url);
   };
 
+  const handleOpenInV0 = () => {
+    const iconNames = items.map((icon) => toPascalCase(icon.normalizedName)).join(", ");
+    const svgBundle = items
+      .map((icon) => {
+        const attrs = getSvgAttributesRaw(icon);
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>${icon.content}</svg>`;
+      })
+      .join("\n");
+    
+    const prompt = encodeURIComponent(
+      `Create a beautiful icon showcase component using these ${items.length} icons (${iconNames}):\n\n${svgBundle}\n\nMake it interactive with hover states and a clean grid layout.`
+    );
+    window.open(`https://v0.dev/?q=${prompt}`, "_blank");
+  };
+
   return (
     <div className="fixed inset-y-0 right-0 w-full max-w-md bg-[hsl(0,0%,6%)] border-l border-white/10 shadow-2xl z-50 flex flex-col">
       {/* Header */}
@@ -259,12 +274,19 @@ ${components.join("\n\n")}
             </button>
             <button
               onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-white/90 rounded-lg text-sm font-mono transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white rounded-lg text-sm font-mono transition-colors"
             >
               <Download className="w-4 h-4" />
               Download
             </button>
           </div>
+          <button
+            onClick={handleOpenInV0}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-white/90 rounded-lg text-sm font-mono transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open in v0
+          </button>
         </div>
       )}
     </div>
