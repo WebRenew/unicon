@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { icons } from "@/lib/schema";
-import { getEmbedding, blobToEmbedding, cosineSimilarity } from "@/lib/ai";
+import { getEmbedding, blobToEmbedding, cosineSimilarity, expandQueryWithAI } from "@/lib/ai";
 import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 
@@ -12,16 +12,18 @@ interface SearchResult extends IconData {
 /**
  * POST /api/search
  * 
- * Semantic search for icons using AI embeddings.
- * Falls back to text search if query is short or embeddings unavailable.
+ * AI-powered semantic search for icons.
+ * Uses Claude to understand user intent and expand queries,
+ * then uses embeddings for semantic matching.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, sourceId, limit = 50 } = body as {
+    const { query, sourceId, limit = 50, useAI = true } = body as {
       query: string;
       sourceId?: string;
       limit?: number;
+      useAI?: boolean;
     };
 
     if (!query || typeof query !== "string") {
@@ -39,10 +41,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ results, searchType: "text" });
     }
 
-    // Try semantic search
+    // Try AI-powered semantic search
     try {
-      const results = await semanticSearch(trimmedQuery, sourceId, limit);
-      return NextResponse.json({ results, searchType: "semantic" });
+      let searchQuery = trimmedQuery;
+      let expandedTerms: string | undefined;
+
+      // Use Claude to expand the query for better semantic matching
+      if (useAI && process.env.ANTHROPIC_API_KEY) {
+        try {
+          expandedTerms = await expandQueryWithAI(trimmedQuery);
+          searchQuery = expandedTerms;
+          console.log(`AI expanded "${trimmedQuery}" to: ${expandedTerms}`);
+        } catch (aiError) {
+          console.error("AI expansion failed, using original query:", aiError);
+        }
+      }
+
+      const results = await semanticSearch(searchQuery, sourceId, limit);
+      return NextResponse.json({ 
+        results, 
+        searchType: "semantic",
+        expandedQuery: expandedTerms,
+      });
     } catch (error) {
       console.error("Semantic search failed, falling back to text:", error);
       const results = await textSearch(trimmedQuery, sourceId, limit);

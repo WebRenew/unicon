@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles } from "lucide-react";
 import { StyledIcon } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import type { IconData, IconLibrary } from "@/types/icon";
@@ -32,6 +32,8 @@ export function MetallicIconBrowser({
   const [page, setPage] = useState(0);
   const [totalResults, setTotalResults] = useState(totalCount);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchType, setSearchType] = useState<string>("text");
+  const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
   
   // Cart state
   const [cartItems, setCartItems] = useState<IconData[]>([]);
@@ -82,6 +84,8 @@ export function MetallicIconBrowser({
         const data = await res.json();
 
         setIcons(data.icons);
+        setSearchType(data.searchType ?? "text");
+        setExpandedQuery(data.expandedQuery ?? null);
         // Estimate total based on hasMore
         if (!data.hasMore && data.icons.length < ICONS_PER_PAGE) {
           setTotalResults(pageNum * ICONS_PER_PAGE + data.icons.length);
@@ -172,19 +176,36 @@ export function MetallicIconBrowser({
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
+      <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
         <input
           type="text"
-          placeholder="Search icons... (try 'celebration' or 'navigation')"
+          placeholder="Try 'business icons' or 'celebration' — AI understands intent"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/20 focus:bg-white/[0.07] transition-colors"
+          className="w-full max-w-md bg-white/5 border border-white/10 rounded-lg pl-10 pr-12 py-2.5 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/20 focus:bg-white/[0.07] transition-colors"
         />
-        {isLoading && search && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 animate-spin" />
-        )}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {isLoading && search && (
+            <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+          )}
+          {!isLoading && search && searchType === "semantic" && (
+            <span title="AI-powered search">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+            </span>
+          )}
+        </div>
       </div>
+      
+      {/* AI Search Feedback */}
+      {expandedQuery && debouncedSearch && (
+        <div className="mb-6 flex items-start gap-2 text-xs text-white/40">
+          <Sparkles className="w-3 h-3 text-purple-400 mt-0.5 shrink-0" />
+          <span>
+            AI expanded to: <span className="text-white/60">{expandedQuery}</span>
+          </span>
+        </div>
+      )}
 
       {/* Source filters */}
       <div className="flex flex-wrap gap-2 mb-8">

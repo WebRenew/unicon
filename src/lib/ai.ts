@@ -1,9 +1,10 @@
 /**
  * AI utilities for embedding generation and semantic search.
- * Uses Vercel AI SDK with AI Gateway.
+ * Uses Vercel AI SDK with AI Gateway for embeddings and Anthropic for chat.
  */
-import { embed, embedMany } from "ai";
+import { embed, embedMany, generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 
 const EMBEDDING_DIMENSIONS = 1536;
 
@@ -15,6 +16,44 @@ function getEmbeddingModel() {
 
   const openai = createOpenAI({ apiKey });
   return openai.embedding("text-embedding-3-small");
+}
+
+function getChatModel() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error("ANTHROPIC_API_KEY is not configured");
+  }
+
+  const anthropic = createAnthropic({ apiKey });
+  return anthropic("claude-sonnet-4-20250514");
+}
+
+/**
+ * Use Claude to expand a user query into relevant icon search terms.
+ * This helps find icons that match user intent even if they don't use exact names.
+ */
+export async function expandQueryWithAI(userQuery: string): Promise<string> {
+  const model = getChatModel();
+  
+  const { text } = await generateText({
+    model,
+    system: `You are an icon search assistant. Given a user's query about icons they need, expand it into a comprehensive list of relevant icon names and concepts.
+
+Rules:
+- Output ONLY a space-separated list of lowercase words/terms
+- Include the original query terms
+- Add synonyms, related concepts, and specific icon names
+- Think about what icons would visually represent the concept
+- Keep it concise (max 20 terms)
+- No punctuation, no explanations
+
+Example:
+User: "business icons"
+Output: business briefcase chart graph money dollar finance office building presentation meeting handshake analytics growth profit`,
+    prompt: userQuery,
+  });
+
+  return text.trim();
 }
 
 /**
