@@ -1,8 +1,7 @@
 "use client";
 
-import Lenis from "lenis";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Search, Github, Copy, Check, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Search, Github, Copy, Check, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StyledIcon, ICON_STYLES, type IconStyle } from "./styled-icon";
 import type { IconData, IconLibrary } from "@/types/icon";
@@ -19,7 +18,7 @@ const SOURCE_COLORS: Record<string, string> = {
   hugeicons: "bg-violet-500",
 };
 
-const ICONS_PER_PAGE = 100;
+const ICONS_PER_PAGE = 60;
 
 export function MetallicIconBrowser({
   initialIcons,
@@ -31,10 +30,12 @@ export function MetallicIconBrowser({
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
-  const [icons, setIcons] = useState<IconData[]>(initialIcons);
+  const [icons, setIcons] = useState<IconData[]>(initialIcons.slice(0, ICONS_PER_PAGE));
+  const [page, setPage] = useState(0);
+  const [totalResults, setTotalResults] = useState(totalCount);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialIcons.length >= ICONS_PER_PAGE);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
 
   // Debounce search
   useEffect(() => {
@@ -44,14 +45,14 @@ export function MetallicIconBrowser({
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch icons when search or source changes
+  // Fetch icons when search, source, or page changes
   const fetchIcons = useCallback(
-    async (offset = 0, append = false) => {
+    async (pageNum: number) => {
       setIsLoading(true);
       try {
         const params = new URLSearchParams({
           limit: String(ICONS_PER_PAGE),
-          offset: String(offset),
+          offset: String(pageNum * ICONS_PER_PAGE),
         });
         if (debouncedSearch) params.set("q", debouncedSearch);
         if (selectedSource !== "all") params.set("source", selectedSource);
@@ -59,12 +60,11 @@ export function MetallicIconBrowser({
         const res = await fetch(`/api/icons?${params}`);
         const data = await res.json();
 
-        if (append) {
-          setIcons((prev) => [...prev, ...data.icons]);
-        } else {
-          setIcons(data.icons);
+        setIcons(data.icons);
+        // Estimate total based on hasMore
+        if (!data.hasMore && data.icons.length < ICONS_PER_PAGE) {
+          setTotalResults(pageNum * ICONS_PER_PAGE + data.icons.length);
         }
-        setHasMore(data.hasMore);
       } catch (error) {
         console.error("Failed to fetch icons:", error);
       } finally {
@@ -74,35 +74,18 @@ export function MetallicIconBrowser({
     [debouncedSearch, selectedSource]
   );
 
-  // Refetch when filters change
+  // Refetch when filters change - reset to page 0
   useEffect(() => {
-    fetchIcons(0, false);
+    setPage(0);
+    fetchIcons(0);
   }, [debouncedSearch, selectedSource, fetchIcons]);
 
-  // Load more icons
-  const loadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
-      fetchIcons(icons.length, true);
-    }
-  }, [isLoading, hasMore, icons.length, fetchIcons]);
-
-  // Intersection observer for infinite scroll
+  // Fetch when page changes
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && hasMore && !isLoading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
+    if (page > 0) {
+      fetchIcons(page);
     }
-
-    return () => observer.disconnect();
-  }, [hasMore, isLoading, loadMore]);
+  }, [page, fetchIcons]);
 
   const handleCopyStyle = async () => {
     await navigator.clipboard.writeText(ICON_STYLES[activeStyle].css);
@@ -110,21 +93,12 @@ export function MetallicIconBrowser({
     setTimeout(() => setStyleCopied(false), 2000);
   };
 
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
+  const goToPage = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-    requestAnimationFrame(raf);
-
-    return () => lenis.destroy();
-  }, []);
+  };
 
   return (
     <div className="min-h-screen bg-[hsl(0,0%,3%)] p-4 lg:px-20 xl:px-40 lg:pt-20 lg:pb-40">
@@ -234,49 +208,80 @@ export function MetallicIconBrowser({
       </div>
 
       {/* Results count */}
-      <p className="text-white/40 text-xs mb-4">
-        {icons.length.toLocaleString()} of {totalCount.toLocaleString()} icons
-        {isLoading && <Loader2 className="inline ml-2 w-3 h-3 animate-spin" />}
-      </p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-white/40 text-xs">
+          Page {page + 1} of {totalPages} • {totalResults.toLocaleString()} icons
+          {isLoading && <Loader2 className="inline ml-2 w-3 h-3 animate-spin" />}
+        </p>
+      </div>
 
       {/* Icon Grid */}
-      {icons.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
+        </div>
+      ) : icons.length > 0 ? (
         <>
-          <div className="flex flex-wrap gap-4 justify-start">
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-3">
             {icons.map((icon) => (
               <StyledIcon key={icon.id} icon={icon} style={activeStyle} />
             ))}
           </div>
 
-          {/* Load more trigger */}
-          <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-8">
-            {isLoading && (
-              <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
-            )}
-            {!isLoading && hasMore && (
-              <button
-                onClick={loadMore}
-                className="px-4 py-2 text-sm font-mono text-white/50 hover:text-white/80 transition-colors"
-              >
-                Load more icons
-              </button>
-            )}
-            {!hasMore && icons.length > 0 && (
-              <p className="text-xs text-white/30">All icons loaded</p>
-            )}
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 0}
+              className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Prev
+            </button>
+            
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i;
+                } else if (page < 3) {
+                  pageNum = i;
+                } else if (page > totalPages - 4) {
+                  pageNum = totalPages - 5 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => goToPage(pageNum)}
+                    className={`w-9 h-9 text-sm font-mono rounded-lg transition-colors ${
+                      pageNum === page
+                        ? "bg-white/20 text-white"
+                        : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"
+                    }`}
+                  >
+                    {pageNum + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          {isLoading ? (
-            <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
-          ) : (
-            <>
-              <div className="text-6xl mb-4 opacity-50">🔍</div>
-              <h3 className="text-lg font-medium text-white/60">No icons found</h3>
-              <p className="text-sm text-white/40 mt-1">Try adjusting your search or filters</p>
-            </>
-          )}
+          <div className="text-6xl mb-4 opacity-50">🔍</div>
+          <h3 className="text-lg font-medium text-white/60">No icons found</h3>
+          <p className="text-sm text-white/40 mt-1">Try adjusting your search or filters</p>
         </div>
       )}
     </div>
