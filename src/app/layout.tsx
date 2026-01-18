@@ -18,16 +18,7 @@ export const metadata: Metadata = {
   description:
     "Browse and install icons from Lucide, Phosphor, and Huge Icons. Copy to clipboard or open in v0.",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
+    icon: "/favicon.svg",
   },
 };
 
