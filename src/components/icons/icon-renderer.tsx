@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface IconRendererProps {
   svgContent: string;
+  viewBox?: string;
   size?: number;
   strokeWidth?: number;
   color?: string;
@@ -12,18 +13,18 @@ interface IconRendererProps {
 
 export function IconRenderer({
   svgContent,
+  viewBox = "0 0 24 24",
   size = 24,
   strokeWidth = 2,
   color = "currentColor",
   className,
 }: IconRendererProps) {
-  // Parse and modify the SVG content
-  const modifiedSvg = svgContent
-    .replace(/width="[^"]*"/, `width="${size}"`)
-    .replace(/height="[^"]*"/, `height="${size}"`)
-    .replace(/stroke-width="[^"]*"/g, `stroke-width="${strokeWidth}"`)
-    .replace(/stroke="[^"]*"/g, `stroke="${color}"`)
-    .replace(/fill="none"/g, 'fill="none"')
+  // Build a complete SVG with the inner content
+  const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${viewBox}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgContent}</svg>`;
+
+  // Replace colors in the content
+  const modifiedSvg = fullSvg
+    .replace(/stroke="currentColor"/g, `stroke="${color}"`)
     .replace(/fill="currentColor"/g, `fill="${color}"`);
 
   return (

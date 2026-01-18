@@ -18,6 +18,8 @@ const libraryColors: Record<string, string> = {
 };
 
 export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
+  const strokeWidth = icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2;
+
   return (
     <button
       onClick={onClick}
@@ -29,14 +31,14 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
       )}
     >
       <div className="flex h-12 w-12 items-center justify-center">
-        <IconRenderer svgContent={icon.svgContent} size={32} strokeWidth={icon.strokeWidth} />
+        <IconRenderer svgContent={icon.content} viewBox={icon.viewBox} size={32} strokeWidth={strokeWidth} />
       </div>
       <div className="flex flex-col items-center gap-1.5">
         <span className="text-xs font-medium text-foreground/80 truncate max-w-full">
-          {icon.name}
+          {icon.normalizedName}
         </span>
-        <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", libraryColors[icon.libraryId])}>
-          {icon.libraryId}
+        <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", libraryColors[icon.sourceId])}>
+          {icon.sourceId}
         </Badge>
       </div>
     </button>

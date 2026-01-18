@@ -1,4 +1,8 @@
 import type { Config } from "drizzle-kit";
+import { config } from "dotenv";
+
+// Load .env.local for drizzle-kit commands
+config({ path: ".env.local" });
 
 if (!process.env.TURSO_DATABASE_URL) {
   throw new Error("TURSO_DATABASE_URL is required");

@@ -13,21 +13,22 @@ interface IconBrowserProps {
 
 export function IconBrowser({ icons }: IconBrowserProps) {
   const [search, setSearch] = useState("");
-  const [selectedLibrary, setSelectedLibrary] = useState<IconLibrary | "all">("all");
+  const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
   const [selectedIcon, setSelectedIcon] = useState<IconData | null>(null);
 
   const filteredIcons = useMemo(() => {
     return icons.filter((icon) => {
       const matchesSearch =
         search === "" ||
+        icon.normalizedName.toLowerCase().includes(search.toLowerCase()) ||
         icon.name.toLowerCase().includes(search.toLowerCase()) ||
         icon.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
 
-      const matchesLibrary = selectedLibrary === "all" || icon.libraryId === selectedLibrary;
+      const matchesSource = selectedSource === "all" || icon.sourceId === selectedSource;
 
-      return matchesSearch && matchesLibrary;
+      return matchesSearch && matchesSource;
     });
-  }, [icons, search, selectedLibrary]);
+  }, [icons, search, selectedSource]);
 
   return (
     <div className="flex h-[calc(100vh-12rem)] gap-6">
@@ -36,8 +37,8 @@ export function IconBrowser({ icons }: IconBrowserProps) {
         <SearchFilters
           search={search}
           onSearchChange={setSearch}
-          selectedLibrary={selectedLibrary}
-          onLibraryChange={setSelectedLibrary}
+          selectedSource={selectedSource}
+          onSourceChange={setSelectedSource}
           totalCount={icons.length}
           filteredCount={filteredIcons.length}
         />

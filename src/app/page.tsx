@@ -1,7 +1,14 @@
 import { IconBrowser } from "@/components/icons/icon-browser";
-import { sampleIcons } from "@/data/sample-icons";
+import { searchIcons, getTotalIconCount, getIconCountBySource } from "@/lib/queries";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  // Fetch initial icons (first 200 for performance)
+  const icons = await searchIcons({ limit: 200 });
+  const totalCount = await getTotalIconCount();
+  const countBySource = await getIconCountBySource();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
       {/* Header */}
@@ -20,7 +27,12 @@ export default function Home() {
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
               CLI
             </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="https://github.com/WebRenew/unicon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               GitHub
             </a>
           </nav>
@@ -36,15 +48,30 @@ export default function Home() {
               your way
             </span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Browse icons from Lucide, Phosphor, and Huge Icons. Copy to clipboard, customize styles, or open in v0.
+          <p className="text-lg text-muted-foreground mb-6">
+            Browse {totalCount.toLocaleString()} icons from Lucide, Phosphor, and Huge Icons. 
+            Copy to clipboard, customize styles, or open in v0.
           </p>
+          <div className="flex gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-orange-500" />
+              <span className="text-muted-foreground">Lucide: {countBySource["lucide"]?.toLocaleString() ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-muted-foreground">Phosphor: {countBySource["phosphor"]?.toLocaleString() ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-violet-500" />
+              <span className="text-muted-foreground">Huge Icons: {countBySource["hugeicons"]?.toLocaleString() ?? 0}</span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Icon Browser */}
       <main className="container mx-auto px-6 pb-12">
-        <IconBrowser icons={sampleIcons} />
+        <IconBrowser icons={icons} />
       </main>
     </div>
   );

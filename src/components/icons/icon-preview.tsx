@@ -46,15 +46,11 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
     );
   }
 
-  const componentCode = `import { ${toPascalCase(icon.name)} } from "@/components/icons/${icon.name}";
+  const componentCode = `import { ${toPascalCase(icon.normalizedName)} } from "@/components/icons/${icon.normalizedName}";
 
-<${toPascalCase(icon.name)} size={${settings.size}} strokeWidth={${settings.strokeWidth}} />`;
+<${toPascalCase(icon.normalizedName)} size={${settings.size}} strokeWidth={${settings.strokeWidth}} />`;
 
-  const svgCode = icon.svgContent
-    .replace(/width="[^"]*"/, `width="${settings.size}"`)
-    .replace(/height="[^"]*"/, `height="${settings.size}"`)
-    .replace(/stroke-width="[^"]*"/g, `stroke-width="${settings.strokeWidth}"`)
-    .replace(/stroke="[^"]*"/g, `stroke="${settings.color}"`);
+  const svgCode = `<svg xmlns="http://www.w3.org/2000/svg" width="${settings.size}" height="${settings.size}" viewBox="${icon.viewBox}" fill="none" stroke="${settings.color}" stroke-width="${settings.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`;
 
   async function copyToClipboard(text: string, type: string) {
     try {
@@ -78,9 +74,9 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div>
-          <h3 className="font-semibold">{icon.name}</h3>
+          <h3 className="font-semibold">{icon.normalizedName}</h3>
           <Badge variant="outline" className="mt-1 text-xs">
-            {icon.libraryId}
+            {icon.sourceId}
           </Badge>
         </div>
         {onClose && (
@@ -94,7 +90,8 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
       <div className="flex items-center justify-center p-8 bg-[repeating-conic-gradient(#80808015_0%_25%,transparent_0%_50%)] bg-[length:16px_16px]">
         <div className="rounded-xl bg-background p-8 shadow-sm border">
           <IconRenderer
-            svgContent={icon.svgContent}
+            svgContent={icon.content}
+            viewBox={icon.viewBox}
             size={settings.size}
             strokeWidth={settings.strokeWidth}
             color={settings.color}

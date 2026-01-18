@@ -1,20 +1,19 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { IconLibrary } from "@/types/icon";
 
 interface SearchFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
-  selectedLibrary: IconLibrary | "all";
-  onLibraryChange: (library: IconLibrary | "all") => void;
+  selectedSource: IconLibrary | "all";
+  onSourceChange: (source: IconLibrary | "all") => void;
   totalCount: number;
   filteredCount: number;
 }
 
-const libraries: { id: IconLibrary | "all"; name: string; color: string }[] = [
+const sources: { id: IconLibrary | "all"; name: string; color: string }[] = [
   { id: "all", name: "All", color: "bg-foreground/10 text-foreground hover:bg-foreground/20" },
   { id: "lucide", name: "Lucide", color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20" },
   { id: "phosphor", name: "Phosphor", color: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20" },
@@ -24,8 +23,8 @@ const libraries: { id: IconLibrary | "all"; name: string; color: string }[] = [
 export function SearchFilters({
   search,
   onSearchChange,
-  selectedLibrary,
-  onLibraryChange,
+  selectedSource,
+  onSourceChange,
   totalCount,
   filteredCount,
 }: SearchFiltersProps) {
@@ -45,20 +44,20 @@ export function SearchFilters({
         />
       </div>
 
-      {/* Library Filters */}
+      {/* Source Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        {libraries.map((lib) => (
+        {sources.map((src) => (
           <button
-            key={lib.id}
-            onClick={() => onLibraryChange(lib.id)}
+            key={src.id}
+            onClick={() => onSourceChange(src.id)}
             className={cn(
               "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
-              selectedLibrary === lib.id
-                ? cn(lib.color, "ring-2 ring-offset-2 ring-offset-background ring-current")
-                : cn(lib.color, "opacity-60 hover:opacity-100")
+              selectedSource === src.id
+                ? cn(src.color, "ring-2 ring-offset-2 ring-offset-background ring-current")
+                : cn(src.color, "opacity-60 hover:opacity-100")
             )}
           >
-            {lib.name}
+            {src.name}
           </button>
         ))}
         
