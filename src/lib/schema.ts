@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, blob } from "drizzle-orm/sqlite-core";
 
 // Icon sources/libraries (lucide, phosphor, hugeicons)
 export const sources = sqliteTable("sources", {
@@ -32,6 +32,10 @@ export const icons = sqliteTable(
     defaultStroke: integer("default_stroke", { mode: "boolean" }),
     defaultFill: integer("default_fill", { mode: "boolean" }),
     strokeWidth: text("stroke_width"),
+
+    // AI search
+    searchText: text("search_text"), // Combined text for embedding: "arrow left back previous navigation"
+    embedding: blob("embedding", { mode: "buffer" }), // Vector embedding (F32_BLOB)
   },
   (table) => [
     index("icons_source_idx").on(table.sourceId),

@@ -1,51 +1,72 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { SearchFilters } from "./search-filters";
 import { IconGrid } from "./icon-grid";
 import { IconPreview } from "./icon-preview";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { useIconSearch } from "@/hooks/use-icon-search";
 import type { IconData, IconLibrary } from "@/types/icon";
 
 interface IconBrowserProps {
   icons: IconData[];
 }
 
-export function IconBrowser({ icons }: IconBrowserProps) {
+export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
   const [search, setSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
   const [selectedIcon, setSelectedIcon] = useState<IconData | null>(null);
 
-  const filteredIcons = useMemo(() => {
-    return icons.filter((icon) => {
-      const matchesSearch =
-        search === "" ||
-        icon.normalizedName.toLowerCase().includes(search.toLowerCase()) ||
-        icon.name.toLowerCase().includes(search.toLowerCase()) ||
-        icon.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
+  const {
+    icons,
+    isSearching,
+    searchType,
+    error,
+    search: performSearch,
+  } = useIconSearch({ initialIcons });
 
-      const matchesSource = selectedSource === "all" || icon.sourceId === selectedSource;
-
-      return matchesSearch && matchesSource;
-    });
-  }, [icons, search, selectedSource]);
+  // Trigger search when query or source changes
+  useEffect(() => {
+    const sourceId = selectedSource === "all" ? undefined : selectedSource;
+    performSearch(search, sourceId);
+  }, [search, selectedSource, performSearch]);
 
   return (
     <div className="flex h-[calc(100vh-12rem)] gap-6">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <SearchFilters
-          search={search}
-          onSearchChange={setSearch}
-          selectedSource={selectedSource}
-          onSourceChange={setSelectedSource}
-          totalCount={icons.length}
-          filteredCount={filteredIcons.length}
-        />
+        <div className="space-y-2">
+          <SearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            selectedSource={selectedSource}
+            onSourceChange={setSelectedSource}
+            totalCount={initialIcons.length}
+            filteredCount={icons.length}
+          />
+          
+          {/* Search status indicator */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {isSearching && (
+              <span className="flex items-center gap-1">
+                <span className="animate-pulse">●</span> Searching...
+              </span>
+            )}
+            {!isSearching && search.length >= 3 && (
+              <Badge variant="outline" className="text-[10px]">
+                {searchType === "semantic" ? "🧠 AI Search" : "📝 Text Search"}
+              </Badge>
+            )}
+            {error && (
+              <span className="text-destructive">⚠️ {error}</span>
+            )}
+          </div>
+        </div>
         
-        <ScrollArea className="flex-1 mt-6 -mx-1 px-1">
+        <ScrollArea className="flex-1 mt-4 -mx-1 px-1">
           <IconGrid
-            icons={filteredIcons}
+            icons={icons}
             selectedIcon={selectedIcon}
             onSelectIcon={setSelectedIcon}
           />
