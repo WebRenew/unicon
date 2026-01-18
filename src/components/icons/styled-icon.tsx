@@ -9,7 +9,7 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, ExternalLink, Plus, Minus } from "lucide-react";
 import type { IconData } from "@/types/icon";
 
 export type IconStyle = "metal" | "brutal" | "glow";
@@ -169,6 +169,22 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
         <ContextMenuLabel className="font-mono text-xs text-muted-foreground">
           {icon.sourceId}:{icon.normalizedName}
         </ContextMenuLabel>
+        <ContextMenuSeparator />
+        {onToggleCart && (
+          <ContextMenuItem onClick={() => onToggleCart(icon)}>
+            {isSelected ? (
+              <>
+                <Minus className="mr-2 h-4 w-4" />
+                Remove from bundle
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Add to bundle
+              </>
+            )}
+          </ContextMenuItem>
+        )}
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleCopySvg}>
           {copied === "svg" ? (
