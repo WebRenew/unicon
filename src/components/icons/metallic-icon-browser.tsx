@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Copy, Check, Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StyledIcon, ICON_STYLES, type IconStyle } from "./styled-icon";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { StyledIcon } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import type { IconData, IconLibrary } from "@/types/icon";
 
@@ -26,8 +25,6 @@ export function MetallicIconBrowser({
   totalCount,
   countBySource,
 }: MetallicIconBrowserProps) {
-  const [activeStyle, setActiveStyle] = useState<IconStyle>("metal");
-  const [styleCopied, setStyleCopied] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
@@ -111,12 +108,6 @@ export function MetallicIconBrowser({
     }
   }, [page, fetchIcons]);
 
-  const handleCopyStyle = async () => {
-    await navigator.clipboard.writeText(ICON_STYLES[activeStyle].css);
-    setStyleCopied(true);
-    setTimeout(() => setStyleCopied(false), 2000);
-  };
-
   const goToPage = (newPage: number) => {
     if (newPage >= 0 && newPage < totalPages) {
       setPage(newPage);
@@ -196,7 +187,7 @@ export function MetallicIconBrowser({
       </div>
 
       {/* Source filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-8">
         {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
           <button
             key={source}
@@ -210,39 +201,6 @@ export function MetallicIconBrowser({
             {source === "all" ? "All" : source}
           </button>
         ))}
-      </div>
-
-      {/* Style tabs and copy button */}
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <Tabs value={activeStyle} onValueChange={(v) => setActiveStyle(v as IconStyle)}>
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger
-              value="metal"
-              className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 font-mono"
-            >
-              Metal
-            </TabsTrigger>
-            <TabsTrigger
-              value="brutal"
-              className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 font-mono"
-            >
-              Brutal
-            </TabsTrigger>
-            <TabsTrigger
-              value="glow"
-              className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 font-mono"
-            >
-              Glow
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <button
-          onClick={handleCopyStyle}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-transparent hover:bg-white/5 text-white/60 hover:text-white/80 text-sm font-mono transition-colors duration-200 border border-white/20 hover:border-white/30"
-        >
-          {styleCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          {styleCopied ? "Copied!" : "Copy Style"}
-        </button>
       </div>
 
       {/* Results count */}
@@ -265,7 +223,7 @@ export function MetallicIconBrowser({
               <StyledIcon
                 key={icon.id}
                 icon={icon}
-                style={activeStyle}
+                style="metal"
                 isSelected={cartItemIds.has(icon.id)}
                 onToggleCart={toggleCartItem}
               />
