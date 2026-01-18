@@ -148,14 +148,14 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
       <ContextMenuTrigger asChild>
         <button
           onClick={handleClick}
-          className={`relative flex items-center justify-center w-11 h-11 shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
+          className={`relative flex items-center justify-center w-14 h-14 shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
             isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-[hsl(0,0%,3%)]" : ""
           }`}
         >
           <div
-            className={`w-5 h-5 ${styles.icon}`}
+            className={`w-6 h-6 ${styles.icon}`}
             dangerouslySetInnerHTML={{
-              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
+              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
             }}
           />
           {isSelected && (
