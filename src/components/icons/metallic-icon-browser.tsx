@@ -18,7 +18,7 @@ const SOURCE_COLORS: Record<string, string> = {
   hugeicons: "bg-violet-500",
 };
 
-const ICONS_PER_PAGE = 120;
+const ICONS_PER_PAGE = 160;
 
 export function MetallicIconBrowser({
   initialIcons,

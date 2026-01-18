@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     limit: number;
     offset: number;
   } = {
-    limit: Math.min(limit, 200),
+    limit: Math.min(limit, 160),
     offset,
   };
 
