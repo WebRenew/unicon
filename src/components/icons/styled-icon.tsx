@@ -85,13 +85,31 @@ export function StyledIcon({ icon, style, onSelect }: StyledIconProps) {
     handleCopy(code, "component");
   };
 
+  // Different icon libraries need different rendering approaches
+  const getSvgAttributes = () => {
+    if (icon.sourceId === "phosphor") {
+      // Phosphor uses 256x256 filled paths
+      return 'fill="currentColor"';
+    }
+    if (icon.sourceId === "hugeicons") {
+      // HugeIcons already has stroke in content, just set color
+      return 'stroke="currentColor" fill="none"';
+    }
+    // Lucide: standard stroke-based icons
+    return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
+  };
+
+  const getFullSvg = (size = 24) => {
+    const attrs = getSvgAttributes();
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${attrs}>${icon.content}</svg>`;
+  };
+
   const handleCopySvg = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`;
-    handleCopy(svg, "svg");
+    handleCopy(getFullSvg(24), "svg");
   };
 
   const handleOpenInV0 = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`;
+    const svg = getFullSvg(24);
     const prompt = encodeURIComponent(
       `Create a beautiful component using this icon:\n\n${svg}\n\nMake it interactive with hover states.`
     );
@@ -108,7 +126,7 @@ export function StyledIcon({ icon, style, onSelect }: StyledIconProps) {
           <div
             className={`w-5 h-5 ${styles.icon}`}
             dangerouslySetInnerHTML={{
-              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`,
+              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributes()}>${icon.content}</svg>`,
             }}
           />
         </button>
