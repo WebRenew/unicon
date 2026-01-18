@@ -87,40 +87,58 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
     setTimeout(() => setCopied(null), 1500);
   };
 
-  const handleCopyComponent = () => {
-    const code = `import { ${componentName} } from "@/components/icons/${icon.normalizedName}";
-
-<${componentName} className="w-6 h-6" />`;
-    handleCopy(code, "component");
-  };
-
   // Different icon libraries need different rendering approaches
-  const getSvgAttributes = () => {
+  const getSvgAttributesJsx = () => {
     if (icon.sourceId === "phosphor") {
-      // Phosphor uses 256x256 filled paths
       return 'fill="currentColor"';
     }
     if (icon.sourceId === "hugeicons") {
-      // HugeIcons already has stroke in content, just set color
       return 'stroke="currentColor" fill="none"';
     }
-    // Lucide: standard stroke-based icons
+    return `fill="none" stroke="currentColor" strokeWidth={${icon.strokeWidth || 2}} strokeLinecap="round" strokeLinejoin="round"`;
+  };
+
+  const getSvgAttributesRaw = () => {
+    if (icon.sourceId === "phosphor") {
+      return 'fill="currentColor"';
+    }
+    if (icon.sourceId === "hugeicons") {
+      return 'stroke="currentColor" fill="none"';
+    }
     return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
   };
 
-  const getFullSvg = (size = 24) => {
-    const attrs = getSvgAttributes();
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${attrs}>${icon.content}</svg>`;
+  const getFullSvg = () => {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`;
   };
 
-  const handleCopySvg = () => {
-    handleCopy(getFullSvg(24), "svg");
+  const getReactComponent = () => {
+    return `export function ${componentName}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="${icon.viewBox}"
+      ${getSvgAttributesJsx()}
+      className={className}
+      {...props}
+    >
+      ${icon.content}
+    </svg>
+  );
+}`;
   };
+
+  const getUsageExample = () => {
+    return `<${componentName} className="w-5 h-5 text-foreground" />`;
+  };
+
+  const handleCopySvg = () => handleCopy(getFullSvg(), "svg");
+  const handleCopyComponent = () => handleCopy(getReactComponent(), "component");
+  const handleCopyUsage = () => handleCopy(getUsageExample(), "usage");
 
   const handleOpenInV0 = () => {
-    const svg = getFullSvg(24);
     const prompt = encodeURIComponent(
-      `Create a beautiful component using this icon:\n\n${svg}\n\nMake it interactive with hover states.`
+      `Create a beautiful component using this icon:\n\n${getFullSvg()}\n\nMake it interactive with hover states.`
     );
     window.open(`https://v0.dev/?q=${prompt}`, "_blank");
   };
@@ -137,7 +155,7 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
           <div
             className={`w-5 h-5 ${styles.icon}`}
             dangerouslySetInnerHTML={{
-              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributes()}>${icon.content}</svg>`,
+              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
             }}
           />
           {isSelected && (
@@ -152,22 +170,6 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
           {icon.sourceId}:{icon.normalizedName}
         </ContextMenuLabel>
         <ContextMenuSeparator />
-        <ContextMenuItem onClick={() => handleCopy(icon.normalizedName, "name")}>
-          {copied === "name" ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Copy name
-        </ContextMenuItem>
-        <ContextMenuItem onClick={handleCopyComponent}>
-          {copied === "component" ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Copy component
-        </ContextMenuItem>
         <ContextMenuItem onClick={handleCopySvg}>
           {copied === "svg" ? (
             <Check className="mr-2 h-4 w-4" />
@@ -175,6 +177,22 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
             <Copy className="mr-2 h-4 w-4" />
           )}
           Copy SVG
+        </ContextMenuItem>
+        <ContextMenuItem onClick={handleCopyComponent}>
+          {copied === "component" ? (
+            <Check className="mr-2 h-4 w-4" />
+          ) : (
+            <Copy className="mr-2 h-4 w-4" />
+          )}
+          Copy React component
+        </ContextMenuItem>
+        <ContextMenuItem onClick={handleCopyUsage}>
+          {copied === "usage" ? (
+            <Check className="mr-2 h-4 w-4" />
+          ) : (
+            <Copy className="mr-2 h-4 w-4" />
+          )}
+          Copy usage example
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleOpenInV0}>
