@@ -58,11 +58,20 @@ interface StyledIconProps {
   icon: IconData;
   style: IconStyle;
   onSelect?: () => void;
+  isSelected?: boolean;
+  onToggleCart?: (icon: IconData) => void;
 }
 
-export function StyledIcon({ icon, style, onSelect }: StyledIconProps) {
+export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: StyledIconProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const styles = ICON_STYLES[style];
+
+  const handleClick = () => {
+    if (onToggleCart) {
+      onToggleCart(icon);
+    }
+    onSelect?.();
+  };
 
   const toPascalCase = (str: string) =>
     str
@@ -120,8 +129,10 @@ export function StyledIcon({ icon, style, onSelect }: StyledIconProps) {
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <button
-          onClick={onSelect}
-          className={`flex items-center justify-center w-11 h-11 shrink-0 cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-95 ${styles.container}`}
+          onClick={handleClick}
+          className={`relative flex items-center justify-center w-11 h-11 shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
+            isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-[hsl(0,0%,3%)]" : ""
+          }`}
         >
           <div
             className={`w-5 h-5 ${styles.icon}`}
@@ -129,6 +140,11 @@ export function StyledIcon({ icon, style, onSelect }: StyledIconProps) {
               __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributes()}>${icon.content}</svg>`,
             }}
           />
+          {isSelected && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-white" />
+            </div>
+          )}
         </button>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56 bg-popover border-border">

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Copy, Check, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Github, Copy, Check, Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StyledIcon, ICON_STYLES, type IconStyle } from "./styled-icon";
+import { IconCart } from "./icon-cart";
 import type { IconData, IconLibrary } from "@/types/icon";
 
 interface MetallicIconBrowserProps {
@@ -34,8 +35,31 @@ export function MetallicIconBrowser({
   const [page, setPage] = useState(0);
   const [totalResults, setTotalResults] = useState(totalCount);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Cart state
+  const [cartItems, setCartItems] = useState<IconData[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const cartItemIds = new Set(cartItems.map((item) => item.id));
 
   const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
+
+  const toggleCartItem = useCallback((icon: IconData) => {
+    setCartItems((prev) => {
+      const exists = prev.some((item) => item.id === icon.id);
+      if (exists) {
+        return prev.filter((item) => item.id !== icon.id);
+      }
+      return [...prev, icon];
+    });
+  }, []);
+
+  const removeCartItem = useCallback((id: string) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -110,14 +134,28 @@ export function MetallicIconBrowser({
             UNICON
           </span>
         </div>
-        <a
-          href="https://github.com/WebRenew/unicon"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white/40 hover:text-white/80 transition-colors"
-        >
-          <Github className="w-5 h-5" />
-        </a>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors text-sm font-mono"
+          >
+            <Package className="w-4 h-4" />
+            Bundle
+            {cartItems.length > 0 && (
+              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-emerald-500 text-white text-xs rounded-full">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+          <a
+            href="https://github.com/WebRenew/unicon"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/40 hover:text-white/80 transition-colors"
+          >
+            <Github className="w-5 h-5" />
+          </a>
+        </div>
       </header>
 
       {/* Hero */}
@@ -224,7 +262,13 @@ export function MetallicIconBrowser({
         <>
           <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-3">
             {icons.map((icon) => (
-              <StyledIcon key={icon.id} icon={icon} style={activeStyle} />
+              <StyledIcon
+                key={icon.id}
+                icon={icon}
+                style={activeStyle}
+                isSelected={cartItemIds.has(icon.id)}
+                onToggleCart={toggleCartItem}
+              />
             ))}
           </div>
 
@@ -283,6 +327,23 @@ export function MetallicIconBrowser({
           <h3 className="text-lg font-medium text-white/60">No icons found</h3>
           <p className="text-sm text-white/40 mt-1">Try adjusting your search or filters</p>
         </div>
+      )}
+
+      {/* Cart Drawer */}
+      <IconCart
+        items={cartItems}
+        onRemove={removeCartItem}
+        onClear={clearCart}
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+      />
+
+      {/* Backdrop */}
+      {isCartOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40"
+          onClick={() => setIsCartOpen(false)}
+        />
       )}
     </div>
   );
