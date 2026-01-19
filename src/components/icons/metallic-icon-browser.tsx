@@ -5,6 +5,13 @@ import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, 
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { IconData, IconLibrary } from "@/types/icon";
 
 interface MetallicIconBrowserProps {
@@ -388,18 +395,24 @@ export function MetallicIconBrowser({
                 <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
                   Category
                 </span>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-2.5 py-1 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/70 dark:text-white/70 focus:outline-none focus:border-black/20 dark:focus:border-white/20"
-                >
-                  <option value="all">All categories</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger 
+                    size="sm" 
+                    className="h-7 px-2.5 text-xs font-mono bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/70 dark:text-white/70"
+                  >
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    <SelectItem value="all" className="text-xs font-mono">
+                      All categories
+                    </SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="text-xs font-mono">
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </>
           )}
