@@ -100,10 +100,10 @@ interface CategoriesResponse {
 }
 
 async function fetchIcons(params: {
-  query?: string;
-  category?: string;
-  source?: string;
-  limit?: number;
+  query?: string | undefined;
+  category?: string | undefined;
+  source?: string | undefined;
+  limit?: number | undefined;
 }): Promise<SearchResponse> {
   const url = new URL(`${API_BASE}/api/icons`);
   if (params.query) url.searchParams.set("q", params.query);

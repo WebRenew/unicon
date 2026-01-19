@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus, Terminal } from "lucide-react";
+import Link from "next/link";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -287,6 +288,13 @@ export function MetallicIconBrowser({
               </span>
             )}
           </button>
+          <Link
+            href="/cli"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-xs font-mono"
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            CLI
+          </Link>
           <ThemeToggle />
           <a
             href="https://github.com/WebRenew/unicon"
