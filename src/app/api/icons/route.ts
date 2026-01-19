@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       const aiResults = await aiSemanticSearch(
         queryParam.trim(),
         sourceParam && sourceParam !== "all" ? sourceParam : undefined,
-        Math.min(limit, 160),
+        Math.min(limit, 320),
         offset
       );
       
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       limit: number;
       offset: number;
     } = {
-      limit: Math.min(limit, 160),
+      limit: Math.min(limit, 320),
       offset,
     };
 

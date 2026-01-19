@@ -6,7 +6,7 @@ export const revalidate = 3600;
 
 export default async function Home() {
   const [icons, totalCount, countBySource] = await Promise.all([
-    searchIcons({ limit: 160 }),
+    searchIcons({ limit: 320 }),
     getTotalIconCount(),
     getIconCountBySource(),
   ]);
