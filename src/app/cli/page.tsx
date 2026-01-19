@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download } from "lucide-react";
+import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download, Eye, Database } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
@@ -157,6 +157,23 @@ unicon add files --source lucide --format vue`}
               description="List all available icon categories."
               example={`unicon categories
 unicon categories --json`}
+            />
+
+            <CommandCard
+              icon={Eye}
+              command="unicon preview <name>"
+              description="Show ASCII art preview of an icon directly in the terminal."
+              example={`unicon preview home
+unicon preview star --width 24 --height 24
+unicon preview arrow --source phosphor`}
+            />
+
+            <CommandCard
+              icon={Database}
+              command="unicon cache"
+              description="Manage local cache for offline use. Icons are cached for 24 hours."
+              example={`unicon cache --stats  # Show cache info
+unicon cache --clear  # Clear all cached data`}
             />
           </div>
         </section>

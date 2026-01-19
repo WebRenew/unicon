@@ -4,11 +4,14 @@ import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
 import figlet from "figlet";
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
 import { dirname, resolve, join } from "path";
+import { homedir } from "os";
 
 const API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
 const CONFIG_FILE = ".uniconrc.json";
+const CACHE_DIR = join(homedir(), ".unicon", "cache");
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 // Config file types
 interface BundleConfig {
@@ -73,7 +76,200 @@ function showBanner(): void {
   });
   
   console.log(chalk.cyan(banner));
-  console.log(chalk.dim("  The unified icon library for React\n"));
+  console.log(chalk.dim("  The unified icon library for React, Vue & Svelte\n"));
+}
+
+// Cache functions
+function ensureCacheDir(): void {
+  if (!existsSync(CACHE_DIR)) {
+    mkdirSync(CACHE_DIR, { recursive: true });
+  }
+}
+
+function getCacheKey(params: Record<string, string | number | undefined>): string {
+  const sorted = Object.entries(params)
+    .filter(([, v]) => v !== undefined)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+  return Buffer.from(sorted).toString("base64url");
+}
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+function getFromCache<T>(key: string): T | null {
+  ensureCacheDir();
+  const cachePath = join(CACHE_DIR, `${key}.json`);
+  
+  if (!existsSync(cachePath)) return null;
+  
+  try {
+    const content = readFileSync(cachePath, "utf-8");
+    const entry = JSON.parse(content) as CacheEntry<T>;
+    
+    if (Date.now() - entry.timestamp > CACHE_TTL) {
+      unlinkSync(cachePath);
+      return null;
+    }
+    
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+
+function setCache<T>(key: string, data: T): void {
+  ensureCacheDir();
+  const cachePath = join(CACHE_DIR, `${key}.json`);
+  const entry: CacheEntry<T> = { data, timestamp: Date.now() };
+  writeFileSync(cachePath, JSON.stringify(entry), "utf-8");
+}
+
+function clearCache(): { count: number; size: number } {
+  ensureCacheDir();
+  let count = 0;
+  let size = 0;
+  
+  try {
+    const files = readdirSync(CACHE_DIR);
+    for (const file of files) {
+      if (file.endsWith(".json")) {
+        const filePath = join(CACHE_DIR, file);
+        const content = readFileSync(filePath, "utf-8");
+        size += content.length;
+        unlinkSync(filePath);
+        count++;
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+  
+  return { count, size };
+}
+
+function getCacheStats(): { count: number; size: number; oldest: Date | null } {
+  ensureCacheDir();
+  let count = 0;
+  let size = 0;
+  let oldest: number | null = null;
+  
+  try {
+    const files = readdirSync(CACHE_DIR);
+    for (const file of files) {
+      if (file.endsWith(".json")) {
+        const filePath = join(CACHE_DIR, file);
+        const content = readFileSync(filePath, "utf-8");
+        size += content.length;
+        count++;
+        
+        try {
+          const entry = JSON.parse(content) as CacheEntry<unknown>;
+          if (oldest === null || entry.timestamp < oldest) {
+            oldest = entry.timestamp;
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+  
+  return { count, size, oldest: oldest ? new Date(oldest) : null };
+}
+
+// ASCII Preview - renders SVG viewBox as simple grid
+function renderAsciiPreview(icon: Icon, width = 16, height = 16): string {
+  const chars = [" ", "░", "▒", "▓", "█"];
+  const grid: number[][] = Array.from({ length: height }, () => Array(width).fill(0));
+  
+  // Parse viewBox
+  const parts = icon.viewBox.split(" ").map(Number);
+  const vbWidth = parts[2] ?? 24;
+  const vbHeight = parts[3] ?? 24;
+  const scaleX = width / vbWidth;
+  const scaleY = height / vbHeight;
+  
+  // Simple path parsing - marks cells that contain path elements
+  const pathMatches = icon.content.matchAll(/d="([^"]+)"/g);
+  
+  for (const match of pathMatches) {
+    const pathData = match[1];
+    if (!pathData) continue;
+    
+    // Extract coordinate pairs from path
+    const coords = pathData.matchAll(/[-\d.]+/g);
+    let x = 0, y = 0;
+    let isX = true;
+    
+    for (const coord of coords) {
+      const coordVal = coord[0];
+      if (!coordVal) continue;
+      
+      const val = parseFloat(coordVal);
+      if (isNaN(val)) continue;
+      
+      if (isX) {
+        x = Math.floor(val * scaleX);
+      } else {
+        y = Math.floor(val * scaleY);
+        // Mark this cell and neighbors
+        const row = grid[y];
+        const rowAbove = grid[y - 1];
+        const rowBelow = grid[y + 1];
+        
+        if (row && x >= 0 && x < width && y >= 0 && y < height) {
+          row[x] = Math.min(4, (row[x] ?? 0) + 2);
+          // Add neighbors for thickness
+          if (x > 0) row[x - 1] = Math.min(4, (row[x - 1] ?? 0) + 1);
+          if (x < width - 1) row[x + 1] = Math.min(4, (row[x + 1] ?? 0) + 1);
+          if (rowAbove) rowAbove[x] = Math.min(4, (rowAbove[x] ?? 0) + 1);
+          if (rowBelow) rowBelow[x] = Math.min(4, (rowBelow[x] ?? 0) + 1);
+        }
+      }
+      isX = !isX;
+    }
+  }
+  
+  // Also check for circles, rects, lines
+  const circleMatches = icon.content.matchAll(/cx="([\d.]+)"\s+cy="([\d.]+)"\s+r="([\d.]+)"/g);
+  for (const match of circleMatches) {
+    const cxStr = match[1];
+    const cyStr = match[2];
+    const rStr = match[3];
+    if (!cxStr || !cyStr || !rStr) continue;
+    
+    const cx = Math.floor(parseFloat(cxStr) * scaleX);
+    const cy = Math.floor(parseFloat(cyStr) * scaleY);
+    const r = Math.ceil(parseFloat(rStr) * Math.min(scaleX, scaleY));
+    
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const px = cx + dx;
+        const py = cy + dy;
+        const row = grid[py];
+        if (row && px >= 0 && px < width && py >= 0 && py < height) {
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist <= r) {
+            row[px] = Math.min(4, (row[px] ?? 0) + 2);
+          }
+        }
+      }
+    }
+  }
+  
+  // Render grid
+  const lines: string[] = [];
+  for (const row of grid) {
+    lines.push(row.map((v) => chars[v] ?? " ").join(""));
+  }
+  
+  return lines.join("\n");
 }
 
 interface Icon {
@@ -99,12 +295,24 @@ interface CategoriesResponse {
   categories: string[];
 }
 
-async function fetchIcons(params: {
-  query?: string | undefined;
-  category?: string | undefined;
-  source?: string | undefined;
-  limit?: number | undefined;
-}): Promise<SearchResponse> {
+async function fetchIcons(
+  params: {
+    query?: string | undefined;
+    category?: string | undefined;
+    source?: string | undefined;
+    limit?: number | undefined;
+  },
+  options: { useCache?: boolean } = { useCache: true }
+): Promise<SearchResponse> {
+  // Check cache first
+  if (options.useCache) {
+    const cacheKey = getCacheKey({ type: "icons", ...params });
+    const cached = getFromCache<SearchResponse>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const url = new URL(`${API_BASE}/api/icons`);
   if (params.query) url.searchParams.set("q", params.query);
   if (params.category) url.searchParams.set("category", params.category);
@@ -115,7 +323,16 @@ async function fetchIcons(params: {
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  
+  const data = await res.json() as SearchResponse;
+  
+  // Cache the result
+  if (options.useCache) {
+    const cacheKey = getCacheKey({ type: "icons", ...params });
+    setCache(cacheKey, data);
+  }
+  
+  return data;
 }
 
 async function fetchCategories(): Promise<string[]> {
@@ -921,6 +1138,86 @@ program
     console.log(chalk.green(`✓ Added bundle "${name}" to ${CONFIG_FILE}`));
     console.log(chalk.dim(`  Output: ${newBundle.output}`));
     console.log(chalk.dim(`\nRun ${chalk.white(`unicon sync --name ${name}`)} to generate.`));
+  });
+
+// Preview command - ASCII art preview of an icon
+program
+  .command("preview <name>")
+  .description("Show ASCII art preview of an icon in the terminal")
+  .option("-s, --source <source>", "Prefer source (lucide, phosphor, hugeicons)")
+  .option("-w, --width <number>", "Preview width", "20")
+  .option("-h, --height <number>", "Preview height", "20")
+  .action(async (name: string, options) => {
+    const spinner = ora("Fetching icon...").start();
+
+    try {
+      const { icons } = await fetchIcons({
+        query: name,
+        source: options.source,
+        limit: 10,
+      });
+
+      const exactMatch = icons.find(
+        (i) => i.normalizedName === name || i.normalizedName === name.toLowerCase()
+      );
+      const icon = exactMatch || icons[0];
+
+      if (!icon) {
+        spinner.fail(`Icon "${name}" not found.`);
+        process.exit(1);
+      }
+
+      spinner.stop();
+
+      const width = parseInt(options.width, 10);
+      const height = parseInt(options.height, 10);
+      const preview = renderAsciiPreview(icon, width, height);
+
+      console.log();
+      console.log(chalk.bold.cyan(icon.normalizedName) + chalk.dim(` (${icon.sourceId})`));
+      console.log(chalk.dim("─".repeat(width)));
+      console.log(chalk.yellow(preview));
+      console.log(chalk.dim("─".repeat(width)));
+      console.log();
+      console.log(chalk.dim(`Get: ${chalk.white(`unicon get ${icon.normalizedName}`)}`));
+      console.log();
+    } catch (error) {
+      spinner.fail("Failed to fetch icon");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+  });
+
+// Cache command - manage local cache
+program
+  .command("cache")
+  .description("Manage local icon cache")
+  .option("-c, --clear", "Clear all cached data")
+  .option("-s, --stats", "Show cache statistics")
+  .action((options) => {
+    if (options.clear) {
+      const { count, size } = clearCache();
+      console.log(chalk.green(`✓ Cleared ${count} cached items (${(size / 1024).toFixed(1)} KB)`));
+      return;
+    }
+
+    if (options.stats || (!options.clear && !options.stats)) {
+      const { count, size, oldest } = getCacheStats();
+      
+      console.log(chalk.bold("Cache Statistics\n"));
+      console.log(`  ${chalk.dim("Location:")} ${CACHE_DIR}`);
+      console.log(`  ${chalk.dim("Items:")}    ${count}`);
+      console.log(`  ${chalk.dim("Size:")}     ${(size / 1024).toFixed(1)} KB`);
+      console.log(`  ${chalk.dim("TTL:")}      24 hours`);
+      
+      if (oldest) {
+        const age = Math.round((Date.now() - oldest.getTime()) / 1000 / 60);
+        console.log(`  ${chalk.dim("Oldest:")}   ${age} minutes ago`);
+      }
+      
+      console.log();
+      console.log(chalk.dim(`Clear with: ${chalk.white("unicon cache --clear")}`));
+    }
   });
 
 program.parse();

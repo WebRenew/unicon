@@ -5,10 +5,13 @@ import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
 import figlet from "figlet";
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
 import { dirname, resolve, join } from "path";
+import { homedir } from "os";
 var API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
 var CONFIG_FILE = ".uniconrc.json";
+var CACHE_DIR = join(homedir(), ".unicon", "cache");
+var CACHE_TTL = 24 * 60 * 60 * 1e3;
 function findConfigFile() {
   const configPath = resolve(process.cwd(), CONFIG_FILE);
   return existsSync(configPath) ? configPath : null;
@@ -51,9 +54,159 @@ function showBanner() {
     horizontalLayout: "fitted"
   });
   console.log(chalk.cyan(banner));
-  console.log(chalk.dim("  The unified icon library for React\n"));
+  console.log(chalk.dim("  The unified icon library for React, Vue & Svelte\n"));
 }
-async function fetchIcons(params) {
+function ensureCacheDir() {
+  if (!existsSync(CACHE_DIR)) {
+    mkdirSync(CACHE_DIR, { recursive: true });
+  }
+}
+function getCacheKey(params) {
+  const sorted = Object.entries(params).filter(([, v]) => v !== void 0).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join("&");
+  return Buffer.from(sorted).toString("base64url");
+}
+function getFromCache(key) {
+  ensureCacheDir();
+  const cachePath = join(CACHE_DIR, `${key}.json`);
+  if (!existsSync(cachePath)) return null;
+  try {
+    const content = readFileSync(cachePath, "utf-8");
+    const entry = JSON.parse(content);
+    if (Date.now() - entry.timestamp > CACHE_TTL) {
+      unlinkSync(cachePath);
+      return null;
+    }
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+function setCache(key, data) {
+  ensureCacheDir();
+  const cachePath = join(CACHE_DIR, `${key}.json`);
+  const entry = { data, timestamp: Date.now() };
+  writeFileSync(cachePath, JSON.stringify(entry), "utf-8");
+}
+function clearCache() {
+  ensureCacheDir();
+  let count = 0;
+  let size = 0;
+  try {
+    const files = readdirSync(CACHE_DIR);
+    for (const file of files) {
+      if (file.endsWith(".json")) {
+        const filePath = join(CACHE_DIR, file);
+        const content = readFileSync(filePath, "utf-8");
+        size += content.length;
+        unlinkSync(filePath);
+        count++;
+      }
+    }
+  } catch {
+  }
+  return { count, size };
+}
+function getCacheStats() {
+  ensureCacheDir();
+  let count = 0;
+  let size = 0;
+  let oldest = null;
+  try {
+    const files = readdirSync(CACHE_DIR);
+    for (const file of files) {
+      if (file.endsWith(".json")) {
+        const filePath = join(CACHE_DIR, file);
+        const content = readFileSync(filePath, "utf-8");
+        size += content.length;
+        count++;
+        try {
+          const entry = JSON.parse(content);
+          if (oldest === null || entry.timestamp < oldest) {
+            oldest = entry.timestamp;
+          }
+        } catch {
+        }
+      }
+    }
+  } catch {
+  }
+  return { count, size, oldest: oldest ? new Date(oldest) : null };
+}
+function renderAsciiPreview(icon, width = 16, height = 16) {
+  const chars = [" ", "\u2591", "\u2592", "\u2593", "\u2588"];
+  const grid = Array.from({ length: height }, () => Array(width).fill(0));
+  const parts = icon.viewBox.split(" ").map(Number);
+  const vbWidth = parts[2] ?? 24;
+  const vbHeight = parts[3] ?? 24;
+  const scaleX = width / vbWidth;
+  const scaleY = height / vbHeight;
+  const pathMatches = icon.content.matchAll(/d="([^"]+)"/g);
+  for (const match of pathMatches) {
+    const pathData = match[1];
+    if (!pathData) continue;
+    const coords = pathData.matchAll(/[-\d.]+/g);
+    let x = 0, y = 0;
+    let isX = true;
+    for (const coord of coords) {
+      const coordVal = coord[0];
+      if (!coordVal) continue;
+      const val = parseFloat(coordVal);
+      if (isNaN(val)) continue;
+      if (isX) {
+        x = Math.floor(val * scaleX);
+      } else {
+        y = Math.floor(val * scaleY);
+        const row = grid[y];
+        const rowAbove = grid[y - 1];
+        const rowBelow = grid[y + 1];
+        if (row && x >= 0 && x < width && y >= 0 && y < height) {
+          row[x] = Math.min(4, (row[x] ?? 0) + 2);
+          if (x > 0) row[x - 1] = Math.min(4, (row[x - 1] ?? 0) + 1);
+          if (x < width - 1) row[x + 1] = Math.min(4, (row[x + 1] ?? 0) + 1);
+          if (rowAbove) rowAbove[x] = Math.min(4, (rowAbove[x] ?? 0) + 1);
+          if (rowBelow) rowBelow[x] = Math.min(4, (rowBelow[x] ?? 0) + 1);
+        }
+      }
+      isX = !isX;
+    }
+  }
+  const circleMatches = icon.content.matchAll(/cx="([\d.]+)"\s+cy="([\d.]+)"\s+r="([\d.]+)"/g);
+  for (const match of circleMatches) {
+    const cxStr = match[1];
+    const cyStr = match[2];
+    const rStr = match[3];
+    if (!cxStr || !cyStr || !rStr) continue;
+    const cx = Math.floor(parseFloat(cxStr) * scaleX);
+    const cy = Math.floor(parseFloat(cyStr) * scaleY);
+    const r = Math.ceil(parseFloat(rStr) * Math.min(scaleX, scaleY));
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const px = cx + dx;
+        const py = cy + dy;
+        const row = grid[py];
+        if (row && px >= 0 && px < width && py >= 0 && py < height) {
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist <= r) {
+            row[px] = Math.min(4, (row[px] ?? 0) + 2);
+          }
+        }
+      }
+    }
+  }
+  const lines = [];
+  for (const row of grid) {
+    lines.push(row.map((v) => chars[v] ?? " ").join(""));
+  }
+  return lines.join("\n");
+}
+async function fetchIcons(params, options = { useCache: true }) {
+  if (options.useCache) {
+    const cacheKey = getCacheKey({ type: "icons", ...params });
+    const cached = getFromCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
   const url = new URL(`${API_BASE}/api/icons`);
   if (params.query) url.searchParams.set("q", params.query);
   if (params.category) url.searchParams.set("category", params.category);
@@ -63,7 +216,12 @@ async function fetchIcons(params) {
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  const data = await res.json();
+  if (options.useCache) {
+    const cacheKey = getCacheKey({ type: "icons", ...params });
+    setCache(cacheKey, data);
+  }
+  return data;
 }
 async function fetchCategories() {
   const res = await fetch(`${API_BASE}/api/icons?limit=1`);
@@ -710,5 +868,60 @@ program.command("add <name>").description("Add a new bundle to .uniconrc.json").
   console.log(chalk.dim(`  Output: ${newBundle.output}`));
   console.log(chalk.dim(`
 Run ${chalk.white(`unicon sync --name ${name}`)} to generate.`));
+});
+program.command("preview <name>").description("Show ASCII art preview of an icon in the terminal").option("-s, --source <source>", "Prefer source (lucide, phosphor, hugeicons)").option("-w, --width <number>", "Preview width", "20").option("-h, --height <number>", "Preview height", "20").action(async (name, options) => {
+  const spinner = ora("Fetching icon...").start();
+  try {
+    const { icons } = await fetchIcons({
+      query: name,
+      source: options.source,
+      limit: 10
+    });
+    const exactMatch = icons.find(
+      (i) => i.normalizedName === name || i.normalizedName === name.toLowerCase()
+    );
+    const icon = exactMatch || icons[0];
+    if (!icon) {
+      spinner.fail(`Icon "${name}" not found.`);
+      process.exit(1);
+    }
+    spinner.stop();
+    const width = parseInt(options.width, 10);
+    const height = parseInt(options.height, 10);
+    const preview = renderAsciiPreview(icon, width, height);
+    console.log();
+    console.log(chalk.bold.cyan(icon.normalizedName) + chalk.dim(` (${icon.sourceId})`));
+    console.log(chalk.dim("\u2500".repeat(width)));
+    console.log(chalk.yellow(preview));
+    console.log(chalk.dim("\u2500".repeat(width)));
+    console.log();
+    console.log(chalk.dim(`Get: ${chalk.white(`unicon get ${icon.normalizedName}`)}`));
+    console.log();
+  } catch (error) {
+    spinner.fail("Failed to fetch icon");
+    console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+    process.exit(1);
+  }
+});
+program.command("cache").description("Manage local icon cache").option("-c, --clear", "Clear all cached data").option("-s, --stats", "Show cache statistics").action((options) => {
+  if (options.clear) {
+    const { count, size } = clearCache();
+    console.log(chalk.green(`\u2713 Cleared ${count} cached items (${(size / 1024).toFixed(1)} KB)`));
+    return;
+  }
+  if (options.stats || !options.clear && !options.stats) {
+    const { count, size, oldest } = getCacheStats();
+    console.log(chalk.bold("Cache Statistics\n"));
+    console.log(`  ${chalk.dim("Location:")} ${CACHE_DIR}`);
+    console.log(`  ${chalk.dim("Items:")}    ${count}`);
+    console.log(`  ${chalk.dim("Size:")}     ${(size / 1024).toFixed(1)} KB`);
+    console.log(`  ${chalk.dim("TTL:")}      24 hours`);
+    if (oldest) {
+      const age = Math.round((Date.now() - oldest.getTime()) / 1e3 / 60);
+      console.log(`  ${chalk.dim("Oldest:")}   ${age} minutes ago`);
+    }
+    console.log();
+    console.log(chalk.dim(`Clear with: ${chalk.white("unicon cache --clear")}`));
+  }
 });
 program.parse();
