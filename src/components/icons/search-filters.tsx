@@ -32,15 +32,18 @@ export function SearchFilters({
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true">
           🔍
         </span>
+        <label htmlFor="icon-search" className="sr-only">Search icons</label>
         <Input
+          id="icon-search"
           type="search"
-          placeholder="Search icons..."
+          placeholder="Search icons…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10 h-12 text-base"
+          autoComplete="off"
         />
       </div>
 
@@ -51,7 +54,7 @@ export function SearchFilters({
             key={src.id}
             onClick={() => onSourceChange(src.id)}
             className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-full transition-all",
+              "px-3 py-1.5 text-sm font-medium rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               selectedSource === src.id
                 ? cn(src.color, "ring-2 ring-offset-2 ring-offset-background ring-current")
                 : cn(src.color, "opacity-60 hover:opacity-100")

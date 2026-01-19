@@ -110,7 +110,7 @@ async function aiSemanticSearch(
   }
 
   // Build query for icons with embeddings
-  let baseQuery = sourceId
+  const baseQuery = sourceId
     ? db
         .select()
         .from(iconsTable)

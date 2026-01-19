@@ -80,7 +80,7 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
           </Badge>
         </div>
         {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close preview">
             ✕
           </Button>
         )}
@@ -109,6 +109,7 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
               <button
                 key={size}
                 onClick={() => setSettings((s) => ({ ...s, size }))}
+                aria-label={`Set size to ${size} pixels`}
                 className={cn(
                   "px-3 py-1.5 text-xs rounded-md border transition-colors",
                   settings.size === size
@@ -151,17 +152,17 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
               <button
                 key={c.value}
                 onClick={() => setSettings((s) => ({ ...s, color: c.value }))}
+                aria-label={`Set color to ${c.name}`}
                 className={cn(
-                  "w-7 h-7 rounded-md border-2 transition-all",
+                  "w-7 h-7 rounded-md border-2 transition-[border-color,transform]",
                   settings.color === c.value ? "border-foreground scale-110" : "border-transparent hover:scale-105"
                 )}
                 style={{
                   backgroundColor: c.value === "currentColor" ? undefined : c.value,
-                  background: c.value === "currentColor" 
-                    ? "linear-gradient(135deg, #000 50%, #fff 50%)" 
+                  background: c.value === "currentColor"
+                    ? "linear-gradient(135deg, #000 50%, #fff 50%)"
                     : undefined,
                 }}
-                title={c.name}
               />
             ))}
           </div>

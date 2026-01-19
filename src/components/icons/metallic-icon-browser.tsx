@@ -35,10 +35,38 @@ export function MetallicIconBrowser({
   const [searchType, setSearchType] = useState<string>("text");
   const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
   
-  // Cart state
+  // Cart state - persisted to localStorage
   const [cartItems, setCartItems] = useState<IconData[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemIds = new Set(cartItems.map((item) => item.id));
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("unicon-bundle");
+      if (saved) {
+        const parsed = JSON.parse(saved) as IconData[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCartItems(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load bundle from localStorage:", error);
+    }
+  }, []);
+
+  // Save cart to localStorage when it changes
+  useEffect(() => {
+    try {
+      if (cartItems.length > 0) {
+        localStorage.setItem("unicon-bundle", JSON.stringify(cartItems));
+      } else {
+        localStorage.removeItem("unicon-bundle");
+      }
+    } catch (error) {
+      console.error("Failed to save bundle to localStorage:", error);
+    }
+  }, [cartItems]);
 
   const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
 
@@ -124,7 +152,7 @@ export function MetallicIconBrowser({
       {/* Header */}
       <header className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🦄</span>
+          <span className="text-2xl" aria-hidden="true">🦄</span>
           <span className="font-mono text-white/60 text-xs tracking-widest uppercase">
             UNICON
           </span>
@@ -146,6 +174,7 @@ export function MetallicIconBrowser({
             href="https://github.com/WebRenew/unicon"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="View source on GitHub"
             className="text-white/40 hover:text-white/80 transition-colors"
           >
             <Github className="w-5 h-5" />
@@ -178,29 +207,32 @@ export function MetallicIconBrowser({
       {/* Search */}
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+        <label htmlFor="icon-search-main" className="sr-only">Search icons</label>
         <input
+          id="icon-search-main"
           type="text"
-          placeholder="Try 'business icons' or 'celebration' — AI understands intent"
+          placeholder="Try 'business icons' or 'celebration'…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md bg-white/5 border border-white/10 rounded-lg pl-10 pr-12 py-2.5 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/20 focus:bg-white/[0.07] transition-colors"
+          autoComplete="off"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {isLoading && search && (
             <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
           )}
           {!isLoading && search && searchType === "semantic" && (
-            <span title="AI-powered search">
+            <span title="AI-powered search" aria-hidden="true">
               <Sparkles className="w-4 h-4 text-purple-400" />
             </span>
           )}
         </div>
       </div>
-      
+
       {/* AI Search Feedback */}
       {expandedQuery && debouncedSearch && (
         <div className="mb-6 flex items-start gap-2 text-xs text-white/40">
-          <Sparkles className="w-3 h-3 text-purple-400 mt-0.5 shrink-0" />
+          <Sparkles className="w-3 h-3 text-purple-400 mt-0.5 shrink-0" aria-hidden="true" />
           <span>
             AI expanded to: <span className="text-white/60">{expandedQuery}</span>
           </span>
@@ -256,12 +288,13 @@ export function MetallicIconBrowser({
             <button
               onClick={() => goToPage(page - 1)}
               disabled={page === 0}
+              aria-label="Go to previous page"
               className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Prev
             </button>
-            
+
             <div className="flex gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum: number;
@@ -278,6 +311,8 @@ export function MetallicIconBrowser({
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
+                    aria-label={`Go to page ${pageNum + 1}`}
+                    aria-current={pageNum === page ? "page" : undefined}
                     className={`w-9 h-9 text-sm font-mono rounded-lg transition-colors ${
                       pageNum === page
                         ? "bg-white/20 text-white"
@@ -293,6 +328,7 @@ export function MetallicIconBrowser({
             <button
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages - 1}
+              aria-label="Go to next page"
               className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Next
@@ -319,9 +355,10 @@ export function MetallicIconBrowser({
 
       {/* Backdrop */}
       {isCartOpen && (
-        <div
+        <button
           className="fixed inset-0 bg-black/60 z-40"
           onClick={() => setIsCartOpen(false)}
+          aria-label="Close bundle drawer"
         />
       )}
     </div>

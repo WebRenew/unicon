@@ -160,7 +160,7 @@ ${components.join("\n\n")}
             <button
               onClick={onClear}
               className="p-2 text-white/40 hover:text-red-400 transition-colors"
-              title="Clear all"
+              aria-label="Clear all icons from bundle"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -168,6 +168,7 @@ ${components.join("\n\n")}
           <button
             onClick={onClose}
             className="p-2 text-white/40 hover:text-white transition-colors"
+            aria-label="Close bundle drawer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -200,6 +201,7 @@ ${components.join("\n\n")}
                 <button
                   onClick={() => onRemove(icon.id)}
                   className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label={`Remove ${icon.normalizedName} from bundle`}
                 >
                   <X className="w-3 h-3 text-white" />
                 </button>
