@@ -119,10 +119,10 @@ unicon info arrow-right --source phosphor`}
             <CommandCard
               icon={Package}
               command="unicon bundle"
-              description="Bundle multiple icons into a file. Supports React, Vue, Svelte, SVG, and JSON formats."
-              example={`unicon bundle --category Dashboards -o ./icons.tsx
-unicon bundle --query "home" --format vue
-unicon bundle --source phosphor --split -o ./icons`}
+              description="Bundle icons into tree-shakeable components. Creates one file per icon by default for optimal bundling."
+              example={`unicon bundle --category Dashboards -o ./icons
+unicon bundle --query "home" --format vue -o ./icons
+unicon bundle --format svg --single-file -o ./all.svg`}
             />
 
             <CommandCard
@@ -308,6 +308,31 @@ unicon cache --clear  # Clear all cached data`}
             <div className="p-4 md:p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
               <h3 className="font-mono font-medium mb-2 text-violet-400">hugeicons</h3>
               <p className="text-white/50 text-xs md:text-sm">1,800+ modern outlined icons</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Tree Shaking */}
+        <section>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Tree-Shaking</h2>
+          <div className="p-4 md:p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+            <p className="text-white/80 text-sm mb-4">
+              Unlike <code className="text-white/60">npm install lucide-react</code> which downloads thousands of icons,
+              the CLI generates <strong>only the icons you need</strong> as individual files.
+            </p>
+            <div className="space-y-3 text-sm">
+              <div className="flex gap-3">
+                <span className="text-emerald-400">✓</span>
+                <span className="text-white/60">One component per file = true tree-shaking</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-emerald-400">✓</span>
+                <span className="text-white/60">No external dependencies to ship</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-emerald-400">✓</span>
+                <span className="text-white/60">Import only what you use: <code className="text-cyan-400">{`import { Home } from "./icons"`}</code></span>
+              </div>
             </div>
           </div>
         </section>

@@ -729,14 +729,14 @@ export function ${componentName}({ className, ...props }: React.SVGProps<SVGSVGE
 // Bundle command
 program
   .command("bundle")
-  .description("Bundle icons into a file (or directory with --split)")
+  .description("Bundle icons for tree-shakeable imports (split by default for components)")
   .option("-q, --query <query>", "Search query")
   .option("-c, --category <category>", "Filter by category")
   .option("-s, --source <source>", "Filter by source (lucide, phosphor, hugeicons)")
   .option("-f, --format <format>", "Output format: react, vue, svelte, svg, json", "react")
   .option("-o, --output <path>", "Output file/directory path")
   .option("-l, --limit <number>", "Maximum number of icons", "100")
-  .option("--split", "Write each icon to its own file (requires -o as directory)")
+  .option("--single-file", "Combine all icons into one file (not recommended for components)")
   .action(async (options) => {
     if (!options.query && !options.category && !options.source) {
       console.log(
@@ -744,6 +744,22 @@ program
       );
       process.exit(1);
     }
+
+    const isComponentFormat = ["react", "vue", "svelte"].includes(options.format);
+    
+    // Vue/Svelte MUST use split mode - single file is invalid syntax
+    if ((options.format === "vue" || options.format === "svelte") && options.singleFile) {
+      console.log(
+        chalk.red(`Error: --single-file is not supported for ${options.format} format.`)
+      );
+      console.log(
+        chalk.dim(`Vue and Svelte require one component per file. Remove --single-file.`)
+      );
+      process.exit(1);
+    }
+
+    // Default to split mode for component formats (tree-shakeable)
+    const useSplitMode = isComponentFormat && !options.singleFile;
 
     const spinner = ora("Fetching icons...").start();
 
@@ -760,8 +776,17 @@ program
         process.exit(1);
       }
 
-      // Split mode - one file per icon
-      if (options.split) {
+      // Warn if using single-file mode with many icons
+      if (options.singleFile && icons.length > 10) {
+        spinner.warn(
+          chalk.yellow(`Bundling ${icons.length} icons into a single file is not tree-shakeable.`)
+        );
+        console.log(chalk.dim(`  Consider removing --single-file for better bundle optimization.\n`));
+        spinner.start("Generating bundle...");
+      }
+
+      // Split mode - one file per icon (default for components)
+      if (useSplitMode) {
         const outDir = options.output || "./icons";
         const fullDir = resolve(process.cwd(), outDir);
         mkdirSync(fullDir, { recursive: true });
@@ -860,21 +885,30 @@ export function ${name}({ className, ...props }: React.SVGProps<SVGSVGElement>) 
 
         // Generate index file for component formats
         if (["react", "vue", "svelte"].includes(options.format)) {
-          const indexExt = options.format === "react" ? "ts" : options.format === "vue" ? "ts" : "ts";
-          const indexContent = `// Re-exports for tree-shaking. Add "sideEffects": false to package.json.
+          let indexContent: string;
+          
+          if (options.format === "react") {
+            // React: named exports
+            indexContent = `// Tree-shakeable re-exports. Add "sideEffects": false to package.json.
+${icons.map((icon) => `export { ${toPascalCase(icon.normalizedName)} } from "./${icon.normalizedName}";`).join("\n")}
+`;
+          } else {
+            // Vue/Svelte: default exports from SFCs
+            indexContent = `// Tree-shakeable re-exports. Add "sideEffects": false to package.json.
 ${icons.map((icon) => `export { default as ${toPascalCase(icon.normalizedName)} } from "./${icon.normalizedName}.${ext}";`).join("\n")}
 `;
-          writeFileSync(join(fullDir, `index.${indexExt}`), indexContent, "utf-8");
+          }
+          
+          writeFileSync(join(fullDir, "index.ts"), indexContent, "utf-8");
         }
 
         spinner.succeed(`${chalk.green(icons.length)} icons → ${chalk.cyan(outDir)}/`);
-        console.log(chalk.dim(`  Each icon in its own file (tree-shakeable)`));
-        if (["react", "vue", "svelte"].includes(options.format)) {
-          console.log(chalk.dim(`  Import: import { Home } from "${outDir}";`));
-        }
+        console.log(chalk.green(`  ✓ Tree-shakeable! Only imported icons will be bundled.`));
+        console.log(chalk.dim(`  Import: import { Home, Settings } from "${outDir}";`));
         return;
       }
 
+      // Single-file mode (only for svg, json, or react with --single-file)
       spinner.text = `Generating ${options.format} bundle for ${icons.length} icons...`;
 
       let content: string;
@@ -888,14 +922,6 @@ ${icons.map((icon) => `export { default as ${toPascalCase(icon.normalizedName)} 
         case "json":
           content = generateJsonBundle(icons);
           ext = "json";
-          break;
-        case "vue":
-          content = generateVueComponents(icons);
-          ext = "vue";
-          break;
-        case "svelte":
-          content = generateSvelteComponents(icons);
-          ext = "svelte";
           break;
         case "react":
         default:
@@ -915,10 +941,18 @@ ${icons.map((icon) => `export { default as ${toPascalCase(icon.normalizedName)} 
         `Bundled ${chalk.green(icons.length)} icons to ${chalk.cyan(outputPath)}`
       );
 
-      // Show summary
+      // Show summary and warnings
       const sources = [...new Set(icons.map((i) => i.sourceId))];
       console.log(chalk.dim(`  Sources: ${sources.join(", ")}`));
       console.log(chalk.dim(`  Format: ${options.format}`));
+      
+      // Warn about tree-shaking for React single-file
+      if (options.format === "react") {
+        console.log();
+        console.log(chalk.yellow(`  ⚠ Single-file mode is NOT tree-shakeable.`));
+        console.log(chalk.dim(`    All ${icons.length} icons will be included in your bundle.`));
+        console.log(chalk.dim(`    For tree-shaking, remove --single-file flag.`));
+      }
     } catch (error) {
       spinner.fail("Bundle failed");
       console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
