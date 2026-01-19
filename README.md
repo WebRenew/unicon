@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦄 Unicon
 
-## Getting Started
+**Just the icons you need. Zero bloat.**
 
-First, run the development server:
+Browse 10,000+ icons from [Lucide](https://lucide.dev), [Phosphor](https://phosphoricons.com), and [Huge Icons](https://hugeicons.com). Copy React components, SVGs, or bundle multiple icons for export. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/WebRenew/unicon)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Features
+
+- **10,000+ Icons** — Lucide, Phosphor, and Huge Icons in one place
+- **AI-Powered Search** — Describe what you need ("business icons", "celebration") and find relevant icons
+- **Bundle Builder** — Select multiple icons and export as React components, SVGs, or JSON
+- **Copy to Clipboard** — One-click copy for SVG, React component, or usage example
+- **Open in v0** — Send icons directly to [v0.dev](https://v0.dev) for rapid prototyping
+- **Light/Dark Mode** — Follows system preference with manual toggle
+- **Zero Bloat** — Only ship the icons you actually use
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- [Turso](https://turso.tech) database (or any libSQL-compatible database)
+- [Anthropic API key](https://console.anthropic.com) (for AI search)
+- [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) key (for embeddings)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/WebRenew/unicon.git
+cd unicon
+
+# Install dependencies
+npm install
+
+# Copy environment variables
+cp .env.example .env.local
+```
+
+### Environment Variables
+
+```bash
+# Turso Database
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+
+# Vercel AI Gateway (for embeddings)
+AI_GATEWAY_API_KEY=your-vercel-ai-gateway-key
+
+# Anthropic Claude (for AI search)
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Admin API (optional)
+ADMIN_SECRET=your-secret-for-admin-routes
+```
+
+### Database Setup
+
+```bash
+# Push schema to database
+npm run db:push
+
+# (Optional) Open Drizzle Studio
+npm run db:studio
+```
+
+### Populate Icons
+
+The icon extraction pipeline is in the `extractor/` directory:
+
+```bash
+cd extractor
+pip install -e .
+
+# Extract icons from each library
+python -m extractor.main
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to browse icons.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router)
+- **Database**: [Turso](https://turso.tech) (libSQL) + [Drizzle ORM](https://orm.drizzle.team)
+- **AI**: [Vercel AI SDK](https://sdk.vercel.ai) + [Anthropic Claude](https://anthropic.com)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **Components**: [Radix UI](https://radix-ui.com) primitives
+- **Icons**: [Lucide](https://lucide.dev) (for UI)
+- **Deployment**: [Vercel](https://vercel.com)
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+unicon/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── api/             # API routes
+│   │   │   ├── icons/       # Icon search endpoint
+│   │   │   ├── search/      # AI semantic search
+│   │   │   └── admin/       # Admin endpoints
+│   │   └── page.tsx         # Main browse page
+│   ├── components/
+│   │   ├── icons/           # Icon browser components
+│   │   └── ui/              # Shared UI components
+│   ├── lib/
+│   │   ├── ai.ts            # AI/embedding utilities
+│   │   ├── db.ts            # Database client
+│   │   ├── queries.ts       # Database queries
+│   │   └── schema.ts        # Drizzle schema
+│   └── types/               # TypeScript types
+├── extractor/               # Python icon extraction pipeline
+│   ├── extractors/          # Per-library extractors
+│   └── main.py              # Entry point
+└── drizzle/                 # Database migrations
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Reference
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### `GET /api/icons`
 
-## Deploy on Vercel
+Fetch paginated icons with optional filters.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `q`       | string | Search query                         |
+| `source`  | string | Filter by library (lucide, phosphor, hugeicons) |
+| `limit`   | number | Results per page (default: 100, max: 160) |
+| `offset`  | number | Pagination offset                    |
+| `ai`      | boolean | Enable AI search (default: true)    |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### `POST /api/search`
+
+Semantic search using AI embeddings.
+
+```json
+{
+  "query": "business icons",
+  "sourceId": "lucide",
+  "limit": 50
+}
+```
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting a PR.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+## Credits
+
+Built by [WebRenew](https://webrenew.com)
+
+Icon libraries:
+- [Lucide](https://lucide.dev) — MIT License
+- [Phosphor Icons](https://phosphoricons.com) — MIT License  
+- [Huge Icons](https://hugeicons.com) — Check their license
+
+---
+
+<p align="center">
+  <a href="https://unicon.webrenew.com">Live Demo</a> •
+  <a href="https://github.com/WebRenew/unicon/issues">Report Bug</a> •
+  <a href="https://github.com/WebRenew/unicon/issues">Request Feature</a>
+</p>
