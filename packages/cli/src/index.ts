@@ -272,7 +272,7 @@ program
       });
 
       console.log(
-        chalk.dim(`\nUse ${chalk.white("unicon bundle <query>")} to export these icons.`)
+        chalk.dim(`\nUse ${chalk.white("unicon get <name>")} to copy a single icon.`)
       );
     } catch (error) {
       spinner.fail("Search failed");
@@ -281,16 +281,100 @@ program
     }
   });
 
+// Get command - copy a single icon (like shadcn add)
+program
+  .command("get <name>")
+  .description("Get a single icon by name (outputs to stdout)")
+  .option("-s, --source <source>", "Prefer source (lucide, phosphor, hugeicons)")
+  .option("-f, --format <format>", "Output format: react, svg, json", "react")
+  .option("-o, --output <path>", "Write to file instead of stdout")
+  .action(async (name: string, options) => {
+    try {
+      const { icons } = await fetchIcons({
+        query: name,
+        source: options.source,
+        limit: 10,
+      });
+
+      // Find exact match first, then partial
+      const exactMatch = icons.find(
+        (i) => i.normalizedName === name || i.normalizedName === name.toLowerCase()
+      );
+      const icon = exactMatch || icons[0];
+
+      if (!icon) {
+        console.error(chalk.red(`Icon "${name}" not found.`));
+        console.error(chalk.dim(`Try: unicon search "${name}"`));
+        process.exit(1);
+      }
+
+      let content: string;
+      const componentName = toPascalCase(icon.normalizedName);
+
+      switch (options.format) {
+        case "svg": {
+          const attrs = getSvgAttributes(icon);
+          content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
+  ${icon.content}
+</svg>`;
+          break;
+        }
+        case "json":
+          content = JSON.stringify({
+            name: icon.normalizedName,
+            source: icon.sourceId,
+            viewBox: icon.viewBox,
+            content: icon.content,
+          }, null, 2);
+          break;
+        case "react":
+        default: {
+          const attrs = getSvgAttributes(icon);
+          content = `import * as React from "react";
+
+export function ${componentName}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="${icon.viewBox}"
+      ${attrs}
+      className={className}
+      {...props}
+    >
+      ${icon.content}
+    </svg>
+  );
+}`;
+          break;
+        }
+      }
+
+      if (options.output) {
+        const fullPath = resolve(process.cwd(), options.output);
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, content, "utf-8");
+        console.error(chalk.green(`✓ ${componentName} → ${options.output}`));
+      } else {
+        // Output to stdout (no colors, pipe-friendly)
+        console.log(content);
+      }
+    } catch (error) {
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+  });
+
 // Bundle command
 program
   .command("bundle")
-  .description("Bundle icons into a file")
+  .description("Bundle icons into a file (or directory with --split)")
   .option("-q, --query <query>", "Search query")
   .option("-c, --category <category>", "Filter by category")
   .option("-s, --source <source>", "Filter by source (lucide, phosphor, hugeicons)")
   .option("-f, --format <format>", "Output format: react, svg, json", "react")
-  .option("-o, --output <path>", "Output file path")
+  .option("-o, --output <path>", "Output file/directory path")
   .option("-l, --limit <number>", "Maximum number of icons", "100")
+  .option("--split", "Write each icon to its own file (requires -o as directory)")
   .action(async (options) => {
     if (!options.query && !options.category && !options.source) {
       console.log(
@@ -312,6 +396,78 @@ program
       if (icons.length === 0) {
         spinner.fail("No icons found matching your criteria");
         process.exit(1);
+      }
+
+      // Split mode - one file per icon
+      if (options.split) {
+        const outDir = options.output || "./icons";
+        const fullDir = resolve(process.cwd(), outDir);
+        mkdirSync(fullDir, { recursive: true });
+
+        spinner.text = `Writing ${icons.length} icons to ${outDir}/...`;
+
+        const ext = options.format === "json" ? "json" : options.format === "svg" ? "svg" : "tsx";
+
+        for (const icon of icons) {
+          const fileName = `${icon.normalizedName}.${ext}`;
+          const filePath = join(fullDir, fileName);
+          let content: string;
+
+          switch (options.format) {
+            case "svg": {
+              const attrs = getSvgAttributes(icon);
+              content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>\n  ${icon.content}\n</svg>`;
+              break;
+            }
+            case "json":
+              content = JSON.stringify({
+                name: icon.normalizedName,
+                source: icon.sourceId,
+                viewBox: icon.viewBox,
+                content: icon.content,
+              }, null, 2);
+              break;
+            case "react":
+            default: {
+              const name = toPascalCase(icon.normalizedName);
+              const attrs = getSvgAttributes(icon);
+              content = `import * as React from "react";
+
+export function ${name}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="${icon.viewBox}"
+      ${attrs}
+      className={className}
+      {...props}
+    >
+      ${icon.content}
+    </svg>
+  );
+}
+`;
+              break;
+            }
+          }
+
+          writeFileSync(filePath, content, "utf-8");
+        }
+
+        // Generate index file for React
+        if (options.format === "react") {
+          const indexContent = icons
+            .map((icon) => `export { ${toPascalCase(icon.normalizedName)} } from "./${icon.normalizedName}";`)
+            .join("\n") + "\n";
+          writeFileSync(join(fullDir, "index.ts"), indexContent, "utf-8");
+        }
+
+        spinner.succeed(`${chalk.green(icons.length)} icons → ${chalk.cyan(outDir)}/`);
+        console.log(chalk.dim(`  Each icon in its own file (tree-shakeable)`));
+        if (options.format === "react") {
+          console.log(chalk.dim(`  Import: import { Home } from "${outDir}";`));
+        }
+        return;
       }
 
       spinner.text = `Generating ${options.format} bundle for ${icons.length} icons...`;
