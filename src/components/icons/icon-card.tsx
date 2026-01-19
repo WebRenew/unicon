@@ -18,6 +18,13 @@ const libraryColors: Record<string, string> = {
   hugeicons: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20",
 };
 
+// Tooltip library colors - optimized for dark bg in dark mode, light bg in light mode
+const tooltipLibraryColors: Record<string, string> = {
+  lucide: "text-orange-400",
+  phosphor: "text-emerald-400",
+  hugeicons: "text-violet-400",
+};
+
 export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
   const strokeWidth = icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2;
 
@@ -72,6 +79,10 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
         {cardContent}
       </TooltipTrigger>
       <TooltipContent side="bottom" className="hidden md:block">
+        <span className={cn("font-medium", tooltipLibraryColors[icon.sourceId])}>
+          {icon.sourceId}
+        </span>
+        <span className="opacity-50 mx-0.5">:</span>
         <span className="font-medium">{icon.normalizedName}</span>
       </TooltipContent>
     </Tooltip>
