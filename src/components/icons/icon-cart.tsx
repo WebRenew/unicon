@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink } from "lucide-react";
 import type { IconData } from "@/types/icon";
 
@@ -17,8 +17,6 @@ type ExportFormat = "react" | "svg" | "json";
 export function IconCart({ items, onRemove, onClear, isOpen, onClose }: IconCartProps) {
   const [copied, setCopied] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
-
-  if (!isOpen) return null;
 
   const toPascalCase = (str: string) =>
     str
@@ -46,11 +44,16 @@ export function IconCart({ items, onRemove, onClear, isOpen, onClose }: IconCart
     return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
   };
 
-  const generateReactComponents = () => {
-    const components = items.map((icon) => {
-      const name = toPascalCase(icon.normalizedName);
-      const attrs = getSvgAttributes(icon);
-      return `export function ${name}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+  // Memoize export content to ensure it uses the latest items
+  const exportContent = useMemo(() => {
+    if (items.length === 0) return "";
+
+    switch (exportFormat) {
+      case "react": {
+        const components = items.map((icon) => {
+          const name = toPascalCase(icon.normalizedName);
+          const attrs = getSvgAttributes(icon);
+          return `export function ${name}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -63,48 +66,40 @@ export function IconCart({ items, onRemove, onClear, isOpen, onClose }: IconCart
     </svg>
   );
 }`;
-    });
-
-    return `import * as React from "react";
+        });
+        return `import * as React from "react";
 
 ${components.join("\n\n")}
 `;
-  };
-
-  const generateSvgBundle = () => {
-    return items
-      .map((icon) => {
-        const attrs = getSvgAttributesRaw(icon);
-        return `<!-- ${icon.normalizedName} (${icon.sourceId}) -->
+      }
+      case "svg":
+        return items
+          .map((icon) => {
+            const attrs = getSvgAttributesRaw(icon);
+            return `<!-- ${icon.normalizedName} (${icon.sourceId}) -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
   ${icon.content}
 </svg>`;
-      })
-      .join("\n\n");
-  };
-
-  const generateJsonBundle = () => {
-    const data = items.map((icon) => ({
-      id: icon.id,
-      name: icon.normalizedName,
-      source: icon.sourceId,
-      viewBox: icon.viewBox,
-      content: icon.content,
-      tags: icon.tags,
-    }));
-    return JSON.stringify(data, null, 2);
-  };
-
-  const getExportContent = () => {
-    switch (exportFormat) {
-      case "react":
-        return generateReactComponents();
-      case "svg":
-        return generateSvgBundle();
+          })
+          .join("\n\n");
       case "json":
-        return generateJsonBundle();
+        return JSON.stringify(
+          items.map((icon) => ({
+            id: icon.id,
+            name: icon.normalizedName,
+            source: icon.sourceId,
+            viewBox: icon.viewBox,
+            content: icon.content,
+            tags: icon.tags,
+          })),
+          null,
+          2
+        );
     }
-  };
+  }, [items, exportFormat]);
+
+  // Early return AFTER all hooks
+  if (!isOpen) return null;
 
   const getFileName = () => {
     switch (exportFormat) {
@@ -118,14 +113,13 @@ ${components.join("\n\n")}
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(getExportContent());
+    await navigator.clipboard.writeText(exportContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
-    const content = getExportContent();
-    const blob = new Blob([content], { type: "text/plain" });
+    const blob = new Blob([exportContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -256,11 +250,18 @@ ${components.join("\n\n")}
           </div>
 
           {/* Preview */}
-          <div className="bg-black/40 rounded-lg p-3 max-h-32 overflow-y-auto">
-            <pre className="text-[10px] text-white/50 font-mono whitespace-pre-wrap break-all">
-              {getExportContent().slice(0, 500)}
-              {getExportContent().length > 500 && "..."}
-            </pre>
+          <div className="space-y-2">
+            <div className="text-xs text-white/50">
+              {exportFormat === "react" && `${items.length} React component${items.length > 1 ? "s" : ""}`}
+              {exportFormat === "svg" && `${items.length} SVG${items.length > 1 ? "s" : ""}`}
+              {exportFormat === "json" && `${items.length} icon${items.length > 1 ? "s" : ""} in JSON`}
+            </div>
+            <div className="bg-black/40 rounded-lg p-3 max-h-32 overflow-y-auto">
+              <pre className="text-[10px] text-white/50 font-mono whitespace-pre-wrap break-all">
+                {exportContent.slice(0, 800)}
+                {exportContent.length > 800 && "\n\n... (more content)"}
+              </pre>
+            </div>
           </div>
 
           {/* Actions */}
