@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus } from "lucide-react";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -178,6 +178,23 @@ export function MetallicIconBrowser({
       return [...prev, icon];
     });
   }, []);
+
+  // Add multiple icons to bundle (skip duplicates)
+  const addAllToBundle = useCallback((iconsToAdd: IconData[]) => {
+    setCartItems((prev) => {
+      const existingIds = new Set(prev.map((item) => item.id));
+      const newIcons = iconsToAdd.filter((icon) => !existingIds.has(icon.id));
+      if (newIcons.length === 0) return prev;
+      return [...prev, ...newIcons];
+    });
+  }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = selectedSource !== "all" || selectedCategory !== "all" || debouncedSearch.length > 0;
+  
+  // Count icons not yet in bundle from current view
+  const iconsNotInBundle = icons.filter((icon) => !cartItemIds.has(icon.id));
+  const canBundleAll = hasActiveFilters && iconsNotInBundle.length > 0;
 
   const removeCartItem = useCallback((id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
@@ -461,9 +478,47 @@ export function MetallicIconBrowser({
                   </PopoverContent>
                 </Popover>
               </div>
+
+              {/* Bundle All Button - visible when filters active */}
+              {canBundleAll && (
+                <>
+                  <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+                  <button
+                    onClick={() => {
+                      addAllToBundle(icons);
+                      setIsCartOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/20 dark:border-emerald-500/30 transition-all"
+                  >
+                    <PackagePlus className="w-3.5 h-3.5" />
+                    Bundle All ({iconsNotInBundle.length})
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
+
+        {/* Bundle All action - visible when filters active but panel collapsed */}
+        {!filtersExpanded && canBundleAll && (
+          <div className="flex items-center gap-3 -mt-2 mb-2">
+            <button
+              onClick={() => {
+                addAllToBundle(icons);
+                setIsCartOpen(true);
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/20 dark:border-emerald-500/30 transition-all"
+            >
+              <PackagePlus className="w-3.5 h-3.5" />
+              Bundle All {icons.length} Filtered Icons
+              {iconsNotInBundle.length < icons.length && (
+                <span className="text-emerald-600/70 dark:text-emerald-500/70">
+                  (+{iconsNotInBundle.length} new)
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Row 2: Display Controls (collapsible) */}
         <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/5 dark:border-white/5">
