@@ -17,8 +17,8 @@ export type IconStyle = "metal" | "brutal" | "glow";
 export const ICON_STYLES: Record<IconStyle, { container: string; icon: string; css: string }> = {
   metal: {
     container:
-      "rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 hover:brightness-110",
-    icon: "text-white/80",
+      "rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10 hover:brightness-105 dark:hover:brightness-110",
+    icon: "dark:text-white/80 text-black/70",
     css: `/* Metal Icon Style */
 .metal-icon {
   display: flex; align-items: center; justify-content: center;
@@ -30,8 +30,8 @@ export const ICON_STYLES: Record<IconStyle, { container: string; icon: string; c
   },
   brutal: {
     container:
-      "rounded-none bg-white border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]",
-    icon: "text-black",
+      "rounded-none bg-white dark:bg-black border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
+    icon: "text-black dark:text-white",
     css: `/* Brutal Icon Style */
 .brutal-icon {
   display: flex; align-items: center; justify-content: center;
@@ -42,8 +42,8 @@ export const ICON_STYLES: Record<IconStyle, { container: string; icon: string; c
   },
   glow: {
     container:
-      "rounded-xl bg-[#0a0a0f] border border-purple-500/10 hover:border-purple-500/30 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]",
-    icon: "text-purple-300/70",
+      "rounded-xl dark:bg-[#0a0a0f] bg-purple-50 border dark:border-purple-500/10 border-purple-200 hover:border-purple-500/30 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]",
+    icon: "dark:text-purple-300/70 text-purple-600/80",
     css: `/* Glow Icon Style */
 .glow-icon {
   display: flex; align-items: center; justify-content: center;
@@ -149,7 +149,7 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
         <button
           onClick={handleClick}
           className={`relative flex items-center justify-center w-14 h-14 shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
-            isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-[hsl(0,0%,3%)]" : ""
+            isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
           }`}
         >
           <div
