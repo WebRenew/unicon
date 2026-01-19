@@ -34,7 +34,7 @@ git clone https://github.com/WebRenew/unicon.git
 cd unicon
 
 # Install dependencies
-npm install
+pnpm install
 
 # Copy environment variables
 cp .env.example .env.local
@@ -61,10 +61,10 @@ ADMIN_SECRET=your-secret-for-admin-routes
 
 ```bash
 # Push schema to database
-npm run db:push
+pnpm db:push
 
 # (Optional) Open Drizzle Studio
-npm run db:studio
+pnpm db:studio
 ```
 
 ### Populate Icons
@@ -82,7 +82,7 @@ python -m extractor.main
 ### Run Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to browse icons.
