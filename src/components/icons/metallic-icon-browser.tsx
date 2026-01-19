@@ -40,6 +40,7 @@ export function MetallicIconBrowser({
   // Display presets - persisted to localStorage
   const [strokePreset, setStrokePreset] = useState<StrokePreset>("regular");
   const [sizePreset, setSizePreset] = useState<SizePreset>("m");
+  const [controlsExpanded, setControlsExpanded] = useState(false);
   const strokeWeight = STROKE_PRESETS[strokePreset].value;
   const { icon: iconSize, container: containerSize } = SIZE_PRESETS[sizePreset];
 
@@ -343,81 +344,99 @@ export function MetallicIconBrowser({
           </div>
         </div>
 
-        {/* Row 2: Display Controls */}
+        {/* Row 2: Display Controls (collapsible) */}
         <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/5 dark:border-white/5">
-          <div className="flex items-center gap-1.5 text-black/40 dark:text-white/40">
-            <SlidersHorizontal className="w-3.5 h-3.5" />
+          {/* Controls toggle button */}
+          <button
+            onClick={() => setControlsExpanded(!controlsExpanded)}
+            className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
+          >
+            <SlidersHorizontal className={`w-3.5 h-3.5 transition-transform ${controlsExpanded ? 'rotate-90' : ''}`} />
             <span className="text-[10px] font-mono uppercase tracking-wider">
               Controls
             </span>
-          </div>
+            <svg 
+              className={`w-3 h-3 transition-transform ${controlsExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor" 
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-          {/* Size Presets */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-              Size
-            </span>
-            <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-              {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setSizePreset(preset)}
-                  title={SIZE_PRESETS[preset].px}
-                  className={`relative px-2.5 py-1.5 text-xs font-mono transition-all ${
-                    sizePreset === preset
-                      ? "bg-black dark:bg-white text-white dark:text-black"
-                      : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-                  }`}
-                >
-                  {SIZE_PRESETS[preset].label}
-                </button>
-              ))}
-            </div>
-            <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
-              {SIZE_PRESETS[sizePreset].px}
-            </span>
-          </div>
-
-          {/* Separator */}
-          <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-
-          {/* Stroke Weight Presets */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-              Weight
-            </span>
-            <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-              {(Object.keys(STROKE_PRESETS) as StrokePreset[]).map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setStrokePreset(preset)}
-                  className={`relative px-3 py-1.5 text-xs font-mono transition-all ${
-                    strokePreset === preset
-                      ? "bg-black dark:bg-white text-white dark:text-black"
-                      : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-                  }`}
-                >
-                  {/* Visual stroke indicator */}
-                  <span className="flex items-center gap-1.5">
-                    <svg 
-                      width="14" 
-                      height="14" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth={STROKE_PRESETS[preset].value * 1.2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="opacity-70"
+          {/* Controls content - visible when expanded */}
+          {controlsExpanded && (
+            <>
+              {/* Size Presets */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  Size
+                </span>
+                <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
+                  {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setSizePreset(preset)}
+                      title={SIZE_PRESETS[preset].px}
+                      className={`relative px-2.5 py-1.5 text-xs font-mono transition-all ${
+                        sizePreset === preset
+                          ? "bg-black dark:bg-white text-white dark:text-black"
+                          : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                      }`}
                     >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    <span className="hidden sm:inline">{STROKE_PRESETS[preset].label}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+                      {SIZE_PRESETS[preset].label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
+                  {SIZE_PRESETS[sizePreset].px}
+                </span>
+              </div>
+
+              {/* Separator */}
+              <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+
+              {/* Stroke Weight Presets */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  Weight
+                </span>
+                <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
+                  {(Object.keys(STROKE_PRESETS) as StrokePreset[]).map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setStrokePreset(preset)}
+                      className={`relative px-3 py-1.5 text-xs font-mono transition-all ${
+                        strokePreset === preset
+                          ? "bg-black dark:bg-white text-white dark:text-black"
+                          : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      {/* Visual stroke indicator */}
+                      <span className="flex items-center gap-1.5">
+                        <svg 
+                          width="14" 
+                          height="14" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth={STROKE_PRESETS[preset].value * 1.2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="opacity-70"
+                        >
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        <span className="hidden sm:inline">{STROKE_PRESETS[preset].label}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
