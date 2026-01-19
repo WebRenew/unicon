@@ -1,18 +1,25 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import type { IconData, IconLibrary } from "@/types/icon";
+
+/** Convert string to Title Case */
+function toTitleCase(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 
 interface MetallicIconBrowserProps {
   initialIcons: IconData[];
@@ -40,6 +47,7 @@ export function MetallicIconBrowser({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
   const [selectedCategory, setSelectedCategory] = useState<string | "all">("all");
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [icons, setIcons] = useState<IconData[]>(initialIcons.slice(0, ICONS_PER_PAGE));
   const [page, setPage] = useState(0);
@@ -390,29 +398,68 @@ export function MetallicIconBrowser({
               {/* Separator */}
               <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
 
-              {/* Category */}
+              {/* Category Combobox */}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
                   Category
                 </span>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger 
-                    size="sm" 
-                    className="h-7 px-2.5 text-xs font-mono bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/70 dark:text-white/70"
-                  >
-                    <SelectValue placeholder="All categories" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    <SelectItem value="all" className="text-xs font-mono">
-                      All categories
-                    </SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="text-xs font-mono">
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      role="combobox"
+                      aria-expanded={categoryOpen}
+                      className="flex h-7 items-center justify-between gap-2 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 text-xs font-mono text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 transition-colors min-w-[140px]"
+                    >
+                      {selectedCategory === "all"
+                        ? "All Categories"
+                        : toTitleCase(selectedCategory)}
+                      <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search categories..." className="text-xs" />
+                      <CommandList>
+                        <CommandEmpty>No category found.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="all"
+                            onSelect={() => {
+                              setSelectedCategory("all");
+                              setCategoryOpen(false);
+                            }}
+                            className="text-xs font-mono"
+                          >
+                            <Check
+                              className={`mr-2 h-3 w-3 ${
+                                selectedCategory === "all" ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            All Categories
+                          </CommandItem>
+                          {categories.map((cat) => (
+                            <CommandItem
+                              key={cat}
+                              value={cat}
+                              onSelect={() => {
+                                setSelectedCategory(cat);
+                                setCategoryOpen(false);
+                              }}
+                              className="text-xs font-mono"
+                            >
+                              <Check
+                                className={`mr-2 h-3 w-3 ${
+                                  selectedCategory === cat ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              {toTitleCase(cat)}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </>
           )}
