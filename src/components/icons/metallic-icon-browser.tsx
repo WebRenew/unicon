@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles } from "lucide-react";
-import { StyledIcon } from "./styled-icon";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal } from "lucide-react";
+import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { IconData, IconLibrary } from "@/types/icon";
@@ -36,23 +36,78 @@ export function MetallicIconBrowser({
   const [searchType, setSearchType] = useState<string>("text");
   const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
   
+  // Display presets - persisted to localStorage
+  const [strokePreset, setStrokePreset] = useState<StrokePreset>("regular");
+  const [sizePreset, setSizePreset] = useState<SizePreset>("m");
+  const strokeWeight = STROKE_PRESETS[strokePreset].value;
+  const { icon: iconSize, container: containerSize } = SIZE_PRESETS[sizePreset];
+
+  // Estimate columns based on viewport width
+  // Use null initially to show all icons during SSR, then calculate on client
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
+  
+  useEffect(() => {
+    // Set initial width on mount
+    setViewportWidth(window.innerWidth);
+    
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Calculate columns based on viewport and known page padding
+  // During SSR/initial render (viewportWidth is null), show all icons
+  const iconsToShow = (() => {
+    if (viewportWidth === null) {
+      // SSR or before hydration - show all icons, CSS will handle layout
+      return icons;
+    }
+    
+    // Match the page padding: p-4 lg:px-20 xl:px-40
+    let padding = 16 * 2; // p-4 = 1rem = 16px each side
+    if (viewportWidth >= 1280) padding = 160 * 2; // xl:px-40 = 10rem = 160px
+    else if (viewportWidth >= 1024) padding = 80 * 2; // lg:px-20 = 5rem = 80px
+    
+    const containerWidth = viewportWidth - padding;
+    const gap = 12; // gap-3
+    const estimatedColumns = Math.max(4, Math.floor((containerWidth + gap) / (containerSize + gap)));
+    
+    // Trim icons to complete rows
+    const completeRowCount = Math.floor(icons.length / estimatedColumns);
+    return completeRowCount > 0 
+      ? icons.slice(0, completeRowCount * estimatedColumns)
+      : icons;
+  })();
+
+  
   // Cart state - persisted to localStorage
   const [cartItems, setCartItems] = useState<IconData[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemIds = new Set(cartItems.map((item) => item.id));
 
-  // Load cart from localStorage on mount
+  // Load settings from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("unicon-bundle");
-      if (saved) {
-        const parsed = JSON.parse(saved) as IconData[];
+      // Load cart
+      const savedCart = localStorage.getItem("unicon-bundle");
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart) as IconData[];
         if (Array.isArray(parsed) && parsed.length > 0) {
           setCartItems(parsed);
         }
       }
+      // Load stroke preset
+      const savedStroke = localStorage.getItem("unicon-stroke-preset");
+      if (savedStroke && savedStroke in STROKE_PRESETS) {
+        setStrokePreset(savedStroke as StrokePreset);
+      }
+      // Load size preset
+      const savedSize = localStorage.getItem("unicon-size-preset");
+      if (savedSize && savedSize in SIZE_PRESETS) {
+        setSizePreset(savedSize as SizePreset);
+      }
     } catch (error) {
-      console.error("Failed to load bundle from localStorage:", error);
+      console.error("Failed to load settings from localStorage:", error);
     }
   }, []);
 
@@ -68,6 +123,23 @@ export function MetallicIconBrowser({
       console.error("Failed to save bundle to localStorage:", error);
     }
   }, [cartItems]);
+
+  // Save display presets to localStorage when they change
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-stroke-preset", strokePreset);
+    } catch (error) {
+      console.error("Failed to save stroke preset to localStorage:", error);
+    }
+  }, [strokePreset]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-size-preset", sizePreset);
+    } catch (error) {
+      console.error("Failed to save size preset to localStorage:", error);
+    }
+  }, [sizePreset]);
 
   const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
 
@@ -241,21 +313,106 @@ export function MetallicIconBrowser({
         </div>
       )}
 
-      {/* Source filters */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
-          <button
-            key={source}
-            onClick={() => setSelectedSource(source)}
-            className={`px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
-              selectedSource === source
-                ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
-                : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
-            }`}
-          >
-            {source === "all" ? "All" : source}
-          </button>
-        ))}
+      {/* Filters & Controls */}
+      <div className="flex flex-col gap-4 mb-8">
+        {/* Row 1: Library Filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-[10px] font-mono text-black/40 dark:text-white/40 uppercase tracking-wider">
+            Library
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
+              <button
+                key={source}
+                onClick={() => setSelectedSource(source)}
+                className={`px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
+                  selectedSource === source
+                    ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
+                    : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
+                }`}
+              >
+                {source === "all" ? "All" : source}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Display Controls */}
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/5 dark:border-white/5">
+          <div className="flex items-center gap-1.5 text-black/40 dark:text-white/40">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-mono uppercase tracking-wider">
+              Controls
+            </span>
+          </div>
+
+          {/* Size Presets */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+              Size
+            </span>
+            <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
+              {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setSizePreset(preset)}
+                  title={SIZE_PRESETS[preset].px}
+                  className={`relative px-2.5 py-1.5 text-xs font-mono transition-all ${
+                    sizePreset === preset
+                      ? "bg-black dark:bg-white text-white dark:text-black"
+                      : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {SIZE_PRESETS[preset].label}
+                </button>
+              ))}
+            </div>
+            <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
+              {SIZE_PRESETS[sizePreset].px}
+            </span>
+          </div>
+
+          {/* Separator */}
+          <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+
+          {/* Stroke Weight Presets */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+              Weight
+            </span>
+            <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
+              {(Object.keys(STROKE_PRESETS) as StrokePreset[]).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setStrokePreset(preset)}
+                  className={`relative px-3 py-1.5 text-xs font-mono transition-all ${
+                    strokePreset === preset
+                      ? "bg-black dark:bg-white text-white dark:text-black"
+                      : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {/* Visual stroke indicator */}
+                  <span className="flex items-center gap-1.5">
+                    <svg 
+                      width="14" 
+                      height="14" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth={STROKE_PRESETS[preset].value * 1.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="opacity-70"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <span className="hidden sm:inline">{STROKE_PRESETS[preset].label}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Results count */}
@@ -273,14 +430,23 @@ export function MetallicIconBrowser({
         </div>
       ) : icons.length > 0 ? (
         <>
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-3">
-            {icons.map((icon) => (
+          <div 
+            className="grid gap-3"
+            style={{ 
+              gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
+              justifyContent: 'center',
+            }}
+          >
+            {iconsToShow.map((icon) => (
               <StyledIcon
                 key={icon.id}
                 icon={icon}
                 style="metal"
                 isSelected={cartItemIds.has(icon.id)}
                 onToggleCart={toggleCartItem}
+                strokeWeight={strokeWeight}
+                iconSize={iconSize}
+                containerSize={containerSize}
               />
             ))}
           </div>

@@ -54,17 +54,54 @@ export const ICON_STYLES: Record<IconStyle, { container: string; icon: string; c
   },
 };
 
+/** Stroke weight presets for consistent icon rendering */
+export type StrokePreset = "thin" | "regular" | "bold";
+
+export const STROKE_PRESETS: Record<StrokePreset, { value: number; label: string }> = {
+  thin: { value: 1.25, label: "Thin" },
+  regular: { value: 1.75, label: "Regular" },
+  bold: { value: 2.5, label: "Bold" },
+};
+
+/** Size presets for icon display */
+export type SizePreset = "s" | "m" | "l" | "xl";
+
+export const SIZE_PRESETS: Record<SizePreset, { icon: number; container: number; label: string; px: string }> = {
+  s: { icon: 18, container: 44, label: "S", px: "18px" },
+  m: { icon: 24, container: 56, label: "M", px: "24px" },
+  l: { icon: 32, container: 64, label: "L", px: "32px" },
+  xl: { icon: 40, container: 72, label: "XL", px: "40px" },
+};
+
 interface StyledIconProps {
   icon: IconData;
   style: IconStyle;
   onSelect?: () => void;
   isSelected?: boolean;
   onToggleCart?: (icon: IconData) => void;
+  /** Override stroke weight (uses icon default if not provided) */
+  strokeWeight?: number;
+  /** Override icon size in pixels */
+  iconSize?: number;
+  /** Override container size in pixels */
+  containerSize?: number;
 }
 
-export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: StyledIconProps) {
+export function StyledIcon({ 
+  icon, 
+  style, 
+  onSelect, 
+  isSelected, 
+  onToggleCart, 
+  strokeWeight,
+  iconSize = 24,
+  containerSize = 56,
+}: StyledIconProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const styles = ICON_STYLES[style];
+
+  // Use provided strokeWeight, or fall back to icon's default
+  const effectiveStrokeWidth = strokeWeight ?? (icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2);
 
   const handleClick = () => {
     if (onToggleCart) {
@@ -88,24 +125,29 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
   };
 
   // Different icon libraries need different rendering approaches
+  // - Lucide: stroke-based, supports stroke-width
+  // - Hugeicons: stroke-based, supports stroke-width
+  // - Phosphor: fill-based (weight is baked into the icon variant), stroke-width has no effect
   const getSvgAttributesJsx = () => {
     if (icon.sourceId === "phosphor") {
+      // Phosphor icons are fill-based - weight is determined by the icon variant (thin/light/regular/bold/fill)
       return 'fill="currentColor"';
     }
     if (icon.sourceId === "hugeicons") {
-      return 'stroke="currentColor" fill="none"';
+      return `stroke="currentColor" fill="none" strokeWidth={${effectiveStrokeWidth}} strokeLinecap="round" strokeLinejoin="round"`;
     }
-    return `fill="none" stroke="currentColor" strokeWidth={${icon.strokeWidth || 2}} strokeLinecap="round" strokeLinejoin="round"`;
+    return `fill="none" stroke="currentColor" strokeWidth={${effectiveStrokeWidth}} strokeLinecap="round" strokeLinejoin="round"`;
   };
 
   const getSvgAttributesRaw = () => {
     if (icon.sourceId === "phosphor") {
+      // Phosphor icons are fill-based - weight is determined by the icon variant (thin/light/regular/bold/fill)
       return 'fill="currentColor"';
     }
     if (icon.sourceId === "hugeicons") {
-      return 'stroke="currentColor" fill="none"';
+      return `stroke="currentColor" fill="none" stroke-width="${effectiveStrokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
     }
-    return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
+    return `fill="none" stroke="currentColor" stroke-width="${effectiveStrokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
   };
 
   const getFullSvg = () => {
@@ -148,14 +190,16 @@ export function StyledIcon({ icon, style, onSelect, isSelected, onToggleCart }: 
       <ContextMenuTrigger asChild>
         <button
           onClick={handleClick}
-          className={`relative flex items-center justify-center w-14 h-14 shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
+          style={{ width: containerSize, height: containerSize }}
+          className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
             isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
           }`}
         >
           <div
-            className={`w-6 h-6 ${styles.icon}`}
+            style={{ width: iconSize, height: iconSize }}
+            className={styles.icon}
             dangerouslySetInnerHTML={{
-              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
+              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
             }}
           />
           {isSelected && (

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { icons } from "@/lib/schema";
 import { getEmbedding, blobToEmbedding, cosineSimilarity, expandQueryWithAI } from "@/lib/ai";
+import { expandQueryWithSynonyms, hasSynonyms } from "@/lib/synonyms";
 import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 
@@ -9,17 +10,34 @@ interface SearchResult extends IconData {
   score: number;
 }
 
+/** Scoring weights for hybrid search */
+const WEIGHTS = {
+  semantic: 0.6,
+  exactMatch: 0.4,
+} as const;
+
+/** Score boosts for different match types */
+const BOOSTS = {
+  exactName: 0.5,
+  startsWithName: 0.4,
+  containsName: 0.3,
+  exactTag: 0.25,
+  containsTag: 0.15,
+  exactCategory: 0.2,
+  containsCategory: 0.1,
+} as const;
+
 /**
  * POST /api/search
  * 
- * AI-powered semantic search for icons.
- * Uses Claude to understand user intent and expand queries,
- * then uses embeddings for semantic matching.
+ * Hybrid semantic + exact match search for icons.
+ * Uses pre-computed synonyms for instant query expansion,
+ * with optional AI fallback for complex queries.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, sourceId, limit = 50, useAI = true } = body as {
+    const { query, sourceId, limit = 50, useAI = false } = body as {
       query: string;
       sourceId?: string;
       limit?: number;
@@ -41,23 +59,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ results, searchType: "text" });
     }
 
-    // Try AI-powered semantic search
+    // Try semantic search with synonym expansion
     try {
-      let searchQuery = trimmedQuery;
-      let expandedTerms: string | undefined;
-
-      // Use Claude to expand the query for better semantic matching
-      if (useAI && process.env.ANTHROPIC_API_KEY) {
+      // First, expand using pre-computed synonyms (instant, no API call)
+      let searchQuery = expandQueryWithSynonyms(trimmedQuery);
+      let expandedTerms: string | undefined = searchQuery !== trimmedQuery ? searchQuery : undefined;
+      
+      // Only use AI expansion if explicitly requested AND synonyms didn't help
+      if (useAI && !hasSynonyms(trimmedQuery) && process.env.ANTHROPIC_API_KEY) {
         try {
-          expandedTerms = await expandQueryWithAI(trimmedQuery);
-          searchQuery = expandedTerms;
-          console.log(`AI expanded "${trimmedQuery}" to: ${expandedTerms}`);
+          const aiExpanded = await expandQueryWithAI(trimmedQuery);
+          searchQuery = aiExpanded;
+          expandedTerms = aiExpanded;
+          console.log(`AI expanded "${trimmedQuery}" to: ${aiExpanded}`);
         } catch (aiError) {
-          console.error("AI expansion failed, using original query:", aiError);
+          console.error("AI expansion failed, using synonym expansion:", aiError);
         }
       }
 
-      const results = await semanticSearch(searchQuery, sourceId, limit);
+      const results = await hybridSearch(trimmedQuery, searchQuery, sourceId, limit);
       return NextResponse.json({ 
         results, 
         searchType: "semantic",
@@ -78,17 +98,89 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Perform semantic search using embeddings.
+ * Calculate exact match boost for an icon against the original query.
  */
-async function semanticSearch(
-  query: string,
+function calculateExactMatchBoost(icon: {
+  normalizedName: string;
+  name: string;
+  tags: string[] | null;
+  category: string | null;
+}, queryLower: string, queryTokens: string[]): number {
+  let boost = 0;
+  const nameLower = icon.normalizedName.toLowerCase();
+  
+  // Name matching
+  if (nameLower === queryLower) {
+    boost += BOOSTS.exactName;
+  } else if (nameLower.startsWith(queryLower)) {
+    boost += BOOSTS.startsWithName;
+  } else if (nameLower.includes(queryLower)) {
+    boost += BOOSTS.containsName;
+  }
+  
+  // Check individual query tokens against name tokens
+  const nameTokens = nameLower.split(/[-_\s]+/);
+  for (const queryToken of queryTokens) {
+    if (nameTokens.includes(queryToken)) {
+      boost += 0.1; // Small boost for each matching word
+    }
+  }
+  
+  // Tag matching
+  if (icon.tags) {
+    for (const tag of icon.tags) {
+      const tagLower = tag.toLowerCase();
+      if (tagLower === queryLower) {
+        boost += BOOSTS.exactTag;
+        break; // Only count once
+      } else if (tagLower.includes(queryLower)) {
+        boost += BOOSTS.containsTag;
+        break;
+      }
+      // Check tokens
+      for (const queryToken of queryTokens) {
+        if (tagLower === queryToken || tagLower.includes(queryToken)) {
+          boost += 0.05;
+        }
+      }
+    }
+  }
+  
+  // Category matching
+  if (icon.category) {
+    const categoryLower = icon.category.toLowerCase();
+    if (categoryLower === queryLower) {
+      boost += BOOSTS.exactCategory;
+    } else if (categoryLower.includes(queryLower)) {
+      boost += BOOSTS.containsCategory;
+    }
+  }
+  
+  return Math.min(boost, 1); // Cap at 1.0
+}
+
+/**
+ * Perform hybrid search combining semantic similarity with exact match boosting.
+ * 
+ * @param originalQuery - The user's original query (for exact matching)
+ * @param expandedQuery - The synonym-expanded query (for semantic search)
+ * @param sourceId - Optional source filter
+ * @param limit - Max results to return
+ */
+async function hybridSearch(
+  originalQuery: string,
+  expandedQuery: string,
   sourceId: string | undefined,
   limit: number
 ): Promise<SearchResult[]> {
-  // Get embedding for the query
-  const queryEmbedding = await getEmbedding(query);
+  // Get embedding for the expanded query
+  const queryEmbedding = await getEmbedding(expandedQuery);
 
-  // Get all icons with embeddings (we'll filter and sort in memory for now)
+  // Prepare query tokens for exact matching
+  const queryLower = originalQuery.toLowerCase();
+  const queryTokens = queryLower.split(/\s+/).filter(Boolean);
+
+  // Get all icons with embeddings
   // TODO: Use libSQL vector_distance_cos when available in Drizzle
   let baseQuery = db
     .select()
@@ -104,14 +196,29 @@ async function semanticSearch(
 
   const allIcons = await baseQuery.limit(5000); // Cap for performance
 
-  // Calculate similarity scores
+  // Calculate hybrid scores
   const scored: SearchResult[] = [];
 
   for (const icon of allIcons) {
     if (!icon.embedding) continue;
 
     const iconEmbedding = blobToEmbedding(icon.embedding as Buffer);
-    const score = cosineSimilarity(queryEmbedding, iconEmbedding);
+    const semanticScore = cosineSimilarity(queryEmbedding, iconEmbedding);
+    
+    // Calculate exact match boost
+    const exactMatchBoost = calculateExactMatchBoost(
+      {
+        normalizedName: icon.normalizedName,
+        name: icon.name,
+        tags: icon.tags as string[] | null,
+        category: icon.category,
+      },
+      queryLower,
+      queryTokens
+    );
+    
+    // Combine scores with weights
+    const hybridScore = (semanticScore * WEIGHTS.semantic) + (exactMatchBoost * WEIGHTS.exactMatch);
 
     scored.push({
       id: icon.id,
@@ -126,7 +233,7 @@ async function semanticSearch(
       defaultStroke: icon.defaultStroke ?? false,
       defaultFill: icon.defaultFill ?? false,
       strokeWidth: icon.strokeWidth,
-      score,
+      score: hybridScore,
     });
   }
 
