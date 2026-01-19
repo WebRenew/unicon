@@ -1,5 +1,6 @@
 import { Metadata } from "next";
-import { Package, Terminal, FileCode, FolderSync, Plus, Search, List } from "lucide-react";
+import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download } from "lucide-react";
+import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
   title: "CLI | Unicon",
@@ -8,10 +9,16 @@ export const metadata: Metadata = {
 
 function CodeBlock({ children, title }: { children: string; title?: string }) {
   return (
-    <div className="rounded-lg overflow-hidden border border-white/10 bg-black/40">
+    <div className="group relative rounded-lg overflow-hidden border border-white/10 bg-black/40">
       {title && (
-        <div className="px-3 py-2 border-b border-white/10 text-xs font-mono text-white/50">
-          {title}
+        <div className="px-3 py-2 border-b border-white/10 text-xs font-mono text-white/50 flex items-center justify-between">
+          <span>{title}</span>
+          <CopyButton value={children} />
+        </div>
+      )}
+      {!title && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <CopyButton value={children} />
         </div>
       )}
       <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm font-mono text-white/80 max-w-full">
@@ -93,12 +100,29 @@ unicon search "arrow" --source lucide --limit 10`}
             />
 
             <CommandCard
+              icon={Download}
+              command="unicon get <name>"
+              description="Get a single icon and output to stdout. Perfect for piping to clipboard or a file."
+              example={`unicon get home
+unicon get home --format vue
+unicon get settings --format svelte -o ./settings.svelte`}
+            />
+
+            <CommandCard
+              icon={Info}
+              command="unicon info <name>"
+              description="Show detailed information about an icon including source, category, tags, and viewBox."
+              example={`unicon info home
+unicon info arrow-right --source phosphor`}
+            />
+
+            <CommandCard
               icon={Package}
               command="unicon bundle"
-              description="Bundle icons into a file. Supports React components, raw SVG, or JSON formats."
+              description="Bundle multiple icons into a file. Supports React, Vue, Svelte, SVG, and JSON formats."
               example={`unicon bundle --category Dashboards -o ./icons.tsx
-unicon bundle --query "home menu" --format svg
-unicon bundle --source phosphor --limit 50`}
+unicon bundle --query "home" --format vue
+unicon bundle --source phosphor --split -o ./icons`}
             />
 
             <CommandCard
@@ -124,7 +148,7 @@ unicon sync --dry-run         # Preview changes`}
               description="Add a new bundle configuration to your .uniconrc.json file."
               example={`unicon add social --category Social
 unicon add nav --query "arrow menu" --limit 30
-unicon add files --source lucide --format svg`}
+unicon add files --source lucide --format vue`}
             />
 
             <CommandCard
@@ -174,21 +198,31 @@ unicon categories --json`}
         {/* Output Formats */}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Output Formats</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-cyan-400">react</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">TypeScript React components with proper typing.</p>
-              <code className="text-xs text-white/40">icons.tsx</code>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">TypeScript React components.</p>
+              <code className="text-xs text-white/40">.tsx</code>
+            </div>
+            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+              <h3 className="font-mono font-medium mb-2 text-green-400">vue</h3>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Vue 3 SFC components.</p>
+              <code className="text-xs text-white/40">.vue</code>
+            </div>
+            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+              <h3 className="font-mono font-medium mb-2 text-orange-400">svelte</h3>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Svelte components.</p>
+              <code className="text-xs text-white/40">.svelte</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-emerald-400">svg</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup with comments for each icon.</p>
-              <code className="text-xs text-white/40">icons.svg</code>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup.</p>
+              <code className="text-xs text-white/40">.svg</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-purple-400">json</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">JSON array with icon data and metadata.</p>
-              <code className="text-xs text-white/40">icons.json</code>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Icon data as JSON.</p>
+              <code className="text-xs text-white/40">.json</code>
             </div>
           </div>
         </section>
