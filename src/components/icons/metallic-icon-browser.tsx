@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter } from "lucide-react";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,6 +11,7 @@ interface MetallicIconBrowserProps {
   initialIcons: IconData[];
   totalCount: number;
   countBySource: Record<string, number>;
+  categories: string[];
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -26,10 +27,13 @@ export function MetallicIconBrowser({
   initialIcons,
   totalCount,
   countBySource,
+  categories,
 }: MetallicIconBrowserProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<string | "all">("all");
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [icons, setIcons] = useState<IconData[]>(initialIcons.slice(0, ICONS_PER_PAGE));
   const [page, setPage] = useState(0);
   const [totalResults, setTotalResults] = useState(totalCount);
@@ -176,7 +180,7 @@ export function MetallicIconBrowser({
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch icons when search, source, or page changes
+  // Fetch icons when search, source, category, or page changes
   const fetchIcons = useCallback(
     async (pageNum: number) => {
       setIsLoading(true);
@@ -187,6 +191,7 @@ export function MetallicIconBrowser({
         });
         if (debouncedSearch) params.set("q", debouncedSearch);
         if (selectedSource !== "all") params.set("source", selectedSource);
+        if (selectedCategory !== "all") params.set("category", selectedCategory);
 
         const res = await fetch(`/api/icons?${params}`);
         const data = await res.json();
@@ -204,14 +209,14 @@ export function MetallicIconBrowser({
         setIsLoading(false);
       }
     },
-    [debouncedSearch, selectedSource]
+    [debouncedSearch, selectedSource, selectedCategory]
   );
 
   // Refetch when filters change - reset to page 0
   useEffect(() => {
     setPage(0);
     fetchIcons(0);
-  }, [debouncedSearch, selectedSource, fetchIcons]);
+  }, [debouncedSearch, selectedSource, selectedCategory, fetchIcons]);
 
   // Fetch when page changes
   useEffect(() => {
@@ -321,27 +326,83 @@ export function MetallicIconBrowser({
       )}
 
       {/* Filters & Controls */}
-      <div className="flex flex-col gap-4 mb-8">
-        {/* Row 1: Library Filters */}
+      <div className="flex flex-col gap-3 mb-8">
+        {/* Row 1: Filters (collapsible) */}
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-[10px] font-mono text-black/40 dark:text-white/40 uppercase tracking-wider">
-            Library
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
-              <button
-                key={source}
-                onClick={() => setSelectedSource(source)}
-                className={`px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
-                  selectedSource === source
-                    ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
-                    : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
-                }`}
-              >
-                {source === "all" ? "All" : source}
-              </button>
-            ))}
-          </div>
+          {/* Filters toggle button */}
+          <button
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+            className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-mono uppercase tracking-wider">
+              Filters
+            </span>
+            <svg 
+              className={`w-3 h-3 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor" 
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+            {/* Show active filter count */}
+            {(selectedSource !== "all" || selectedCategory !== "all") && (
+              <span className="ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-black/10 dark:bg-white/10 rounded">
+                {(selectedSource !== "all" ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0)}
+              </span>
+            )}
+          </button>
+
+          {/* Filters content - visible when expanded */}
+          {filtersExpanded && (
+            <>
+              {/* Library */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  Library
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
+                    <button
+                      key={source}
+                      onClick={() => setSelectedSource(source)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${
+                        selectedSource === source
+                          ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
+                          : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
+                      }`}
+                    >
+                      {source === "all" ? "All" : source}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+
+              {/* Category */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  Category
+                </span>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/70 dark:text-white/70 focus:outline-none focus:border-black/20 dark:focus:border-white/20"
+                >
+                  <option value="all">All categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Row 2: Display Controls (collapsible) */}

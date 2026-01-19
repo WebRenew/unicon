@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
   const queryParam = searchParams.get("q");
   const sourceParam = searchParams.get("source");
+  const categoryParam = searchParams.get("category");
   const limit = parseInt(searchParams.get("limit") ?? "100", 10);
   const offset = parseInt(searchParams.get("offset") ?? "0", 10);
   const useAI = searchParams.get("ai") !== "false"; // AI search enabled by default
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
     const params: {
       query?: string;
       sourceId?: string;
+      category?: string;
       limit: number;
       offset: number;
     } = {
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (queryParam) params.query = queryParam;
     if (sourceParam && sourceParam !== "all") params.sourceId = sourceParam;
+    if (categoryParam && categoryParam !== "all") params.category = categoryParam;
 
     const icons = await searchIcons(params);
 
