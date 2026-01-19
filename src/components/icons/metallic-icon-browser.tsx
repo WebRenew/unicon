@@ -19,7 +19,8 @@ const SOURCE_COLORS: Record<string, string> = {
   hugeicons: "bg-violet-500",
 };
 
-const ICONS_PER_PAGE = 160;
+// Icons per page - sized for large screens (4K: ~50 columns × 8 rows = 400)
+const ICONS_PER_PAGE = 320;
 
 export function MetallicIconBrowser({
   initialIcons,
@@ -56,12 +57,8 @@ export function MetallicIconBrowser({
   }, []);
 
   // Calculate columns based on viewport and known page padding
-  // During SSR/initial render (viewportWidth is null), show all icons
-  const iconsToShow = (() => {
-    if (viewportWidth === null) {
-      // SSR or before hydration - show all icons, CSS will handle layout
-      return icons;
-    }
+  const estimatedColumns = (() => {
+    if (viewportWidth === null) return 10; // SSR fallback
     
     // Match the page padding: p-4 lg:px-20 xl:px-40
     let padding = 16 * 2; // p-4 = 1rem = 16px each side
@@ -70,12 +67,21 @@ export function MetallicIconBrowser({
     
     const containerWidth = viewportWidth - padding;
     const gap = 12; // gap-3
-    const estimatedColumns = Math.max(4, Math.floor((containerWidth + gap) / (containerSize + gap)));
+    return Math.max(4, Math.floor((containerWidth + gap) / (containerSize + gap)));
+  })();
+
+  // During SSR/initial render (viewportWidth is null), show all icons
+  // Otherwise, trim to complete rows
+  const iconsToShow = (() => {
+    if (viewportWidth === null) {
+      // SSR or before hydration - show all icons, CSS will handle layout
+      return icons;
+    }
     
-    // Trim icons to complete rows
-    const completeRowCount = Math.floor(icons.length / estimatedColumns);
-    return completeRowCount > 0 
-      ? icons.slice(0, completeRowCount * estimatedColumns)
+    // Trim to complete rows
+    const completeRows = Math.floor(icons.length / estimatedColumns);
+    return completeRows > 0 
+      ? icons.slice(0, completeRows * estimatedColumns)
       : icons;
   })();
 
