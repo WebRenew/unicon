@@ -365,6 +365,7 @@ function toPascalCase(str: string): string {
     .join("");
 }
 
+// For raw SVG output (kebab-case attributes)
 function getSvgAttributes(icon: Icon): string {
   if (icon.sourceId === "phosphor") {
     return 'fill="currentColor"';
@@ -375,10 +376,21 @@ function getSvgAttributes(icon: Icon): string {
   return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
 }
 
+// For React JSX output (camelCase attributes)
+function getJsxAttributes(icon: Icon): string {
+  if (icon.sourceId === "phosphor") {
+    return 'fill="currentColor"';
+  }
+  if (icon.sourceId === "hugeicons") {
+    return 'stroke="currentColor" fill="none"';
+  }
+  return `fill="none" stroke="currentColor" strokeWidth={${icon.strokeWidth || 2}} strokeLinecap="round" strokeLinejoin="round"`;
+}
+
 function generateReactComponents(icons: Icon[]): string {
   const components = icons.map((icon) => {
     const name = toPascalCase(icon.normalizedName);
-    const attrs = getSvgAttributes(icon);
+    const attrs = getJsxAttributes(icon);
     return `export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -635,11 +647,12 @@ program
 
       let content: string;
       const componentName = toPascalCase(icon.normalizedName);
-      const attrs = getSvgAttributes(icon);
+      const svgAttrs = getSvgAttributes(icon);
+      const jsxAttrs = getJsxAttributes(icon);
 
       switch (options.format) {
         case "svg":
-          content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
+          content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>
   ${icon.content}
 </svg>`;
           break;
@@ -657,7 +670,7 @@ program
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
-    ${attrs}
+    ${svgAttrs}
     :class="className"
     v-bind="$attrs"
   >
@@ -679,7 +692,7 @@ defineProps<{ className?: string }>();
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
-  ${attrs}
+  ${svgAttrs}
   class={className}
   {...$$restProps}
 >
@@ -696,7 +709,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
-      ${attrs}
+      ${jsxAttrs}
       className={className}
       {...props}
     >
@@ -802,12 +815,13 @@ program
           const fileName = `${icon.normalizedName}.${ext}`;
           const filePath = join(fullDir, fileName);
           const name = toPascalCase(icon.normalizedName);
-          const attrs = getSvgAttributes(icon);
+          const svgAttrs = getSvgAttributes(icon);
+          const jsxAttrs = getJsxAttributes(icon);
           let content: string;
 
           switch (options.format) {
             case "svg":
-              content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>\n  ${icon.content}\n</svg>`;
+              content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>\n  ${icon.content}\n</svg>`;
               break;
             case "json":
               content = JSON.stringify({
@@ -823,7 +837,7 @@ program
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
-    ${attrs}
+    ${svgAttrs}
     :class="className"
     v-bind="$attrs"
   >
@@ -846,7 +860,7 @@ defineProps<{ className?: string }>();
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
-  ${attrs}
+  ${svgAttrs}
   class={className}
   {...$$restProps}
 >
@@ -864,7 +878,7 @@ export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
-      ${attrs}
+      ${jsxAttrs}
       className={className}
       {...props}
     >
