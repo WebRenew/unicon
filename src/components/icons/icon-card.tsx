@@ -18,11 +18,13 @@ const libraryColors: Record<string, string> = {
   hugeicons: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20",
 };
 
-// Tooltip library colors - optimized for dark bg in dark mode, light bg in light mode
+// Tooltip library colors - optimized for inverted tooltip backgrounds
+// Light mode: dark tooltip bg needs lighter text (400)
+// Dark mode: light tooltip bg needs darker text (600)
 const tooltipLibraryColors: Record<string, string> = {
-  lucide: "text-orange-400",
-  phosphor: "text-emerald-400",
-  hugeicons: "text-violet-400",
+  lucide: "text-orange-400 dark:text-orange-600",
+  phosphor: "text-emerald-400 dark:text-emerald-600",
+  hugeicons: "text-violet-400 dark:text-violet-600",
 };
 
 export function IconCard({ icon, isSelected, onClick }: IconCardProps) {

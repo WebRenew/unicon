@@ -4,9 +4,18 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
+import figlet from "figlet";
 import { writeFileSync, mkdirSync } from "fs";
 import { dirname, resolve } from "path";
 var API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
+function showBanner() {
+  const banner = figlet.textSync("UNICON", {
+    font: "ANSI Shadow",
+    horizontalLayout: "fitted"
+  });
+  console.log(chalk.cyan(banner));
+  console.log(chalk.dim("  The unified icon library for React\n"));
+}
 async function fetchIcons(params) {
   const url = new URL(`${API_BASE}/api/icons`);
   if (params.query) url.searchParams.set("q", params.query);
@@ -99,7 +108,14 @@ function generateJsonBundle(icons) {
   );
 }
 var program = new Command();
-program.name("unicon").description("CLI for searching and bundling icons from Unicon").version("0.1.0");
+program.name("unicon").description("CLI for searching and bundling icons from Unicon").version("0.1.0").hook("preAction", (thisCommand) => {
+  if (thisCommand.args.length === 0 || process.argv.includes("--help") || process.argv.includes("-h")) {
+    return;
+  }
+}).addHelpText("beforeAll", () => {
+  showBanner();
+  return "";
+});
 program.command("search <query>").description("Search for icons by name or keyword").option("-s, --source <source>", "Filter by source (lucide, phosphor, hugeicons)").option("-c, --category <category>", "Filter by category").option("-l, --limit <number>", "Maximum number of results", "20").option("-j, --json", "Output as JSON").action(async (query, options) => {
   const spinner = ora("Searching icons...").start();
   try {

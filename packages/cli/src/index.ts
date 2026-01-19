@@ -3,10 +3,21 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
+import figlet from "figlet";
 import { writeFileSync, mkdirSync } from "fs";
 import { dirname, resolve } from "path";
 
 const API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
+
+function showBanner(): void {
+  const banner = figlet.textSync("UNICON", {
+    font: "ANSI Shadow",
+    horizontalLayout: "fitted",
+  });
+  
+  console.log(chalk.cyan(banner));
+  console.log(chalk.dim("  The unified icon library for React\n"));
+}
 
 interface Icon {
   id: string;
@@ -148,7 +159,17 @@ const program = new Command();
 program
   .name("unicon")
   .description("CLI for searching and bundling icons from Unicon")
-  .version("0.1.0");
+  .version("0.1.0")
+  .hook("preAction", (thisCommand) => {
+    // Show banner only for main commands, not subcommands
+    if (thisCommand.args.length === 0 || process.argv.includes("--help") || process.argv.includes("-h")) {
+      return;
+    }
+  })
+  .addHelpText("beforeAll", () => {
+    showBanner();
+    return "";
+  });
 
 // Search command
 program
