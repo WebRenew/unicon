@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download, Eye, Database } from "lucide-react";
+import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download, Eye, Database, Layers } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
@@ -169,12 +169,61 @@ unicon preview arrow --source phosphor`}
             />
 
             <CommandCard
+              icon={Layers}
+              command="unicon sources"
+              description="List all available icon libraries (lucide, phosphor, hugeicons)."
+              example={`unicon sources`}
+            />
+
+            <CommandCard
               icon={Database}
               command="unicon cache"
               description="Manage local cache for offline use. Icons are cached for 24 hours."
               example={`unicon cache --stats  # Show cache info
 unicon cache --clear  # Clear all cached data`}
             />
+          </div>
+        </section>
+
+        {/* Workflow */}
+        <section>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Typical Workflow</h2>
+          <div className="space-y-3">
+            <div className="flex gap-3 items-start">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">1</span>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Initialize config</p>
+                <code className="text-xs text-white/50">unicon init</code>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">2</span>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Search for icons you need</p>
+                <code className="text-xs text-white/50">unicon search &quot;dashboard&quot;</code>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">3</span>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Add bundles to your config</p>
+                <code className="text-xs text-white/50">unicon add dashboard --category Dashboards</code>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">4</span>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Generate all bundles</p>
+                <code className="text-xs text-white/50">unicon sync</code>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono flex items-center justify-center">✓</span>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Import and use</p>
+                <code className="text-xs text-white/50">{`import { Home, Settings } from "./icons/dashboard"`}</code>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -259,6 +308,21 @@ unicon cache --clear  # Clear all cached data`}
             <div className="p-4 md:p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
               <h3 className="font-mono font-medium mb-2 text-violet-400">hugeicons</h3>
               <p className="text-white/50 text-xs md:text-sm">1,800+ modern outlined icons</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Caching */}
+        <section>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Offline Support</h2>
+          <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <p className="text-white/60 text-sm mb-4">
+              The CLI automatically caches icon data locally at <code className="text-cyan-400">~/.unicon/cache</code> for 
+              24 hours. This enables faster subsequent searches and partial offline usage.
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs font-mono">
+              <span className="px-2 py-1 rounded bg-white/5 text-white/50">unicon cache --stats</span>
+              <span className="px-2 py-1 rounded bg-white/5 text-white/50">unicon cache --clear</span>
             </div>
           </div>
         </section>
