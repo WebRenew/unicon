@@ -10,12 +10,12 @@ function CodeBlock({ children, title }: { children: string; title?: string }) {
   return (
     <div className="rounded-lg overflow-hidden border border-white/10 bg-black/40">
       {title && (
-        <div className="px-4 py-2 border-b border-white/10 text-xs font-mono text-white/50">
+        <div className="px-3 py-2 border-b border-white/10 text-xs font-mono text-white/50">
           {title}
         </div>
       )}
-      <pre className="p-4 overflow-x-auto text-sm font-mono text-white/80">
-        <code>{children}</code>
+      <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm font-mono text-white/80 max-w-full">
+        <code className="break-all md:break-normal">{children}</code>
       </pre>
     </div>
   );
@@ -33,12 +33,12 @@ function CommandCard({
   example: string;
 }) {
   return (
-    <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="p-2 rounded-lg bg-white/5">
+    <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors overflow-hidden">
+      <div className="flex items-center gap-2 md:gap-3 mb-3">
+        <div className="p-1.5 md:p-2 rounded-lg bg-white/5 shrink-0">
           <Icon className="w-4 h-4 text-cyan-400" />
         </div>
-        <code className="text-white font-mono font-medium">{command}</code>
+        <code className="text-white font-mono font-medium text-sm md:text-base break-all">{command}</code>
       </div>
       <p className="text-white/60 text-sm mb-4">{description}</p>
       <CodeBlock>{example}</CodeBlock>
@@ -51,27 +51,27 @@ export default function CLIPage() {
     <main className="min-h-screen bg-[hsl(0,0%,3%)] text-white">
       {/* Header */}
       <div className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10">
-              <Terminal className="w-6 h-6 text-cyan-400" />
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-10 md:py-16">
+          <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
+            <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10">
+              <Terminal className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-mono bg-white/5 text-white/50">
+            <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-white/5 text-white/50">
               @webrenew/unicon
             </span>
           </div>
-          <h1 className="text-4xl font-bold mb-4">Unicon CLI</h1>
-          <p className="text-xl text-white/60 max-w-2xl">
+          <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
+          <p className="text-base md:text-xl text-white/60 max-w-2xl">
             Search and bundle icons from the command line. Define your icon sets once, 
             regenerate anytime with a single command.
           </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12 space-y-16">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12 space-y-10 md:space-y-16">
         {/* Quick Start */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Quick Start</h2>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Quick Start</h2>
           <div className="space-y-4">
             <CodeBlock title="Install globally">npm install -g @webrenew/unicon</CodeBlock>
             <p className="text-white/50 text-sm">Or use directly with npx:</p>
@@ -81,7 +81,7 @@ export default function CLIPage() {
 
         {/* Commands */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Commands</h2>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Commands</h2>
           <div className="grid gap-4">
             <CommandCard
               icon={Search}
@@ -139,10 +139,10 @@ unicon categories --json`}
 
         {/* Config File */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Config File</h2>
-          <p className="text-white/60 mb-6">
-            Define your icon bundles in <code className="text-cyan-400">.uniconrc.json</code> and 
-            regenerate them anytime with <code className="text-cyan-400">unicon sync</code>.
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Config File</h2>
+          <p className="text-white/60 mb-4 md:mb-6 text-sm md:text-base">
+            Define your icon bundles in <code className="text-cyan-400 text-xs md:text-sm">.uniconrc.json</code> and 
+            regenerate them anytime with <code className="text-cyan-400 text-xs md:text-sm">unicon sync</code>.
           </p>
           <CodeBlock title=".uniconrc.json">{`{
   "bundles": [
@@ -173,21 +173,21 @@ unicon categories --json`}
 
         {/* Output Formats */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Output Formats</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Output Formats</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-cyan-400">react</h3>
-              <p className="text-white/50 text-sm mb-3">TypeScript React components with proper typing.</p>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">TypeScript React components with proper typing.</p>
               <code className="text-xs text-white/40">icons.tsx</code>
             </div>
-            <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-emerald-400">svg</h3>
-              <p className="text-white/50 text-sm mb-3">Raw SVG markup with comments for each icon.</p>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup with comments for each icon.</p>
               <code className="text-xs text-white/40">icons.svg</code>
             </div>
-            <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
               <h3 className="font-mono font-medium mb-2 text-purple-400">json</h3>
-              <p className="text-white/50 text-sm mb-3">JSON array with icon data and metadata.</p>
+              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">JSON array with icon data and metadata.</p>
               <code className="text-xs text-white/40">icons.json</code>
             </div>
           </div>
@@ -195,19 +195,19 @@ unicon categories --json`}
 
         {/* Sources */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Icon Sources</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-xl border border-orange-500/20 bg-orange-500/5">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Icon Sources</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <div className="p-4 md:p-5 rounded-xl border border-orange-500/20 bg-orange-500/5">
               <h3 className="font-mono font-medium mb-2 text-orange-400">lucide</h3>
-              <p className="text-white/50 text-sm">1,900+ beautiful & consistent icons</p>
+              <p className="text-white/50 text-xs md:text-sm">1,900+ beautiful & consistent icons</p>
             </div>
-            <div className="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+            <div className="p-4 md:p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
               <h3 className="font-mono font-medium mb-2 text-emerald-400">phosphor</h3>
-              <p className="text-white/50 text-sm">1,500+ flexible icons in 6 weights</p>
+              <p className="text-white/50 text-xs md:text-sm">1,500+ flexible icons in 6 weights</p>
             </div>
-            <div className="p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
+            <div className="p-4 md:p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
               <h3 className="font-mono font-medium mb-2 text-violet-400">hugeicons</h3>
-              <p className="text-white/50 text-sm">1,800+ modern outlined icons</p>
+              <p className="text-white/50 text-xs md:text-sm">1,800+ modern outlined icons</p>
             </div>
           </div>
         </section>
