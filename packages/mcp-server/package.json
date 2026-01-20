@@ -1,0 +1,52 @@
+{
+  "name": "@webrenew/unicon-mcp-server",
+  "version": "1.0.2",
+  "description": "MCP server for Unicon icon library - connects AI assistants to 14,700+ icons",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "@webrenew/unicon-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "publish:package": "./scripts/publish.sh"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "icons",
+    "unicon",
+    "ai",
+    "claude",
+    "cursor"
+  ],
+  "author": "WebRenew",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webrenew/unicon.git",
+    "directory": "packages/mcp-server"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

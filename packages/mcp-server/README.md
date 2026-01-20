@@ -1,0 +1,202 @@
+# Unicon MCP Server
+
+Model Context Protocol (MCP) server for the Unicon icon library. Connects AI assistants like Claude and Cursor to 14,700+ icons from 8 popular libraries.
+
+## Features
+
+- 🔍 **AI-Powered Search**: Semantic search across all icon libraries
+- 🎨 **Multiple Formats**: Get icons as React, Vue, Svelte, SVG, or JSON
+- 📦 **8 Icon Libraries**: Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons
+- ⚡ **Fast**: Hosted API with local MCP bridge for optimal performance
+
+## Installation
+
+### Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"]
+    }
+  }
+}
+```
+
+**Config file locations:**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+### Cursor IDE
+
+Add to your Cursor MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"]
+    }
+  }
+}
+```
+
+## Usage Examples
+
+Once installed, you can ask your AI assistant:
+
+### Search for Icons
+
+```
+"Search for arrow icons in the Lucide library"
+"Find dashboard-related icons"
+"Show me social media icons"
+```
+
+### Get Icon Code
+
+```
+"Get the React code for the home icon from Heroicons"
+"Give me the SVG for lucide:arrow-right"
+"Generate a Vue component for the settings icon"
+```
+
+### Get Multiple Icons
+
+```
+"Get React components for home, settings, and user icons from Lucide"
+"Give me all the arrow icons from Phosphor as Svelte components"
+```
+
+## Available Tools
+
+### `search_icons`
+
+Search through 14,700+ icons using semantic search.
+
+**Parameters:**
+- `query` (required): Search query (e.g., "arrow", "dashboard")
+- `source` (optional): Filter by library (lucide, phosphor, heroicons, etc.)
+- `category` (optional): Filter by category
+- `limit` (optional): Max results (default: 20, max: 100)
+
+### `get_icon`
+
+Retrieve source code for a specific icon.
+
+**Parameters:**
+- `iconId` (required): Icon ID (e.g., "lucide:arrow-right")
+- `format` (optional): Output format (svg, react, vue, svelte, json) - default: react
+- `size` (optional): Icon size in pixels - default: 24
+- `strokeWidth` (optional): Stroke width for outline icons - default: 2
+
+### `get_multiple_icons`
+
+Retrieve multiple icons at once.
+
+**Parameters:**
+- `iconIds` (required): Array of icon IDs
+- `format` (optional): Output format - default: react
+- `size` (optional): Icon size - default: 24
+- `strokeWidth` (optional): Stroke width - default: 2
+
+## Available Resources
+
+### `unicon://sources`
+
+List all available icon libraries with versions and icon counts.
+
+### `unicon://categories`
+
+List all icon categories for filtering searches.
+
+### `unicon://stats`
+
+Get total icon count and per-library statistics.
+
+## Configuration
+
+### Custom API Endpoint
+
+Set a custom API endpoint (useful for development):
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"],
+      "env": {
+        "UNICON_API_URL": "http://localhost:3000/api/mcp"
+      }
+    }
+  }
+}
+```
+
+## Development
+
+### Local Development
+
+```bash
+# Clone the repo
+git clone https://github.com/webrenew/unicon.git
+cd unicon/packages/mcp-server
+
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Test locally
+node dist/index.js
+```
+
+### Testing with Claude Desktop
+
+1. Build the package locally
+2. Update your Claude config to use the local version:
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "node",
+      "args": ["/path/to/unicon/packages/mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+### Server not showing in Claude
+
+1. Check that your config file is valid JSON
+2. Restart Claude Desktop completely
+3. Check the MCP logs (Help → Developer Tools → Console)
+
+### Connection errors
+
+The server requires internet access to connect to the Unicon API at `https://unicon.webrenew.com`.
+
+### Icons not found
+
+Make sure you're using the correct icon ID format: `source:icon-name` (e.g., `lucide:arrow-right`).
+
+Use the `search_icons` tool first to find the exact icon ID.
+
+## Support
+
+- 📖 Documentation: https://unicon.webrenew.com/docs
+- 🐛 Issues: https://github.com/webrenew/unicon/issues
+- 💬 Discussions: https://github.com/webrenew/unicon/discussions
+
+## License
+
+MIT © WebRenew
