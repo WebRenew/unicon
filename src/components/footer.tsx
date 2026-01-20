@@ -5,7 +5,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 py-6">
+      <div className="px-4 lg:px-20 xl:px-40 py-6">
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
