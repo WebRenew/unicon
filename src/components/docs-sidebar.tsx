@@ -9,7 +9,7 @@ import {
   Code,
   BookOpen,
 } from "lucide-react";
-import { SparklesIcon } from "@/components/icons/sparkles-icon";
+import { MCPIcon } from "@/components/icons/mcp-icon";
 
 interface NavItem {
   title: string;
@@ -44,7 +44,7 @@ const navigation: NavItem[] = [
   {
     title: "MCP Integration",
     href: "/docs/mcp",
-    icon: SparklesIcon,
+    icon: MCPIcon,
     items: [
       { title: "Overview", href: "/docs/mcp" },
       { title: "Claude Desktop", href: "/docs/mcp#claude-desktop" },

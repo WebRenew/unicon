@@ -13,7 +13,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from "lucide-react";
-import { SparklesIcon } from "@/components/icons/sparkles-icon";
+import { MCPIcon } from "@/components/icons/mcp-icon";
 
 export const metadata: Metadata = {
   title: "Documentation | Unicon",
@@ -166,7 +166,7 @@ export default function DocsPage() {
               href="/cli"
             />
             <FeatureCard
-              icon={SparklesIcon}
+              icon={MCPIcon}
               title="MCP Server (AI Integration)"
               description="Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant."
               href="/docs/mcp"
@@ -252,7 +252,7 @@ export default function DocsPage() {
               href="/cli"
             />
             <FeatureCard
-              icon={SparklesIcon}
+              icon={MCPIcon}
               title="MCP Integration Guide"
               description="Set up Unicon with Claude Desktop, Cursor, or other AI assistants."
               href="/docs/mcp"

@@ -4,7 +4,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
-import { SparklesIcon } from "@/components/icons/sparkles-icon";
+import { MCPIcon } from "@/components/icons/mcp-icon";
 
 export const metadata: Metadata = {
   title: "MCP Integration | Unicon",
@@ -58,7 +58,7 @@ export default function MCPDocsPage() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[#E6A8D7]/10 border border-[#E6A8D7]/20">
-            <SparklesIcon className="w-6 h-6 text-[#E6A8D7]" size={24} />
+            <MCPIcon className="w-6 h-6 text-[#E6A8D7]" size={24} />
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-mono bg-[#E6A8D7]/10 text-[#E6A8D7] border border-[#E6A8D7]/30">
             MCP Server

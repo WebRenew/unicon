@@ -14,7 +14,7 @@ import {
   Layers,
 } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
-import { SparklesIcon } from "@/components/icons/sparkles-icon";
+import { MCPIcon } from "@/components/icons/mcp-icon";
 
 export const metadata: Metadata = {
   title: "CLI | Unicon",
@@ -386,7 +386,7 @@ unicon cache --clear  # Clear all cached data`}
           <div className="p-5 md:p-6 rounded-xl border border-[#E6A8D7]/20 bg-[#E6A8D7]/5">
             <div className="flex items-start gap-4 mb-4">
               <div className="p-2 rounded-lg bg-[#E6A8D7]/10 shrink-0">
-                <SparklesIcon className="w-5 h-5 text-[#E6A8D7]" size={20} />
+                <MCPIcon className="w-5 h-5 text-[#E6A8D7]" size={20} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Use Unicon with Claude & Cursor</h3>

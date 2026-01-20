@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Github, Terminal, FileText } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SparklesIcon } from "@/components/icons/sparkles-icon";
+import { MCPIcon } from "@/components/icons/mcp-icon";
 
 export function SiteHeader() {
   return (
@@ -34,7 +34,7 @@ export function SiteHeader() {
               href="/docs/mcp"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#E6A8D7] hover:bg-[#E6A8D7]/5 transition-colors"
             >
-              <SparklesIcon className="w-3.5 h-3.5" />
+              <MCPIcon className="w-3.5 h-3.5" size={14} />
               MCP
             </Link>
           </nav>
