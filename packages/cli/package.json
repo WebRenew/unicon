@@ -13,6 +13,7 @@
     "build": "tsup src/index.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts --format esm --watch",
     "prepublishOnly": "npm run build",
+    "publish:package": "./scripts/publish.sh",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

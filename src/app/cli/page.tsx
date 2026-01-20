@@ -12,6 +12,7 @@ import {
   Eye,
   Database,
   Layers,
+  Sparkles,
 } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
@@ -350,6 +351,76 @@ unicon cache --clear  # Clear all cached data`}
             <div className="p-4 md:p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
               <h3 className="font-mono font-medium mb-2 text-violet-400">hugeicons</h3>
               <p className="text-white/50 text-xs md:text-sm">1,800+ modern outlined icons</p>
+            </div>
+          </div>
+        </section>
+
+        {/* MCP Server */}
+        <section>
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-bold">AI Assistant Integration</h2>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-400 border border-purple-500/30">NEW</span>
+          </div>
+          <div className="p-5 md:p-6 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-cyan-500/5">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="p-2 rounded-lg bg-purple-500/10 shrink-0">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Use Unicon with Claude & Cursor</h3>
+                <p className="text-white/60 text-sm mb-4">
+                  Connect Unicon to AI assistants via Model Context Protocol (MCP). 
+                  Search and generate icon components using natural language.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-white/50 text-xs mb-2">Install the MCP server:</p>
+                <CodeBlock>npx @webrenew/unicon-mcp-server</CodeBlock>
+              </div>
+
+              <div>
+                <p className="text-white/50 text-xs mb-2">Add to Claude Desktop config:</p>
+                <CodeBlock title="claude_desktop_config.json">{`{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"]
+    }
+  }
+}`}</CodeBlock>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-white/50 text-xs mb-3">Then ask Claude:</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex gap-2 items-start">
+                    <span className="text-purple-400">→</span>
+                    <span className="text-white/70">&quot;Search for dashboard icons in Lucide&quot;</span>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <span className="text-purple-400">→</span>
+                    <span className="text-white/70">&quot;Get the React component for lucide:home&quot;</span>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <span className="text-purple-400">→</span>
+                    <span className="text-white/70">&quot;Generate Vue components for social media icons&quot;</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/10">
+                <a 
+                  href="/docs/mcp-integration.md" 
+                  className="text-xs text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Full MCP documentation →
+                </a>
+              </div>
             </div>
           </div>
         </section>
