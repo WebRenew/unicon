@@ -16,8 +16,20 @@ export function Footer() {
             </Link>
           </div>
 
-          {/* Legal Links */}
+          {/* Navigation Links */}
           <nav className="flex flex-wrap justify-center gap-4 text-sm">
+            <Link
+              href="/docs"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
+              href="/cli"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              CLI
+            </Link>
             <Link
               href="/privacy.txt"
               target="_blank"

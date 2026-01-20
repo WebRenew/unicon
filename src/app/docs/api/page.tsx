@@ -1,0 +1,534 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import { Code, ArrowRight, Database, Search } from "lucide-react";
+import { CopyButton } from "@/components/ui/copy-button";
+
+export const metadata: Metadata = {
+  title: "API Reference | Unicon",
+  description: "REST API documentation for programmatic access to 14,700+ icons. Search, filter, and retrieve icon data in JSON format.",
+  keywords: [
+    "icon api",
+    "rest api",
+    "icon data",
+    "api documentation",
+    "icon search api",
+    "programmatic icons",
+  ],
+  alternates: {
+    canonical: "/docs/api",
+  },
+  openGraph: {
+    title: "Unicon API Reference",
+    description: "REST API for programmatic access to 14,700+ icons across 8 libraries.",
+    url: "https://unicon.webrenew.com/docs/api",
+    type: "website",
+  },
+};
+
+function CodeBlock({ children, title }: { children: string; title?: string }) {
+  return (
+    <div className="group relative rounded-lg overflow-hidden border border-border bg-muted/40">
+      {title && (
+        <div className="px-3 py-2 border-b border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
+          <span>{title}</span>
+          <CopyButton value={children} />
+        </div>
+      )}
+      {!title && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <CopyButton value={children} />
+        </div>
+      )}
+      <pre className="p-4 overflow-x-auto text-sm font-mono text-foreground/80">
+        <code>{children}</code>
+      </pre>
+    </div>
+  );
+}
+
+interface ParamTableProps {
+  params: Array<{
+    name: string;
+    type: string;
+    required?: boolean;
+    default?: string;
+    description: string;
+  }>;
+}
+
+function ParamTable({ params }: ParamTableProps) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="text-left py-2 px-3 text-muted-foreground font-semibold">Parameter</th>
+            <th className="text-left py-2 px-3 text-muted-foreground font-semibold">Type</th>
+            <th className="text-left py-2 px-3 text-muted-foreground font-semibold">Required</th>
+            <th className="text-left py-2 px-3 text-muted-foreground font-semibold">Default</th>
+            <th className="text-left py-2 px-3 text-muted-foreground font-semibold">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {params.map((param, i) => (
+            <tr key={i} className="border-b border-border/50">
+              <td className="py-2 px-3 font-mono text-cyan-400">{param.name}</td>
+              <td className="py-2 px-3 font-mono text-muted-foreground">{param.type}</td>
+              <td className="py-2 px-3">
+                {param.required ? (
+                  <span className="text-emerald-400">Yes</span>
+                ) : (
+                  <span className="text-muted-foreground">No</span>
+                )}
+              </td>
+              <td className="py-2 px-3 font-mono text-muted-foreground">{param.default || "—"}</td>
+              <td className="py-2 px-3 text-muted-foreground">{param.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default function APIDocsPage() {
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <div className="border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-16">
+          <Link
+            href="/docs"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            Back to Documentation
+          </Link>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-border">
+              <Code className="w-6 h-6 text-cyan-400" />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold mb-4">API Reference</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl">
+            REST API for programmatic access to Unicon&apos;s icon library. Search, filter, and retrieve icon data 
+            in JSON format.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-16">
+        {/* Base URL */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Base URL</h2>
+          <CodeBlock>https://unicon.webrenew.com/api</CodeBlock>
+          <p className="text-sm text-muted-foreground mt-3">
+            All endpoints are HTTPS only. No authentication required for public endpoints.
+          </p>
+        </section>
+
+        {/* Rate Limits */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Rate Limits</h2>
+          <div className="p-5 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Icon search (GET /api/icons)</span>
+                <span className="font-mono text-yellow-400">100 req/hour</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Semantic search (POST /api/search)</span>
+                <span className="font-mono text-yellow-400">50 req/hour</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">MCP endpoints</span>
+                <span className="font-mono text-yellow-400">200 req/hour</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Rate limits are per IP address. Contact us for higher limits or API key access.
+            </p>
+          </div>
+        </section>
+
+        {/* GET /api/icons */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono text-xs">GET</span>
+            <h2 className="text-2xl font-bold">/api/icons</h2>
+          </div>
+          <p className="text-white/70 mb-6">
+            Fetch icons with optional filters. Supports AI-powered semantic search for queries with 3+ characters.
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Parameters</h3>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+                <ParamTable
+                  params={[
+                    { name: "q", type: "string", description: "Search query (AI search if 3+ characters)" },
+                    { name: "source", type: "string", description: "Filter by library (lucide, phosphor, etc.)", default: "all" },
+                    { name: "category", type: "string", description: "Filter by category", default: "all" },
+                    { name: "names", type: "string", description: "Comma-separated exact icon names" },
+                    { name: "limit", type: "number", description: "Results per page (max: 320)", default: "100" },
+                    { name: "offset", type: "number", description: "Pagination offset", default: "0" },
+                    { name: "ai", type: "boolean", description: "Enable AI search", default: "true" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Response</h3>
+              <CodeBlock title="Example Response">{`{
+  "icons": [
+    {
+      "id": "lucide:home",
+      "name": "Home",
+      "normalizedName": "home",
+      "sourceId": "lucide",
+      "category": "Buildings",
+      "tags": ["house", "building", "residence"],
+      "viewBox": "0 0 24 24",
+      "content": "<path d=\\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\\"/><polyline points=\\"9 22 9 12 15 12 15 22\\"/>",
+      "defaultStroke": true,
+      "defaultFill": false,
+      "strokeWidth": "2",
+      "brandColor": null
+    }
+  ],
+  "hasMore": true,
+  "searchType": "semantic"
+}`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Examples</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Search with AI:</p>
+                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?q=dashboard"`}</CodeBlock>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Filter by source:</p>
+                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide&limit=10"`}</CodeBlock>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Get specific icons by name:</p>
+                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"`}</CodeBlock>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Browse by category:</p>
+                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?category=Social&limit=50"`}</CodeBlock>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* POST /api/search */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-mono text-xs">POST</span>
+            <h2 className="text-2xl font-bold">/api/search</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Hybrid semantic + exact match search with relevance scoring. More advanced than the GET endpoint.
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Request Body</h3>
+              <CodeBlock title="application/json">{`{
+  "query": "dashboard",
+  "sourceId": "lucide",
+  "limit": 50,
+  "useAI": false
+}`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Parameters</h3>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+                <ParamTable
+                  params={[
+                    { name: "query", type: "string", required: true, description: "Search query" },
+                    { name: "sourceId", type: "string", description: "Filter by library", default: "all" },
+                    { name: "limit", type: "number", description: "Max results", default: "50" },
+                    { name: "useAI", type: "boolean", description: "Enable AI semantic search", default: "false" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Response</h3>
+              <CodeBlock title="Example Response">{`{
+  "results": [
+    {
+      "id": "lucide:home",
+      "name": "Home",
+      "normalizedName": "home",
+      "sourceId": "lucide",
+      "category": "Buildings",
+      "tags": ["house", "building"],
+      "viewBox": "0 0 24 24",
+      "content": "<path d=\\"...\\"/>",
+      "score": 0.95
+    }
+  ]
+}`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Examples</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Basic search:</p>
+                  <CodeBlock>{`curl -X POST "https://unicon.webrenew.com/api/search" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "dashboard"}'`}</CodeBlock>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Filter by source:</p>
+                  <CodeBlock>{`curl -X POST "https://unicon.webrenew.com/api/search" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "arrow", "sourceId": "phosphor", "limit": 20}'`}</CodeBlock>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* GET /api/mcp */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono text-xs">GET</span>
+            <h2 className="text-2xl font-bold">/api/mcp</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            MCP server information and capabilities. Used by the MCP server package.
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Response</h3>
+              <CodeBlock title="Example Response">{`{
+  "name": "Unicon MCP API",
+  "version": "1.0.0",
+  "description": "REST API for Unicon icon library with MCP compatibility",
+  "capabilities": {
+    "tools": ["search_icons", "get_icon", "get_multiple_icons"],
+    "resources": ["sources", "categories", "stats"]
+  },
+  "usage": {
+    "direct": "POST /api/mcp with { action, params }",
+    "mcp": "Install: npx @webrenew/unicon-mcp-server",
+    "docs": "https://unicon.webrenew.com/docs/mcp"
+  }
+}`}</CodeBlock>
+            </div>
+          </div>
+        </section>
+
+        {/* POST /api/mcp */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-mono text-xs">POST</span>
+            <h2 className="text-2xl font-bold">/api/mcp</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Execute MCP actions. Used internally by the MCP server package. For direct use, prefer the CLI or 
+            standard API endpoints.
+          </p>
+
+          <div className="p-5 rounded-xl border border-purple-500/20 bg-purple-500/5">
+            <p className="text-sm text-muted-foreground">
+              This endpoint is designed for MCP protocol communication. For easier integration, use the{" "}
+              <Link href="/docs/mcp" className="text-purple-400 hover:underline">
+                MCP Server package
+              </Link>{" "}
+              which handles the protocol details for you.
+            </p>
+          </div>
+        </section>
+
+        {/* Icon Sources */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Icon Sources</h2>
+          <p className="text-muted-foreground mb-6">
+            Available icon libraries for filtering. Use these IDs in the <code className="text-cyan-400">source</code> or{" "}
+            <code className="text-cyan-400">sourceId</code> parameters.
+          </p>
+
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Source ID</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Name</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Icons</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">License</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { id: "lucide", name: "Lucide Icons", count: "1,900+", license: "ISC" },
+                  { id: "phosphor", name: "Phosphor Icons", count: "1,500+", license: "MIT" },
+                  { id: "hugeicons", name: "Huge Icons", count: "1,800+", license: "MIT" },
+                  { id: "heroicons", name: "Heroicons", count: "292", license: "MIT" },
+                  { id: "tabler", name: "Tabler Icons", count: "4,600+", license: "MIT" },
+                  { id: "feather", name: "Feather Icons", count: "287", license: "MIT" },
+                  { id: "remix", name: "Remix Icon", count: "2,800+", license: "Apache-2.0" },
+                  { id: "simple-icons", name: "Simple Icons", count: "3,300+", license: "CC0" },
+                ].map((source, i) => (
+                  <tr key={i} className="border-b border-border/50">
+                    <td className="py-3 px-4 font-mono text-cyan-400">{source.id}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{source.name}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{source.count}</td>
+                    <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{source.license}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Error Responses */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Error Responses</h2>
+          <p className="text-muted-foreground mb-6">
+            All errors return a JSON object with an error message and appropriate HTTP status code.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">400 Bad Request</h3>
+              <CodeBlock>{`{
+  "error": "Invalid query parameter"
+}`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">429 Too Many Requests</h3>
+              <CodeBlock>{`{
+  "error": "Rate limit exceeded. Please try again later."
+}`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">500 Internal Server Error</h3>
+              <CodeBlock>{`{
+  "error": "Internal server error"
+}`}</CodeBlock>
+            </div>
+          </div>
+        </section>
+
+        {/* Examples */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Complete Examples</h2>
+
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">JavaScript/TypeScript</h3>
+              <CodeBlock title="fetch-icons.ts">{`async function searchIcons(query: string) {
+  const response = await fetch(
+    \`https://unicon.webrenew.com/api/icons?q=\${encodeURIComponent(query)}&limit=20\`
+  );
+  
+  if (!response.ok) {
+    throw new Error(\`HTTP error! status: \${response.status}\`);
+  }
+  
+  const data = await response.json();
+  return data.icons;
+}
+
+// Usage
+const icons = await searchIcons("dashboard");
+console.log(icons);`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Python</h3>
+              <CodeBlock title="fetch_icons.py">{`import requests
+
+def search_icons(query: str, limit: int = 20):
+    response = requests.get(
+        "https://unicon.webrenew.com/api/icons",
+        params={"q": query, "limit": limit}
+    )
+    response.raise_for_status()
+    return response.json()["icons"]
+
+# Usage
+icons = search_icons("dashboard")
+print(icons)`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">cURL</h3>
+              <CodeBlock title="search-icons.sh">{`#!/bin/bash
+
+# Search for icons
+curl -s "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10" \\
+  | jq '.icons[] | {name: .name, source: .sourceId}'
+
+# Get specific icons
+curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" \\
+  | jq '.icons'`}</CodeBlock>
+            </div>
+          </div>
+        </section>
+
+        {/* CORS */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">CORS</h2>
+          <p className="text-muted-foreground mb-4">
+            All API endpoints support CORS and can be called from any origin. This enables browser-based 
+            applications to use the API directly.
+          </p>
+          <div className="p-5 rounded-xl border border-border bg-card">
+            <code className="text-sm text-muted-foreground">Access-Control-Allow-Origin: *</code>
+          </div>
+        </section>
+
+        {/* Related Links */}
+        <section className="border-t border-border pt-12">
+          <h2 className="text-2xl font-bold mb-6">Related Documentation</h2>
+          <div className="grid gap-3">
+            <Link
+              href="/docs/mcp"
+              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Database className="w-5 h-5 text-purple-400" />
+                <div>
+                  <h3 className="font-semibold">MCP Integration</h3>
+                  <p className="text-sm text-muted-foreground">Use with AI assistants</p>
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+
+            <Link
+              href="/cli"
+              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Search className="w-5 h-5 text-cyan-400" />
+                <div>
+                  <h3 className="font-semibold">CLI Documentation</h3>
+                  <p className="text-sm text-muted-foreground">Command-line interface</p>
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
