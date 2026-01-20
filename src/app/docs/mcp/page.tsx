@@ -53,7 +53,7 @@ function CodeBlock({ children, title }: { children: string; title?: string }) {
 
 export default function MCPDocsPage() {
   return (
-    <div className="container max-w-4xl py-10 px-4 md:px-6">
+    <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">

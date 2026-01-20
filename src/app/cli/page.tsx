@@ -98,7 +98,7 @@ function CommandCard({
 
 export default function CLIPage() {
   return (
-    <div className="container max-w-4xl py-10 px-4 md:px-6 bg-background text-foreground">
+    <div className="w-full py-10 px-6 md:px-12 lg:px-16 bg-background text-foreground">
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">

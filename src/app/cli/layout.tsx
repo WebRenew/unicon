@@ -11,8 +11,10 @@ export default function CLILayout({
       <SiteHeader />
       <div className="flex-1 flex">
         <DocsSidebar />
-        <main className="flex-1 lg:pl-64">
-          {children}
+        <main className="flex-1 lg:pl-64 flex justify-center">
+          <div className="w-full max-w-5xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>
