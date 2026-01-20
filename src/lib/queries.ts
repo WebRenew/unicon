@@ -104,6 +104,51 @@ export async function getIconById(id: string): Promise<IconData | null> {
 }
 
 /**
+ * Get icons by their normalized names (for starter packs).
+ * Returns icons matching any of the provided names.
+ */
+export async function getIconsByNames(names: string[]): Promise<IconData[]> {
+  if (names.length === 0) return [];
+
+  // Normalize names for matching
+  const normalizedNames = names.map((n) => n.toLowerCase());
+
+  // Use SQL IN clause for exact matching
+  const results = await db
+    .select({
+      id: icons.id,
+      name: icons.name,
+      normalizedName: icons.normalizedName,
+      sourceId: icons.sourceId,
+      category: icons.category,
+      tags: icons.tags,
+      viewBox: icons.viewBox,
+      content: icons.content,
+      defaultStroke: icons.defaultStroke,
+      defaultFill: icons.defaultFill,
+      strokeWidth: icons.strokeWidth,
+    })
+    .from(icons)
+    .where(sql`lower(${icons.normalizedName}) IN ${normalizedNames}`)
+    .orderBy(asc(icons.normalizedName));
+
+  return results.map((row) => ({
+    id: row.id,
+    name: row.name,
+    normalizedName: row.normalizedName,
+    sourceId: row.sourceId,
+    category: row.category,
+    tags: (row.tags as string[]) ?? [],
+    viewBox: row.viewBox,
+    content: row.content,
+    pathData: null,
+    defaultStroke: row.defaultStroke ?? false,
+    defaultFill: row.defaultFill ?? false,
+    strokeWidth: row.strokeWidth,
+  }));
+}
+
+/**
  * Get all variants for an icon.
  */
 export async function getIconVariants(iconId: string) {

@@ -243,10 +243,9 @@ export function MetallicIconBrowser({
   // Add icons by name (for starter packs)
   const addIconsByName = useCallback(async (iconNames: string[]) => {
     try {
-      // Fetch icons matching the names
+      // Fetch icons by exact name match using the names parameter
       const params = new URLSearchParams({
-        q: iconNames.join(" "),
-        limit: String(iconNames.length * 3), // Fetch extra to ensure we get matches
+        names: iconNames.join(","),
       });
       const res = await fetch(`/api/icons?${params}`);
       if (!res.ok) throw new Error("Failed to fetch icons");
@@ -254,14 +253,9 @@ export function MetallicIconBrowser({
       const data = await res.json();
       const fetchedIcons: IconData[] = data.icons || [];
       
-      // Filter to only include exact matches from the pack
-      const nameSet = new Set(iconNames.map(n => n.toLowerCase()));
-      const matchedIcons = fetchedIcons.filter((icon: IconData) => 
-        nameSet.has(icon.normalizedName.toLowerCase())
-      );
-      
-      if (matchedIcons.length > 0) {
-        performAddToBundle(matchedIcons);
+      if (fetchedIcons.length > 0) {
+        performAddToBundle(fetchedIcons);
+        toast.success(`Added ${fetchedIcons.length} icons to bundle`);
       } else {
         toast.error("No icons found for this pack");
       }

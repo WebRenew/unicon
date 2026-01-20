@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchIcons } from "@/lib/queries";
+import { searchIcons, getIconsByNames } from "@/lib/queries";
 import { db } from "@/lib/db";
 import { icons as iconsTable } from "@/lib/schema";
 import { getEmbedding, blobToEmbedding, cosineSimilarity, expandQueryWithAI } from "@/lib/ai";
@@ -12,11 +12,26 @@ export async function GET(request: NextRequest) {
   const queryParam = searchParams.get("q");
   const sourceParam = searchParams.get("source");
   const categoryParam = searchParams.get("category");
+  const namesParam = searchParams.get("names"); // Comma-separated list of exact names
   const limit = parseInt(searchParams.get("limit") ?? "100", 10);
   const offset = parseInt(searchParams.get("offset") ?? "0", 10);
   const useAI = searchParams.get("ai") !== "false"; // AI search enabled by default
 
   try {
+    // If names parameter is provided, fetch icons by exact name match
+    if (namesParam) {
+      const names = namesParam.split(",").map((n) => n.trim()).filter(Boolean);
+      const icons = await getIconsByNames(names);
+      
+      return NextResponse.json(
+        { icons, hasMore: false, searchType: "exact" },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        }
+      );
+    }
     // If there's a search query, use AI-powered semantic search
     if (queryParam && queryParam.trim().length >= 3 && useAI) {
       const aiResults = await aiSemanticSearch(
