@@ -101,6 +101,12 @@ const SYNONYM_GROUPS: readonly string[][] = [
   ["question", "help", "support", "faq", "ask"],
   ["loading", "spinner", "wait", "progress", "processing"],
   
+  // Theme & Appearance
+  ["theme", "appearance", "style", "mode", "color-scheme", "dark-mode", "light-mode"],
+  ["dark", "night", "moon", "dark-mode", "theme", "black"],
+  ["light", "day", "sun", "light-mode", "theme", "bright", "white"],
+  ["palette", "color", "colors", "theme", "paint", "swatch"],
+  
   // Weather & Nature
   ["sun", "light", "day", "bright", "sunny"],
   ["moon", "night", "dark", "evening"],
