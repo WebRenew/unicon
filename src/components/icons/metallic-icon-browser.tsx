@@ -824,21 +824,6 @@ export function MetallicIconBrowser({
       </Dialog>
 
       {/* Footer with trademark disclaimer */}
-      <footer className="mt-20 pt-8 border-t border-black/5 dark:border-white/5">
-        <p className="text-[10px] text-black/30 dark:text-white/30 max-w-xl leading-relaxed">
-          Brand logos from{" "}
-          <a 
-            href="https://simpleicons.org" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="underline hover:text-black/50 dark:hover:text-white/50"
-          >
-            Simple Icons
-          </a>
-          {" "}are trademarks of their respective owners. Use of these trademarks does not indicate endorsement. 
-          Please review each brand&apos;s guidelines before use.
-        </p>
-      </footer>
       </div>
     </div>
   );

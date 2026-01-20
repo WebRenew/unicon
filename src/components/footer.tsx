@@ -72,11 +72,6 @@ export function Footer() {
             </a>
           </div>
         </div>
-
-        {/* Brand Disclaimer */}
-        <div className="mt-4 text-center text-xs text-muted-foreground/70">
-          Brand logos are trademarks of their respective owners. Use does not indicate endorsement.
-        </div>
       </div>
     </footer>
   );
