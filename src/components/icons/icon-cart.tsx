@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink, ChevronDown, ChevronUp, Sparkles, AlertTriangle } from "lucide-react";
+import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { STARTER_PACKS, getPackColorClasses } from "@/lib/starter-packs";
+import { STARTER_PACKS } from "@/lib/starter-packs";
 import {
   toPascalCase,
-  getSvgAttributesRaw,
   generateReactFile,
   generateSvgBundle,
   generateJsonBundle,
@@ -24,11 +23,12 @@ interface IconCartProps {
 }
 
 type ExportFormat = "react" | "svg" | "json";
+type TabType = "bundle" | "packs";
 
 export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose }: IconCartProps) {
   const [copied, setCopied] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
-  const [starterPacksExpanded, setStarterPacksExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>("bundle");
 
   // Memoize export content to ensure it uses the latest items
   const exportContent = useMemo(() => {
@@ -88,6 +88,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     window.open(`https://v0.dev/?q=${prompt}`, "_blank");
   };
 
+  const handleAddPack = (pack: typeof STARTER_PACKS[0]) => {
+    if (onAddPack) {
+      onAddPack(pack.iconNames);
+      toast.success(`Added "${pack.name}" pack`);
+      setActiveTab("bundle");
+    }
+  };
+
   return (
     <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-[hsl(0,0%,6%)] border-l border-black/10 dark:border-white/10 shadow-2xl z-50 flex flex-col">
       {/* Header */}
@@ -95,11 +103,11 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         <div className="flex items-center gap-3">
           <Package className="w-5 h-5 text-black/60 dark:text-white/60" />
           <h2 className="font-mono text-black dark:text-white text-sm tracking-wide">
-            BUNDLE ({items.length})
+            BUNDLE
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {items.length > 0 && (
+          {items.length > 0 && activeTab === "bundle" && (
             <button
               onClick={onClear}
               className="p-2 text-black/40 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -118,8 +126,49 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-black/10 dark:border-white/10">
+        <button
+          onClick={() => setActiveTab("bundle")}
+          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${
+            activeTab === "bundle"
+              ? "text-black dark:text-white"
+              : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <Package className="w-3.5 h-3.5" />
+            Bundle
+            {items.length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-black/10 dark:bg-white/10 text-[10px]">
+                {items.length}
+              </span>
+            )}
+          </span>
+          {activeTab === "bundle" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("packs")}
+          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${
+            activeTab === "packs"
+              ? "text-black dark:text-white"
+              : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            Starter Packs
+          </span>
+          {activeTab === "packs" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+          )}
+        </button>
+      </div>
+
       {/* Bundle Size Warning */}
-      {items.length > 100 && (
+      {items.length > 100 && activeTab === "bundle" && (
         <div className="mx-4 mt-4 p-3 rounded-lg bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/10 dark:border-amber-500/20">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
@@ -133,98 +182,83 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         </div>
       )}
 
-      {/* Icons List */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {items.length === 0 ? (
-          <div className="flex flex-col h-full">
-            <div className="flex flex-col items-center justify-center text-center py-8">
+        {activeTab === "bundle" ? (
+          // Bundle Tab
+          items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center py-12">
               <div className="w-12 h-12 mb-3 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <Package className="w-6 h-6 text-black/30 dark:text-white/30" />
               </div>
               <p className="text-black/50 dark:text-white/40 text-sm">Your bundle is empty</p>
               <p className="text-black/40 dark:text-white/30 text-xs mt-1">
-                Click icons to add them, or try a starter pack
+                Click icons to add them
               </p>
-            </div>
-
-            {/* Starter Packs */}
-            <div className="mt-4">
               <button
-                onClick={() => setStarterPacksExpanded(!starterPacksExpanded)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5 transition-colors"
+                onClick={() => setActiveTab("packs")}
+                className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-mono text-black/60 dark:text-white/60 transition-colors"
               >
-                <span className="flex items-center gap-2 text-xs font-mono text-black/60 dark:text-white/60">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                  Starter Packs
-                </span>
-                {starterPacksExpanded ? (
-                  <ChevronUp className="w-4 h-4 text-black/40 dark:text-white/40" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-black/40 dark:text-white/40" />
-                )}
+                <Sparkles className="w-3.5 h-3.5" />
+                Browse starter packs
+                <ArrowRight className="w-3 h-3" />
               </button>
-
-              {starterPacksExpanded && (
-                <div className="mt-2 space-y-1.5">
-                  {STARTER_PACKS.map((pack) => {
-                    const colors = getPackColorClasses(pack.color);
-                    return (
-                      <button
-                        key={pack.id}
-                        onClick={() => {
-                          if (onAddPack) {
-                            onAddPack(pack.iconNames);
-                            toast.success(`Added "${pack.name}" pack`);
-                          }
-                        }}
-                        className={`w-full p-2.5 rounded-lg border ${colors.border} ${colors.bg} hover:brightness-110 dark:hover:brightness-125 transition-all text-left group`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-xs font-mono font-medium ${colors.text}`}>
-                            {pack.name}
-                          </span>
-                          <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
-                            {pack.iconNames.length} icons
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-black/50 dark:text-white/50 mt-0.5">
-                          {pack.description}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-6 gap-2">
-            {items.map((icon) => (
-              <div
-                key={icon.id}
-                className="group relative flex items-center justify-center w-12 h-12 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10"
-              >
+          ) : (
+            <div className="grid grid-cols-6 gap-2">
+              {items.map((icon) => (
                 <div
-                  className="w-5 h-5 text-black/70 dark:text-white/70"
-                  dangerouslySetInnerHTML={{
-                    __html: generateRenderableSvg(icon, { size: 20 }),
-                  }}
-                />
-                <button
-                  onClick={() => onRemove(icon.id)}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label={`Remove ${icon.normalizedName} from bundle`}
+                  key={icon.id}
+                  className="group relative flex items-center justify-center w-12 h-12 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10"
                 >
-                  <X className="w-3 h-3 text-white" />
-                </button>
-              </div>
+                  <div
+                    className="w-5 h-5 text-black/70 dark:text-white/70"
+                    dangerouslySetInnerHTML={{
+                      __html: generateRenderableSvg(icon, { size: 20 }),
+                    }}
+                  />
+                  <button
+                    onClick={() => onRemove(icon.id)}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label={`Remove ${icon.normalizedName} from bundle`}
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          // Starter Packs Tab - Vercel style grid
+          <div className="grid grid-cols-2 gap-3">
+            {STARTER_PACKS.map((pack) => (
+              <button
+                key={pack.id}
+                onClick={() => handleAddPack(pack)}
+                className="group p-4 rounded-xl border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/20 dark:hover:border-white/20 transition-all text-left"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-sm font-medium text-black dark:text-white">
+                    {pack.name}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+                </div>
+                <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-3">
+                  {pack.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
+                    {pack.iconNames.length} icons
+                  </span>
+                </div>
+              </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Export Options */}
-      {items.length > 0 && (
+      {/* Export Options - Only show when bundle has items and on bundle tab */}
+      {items.length > 0 && activeTab === "bundle" && (
         <div className="border-t border-black/10 dark:border-white/10 p-4 space-y-4">
           {/* Format selector */}
           <div className="flex gap-2">
