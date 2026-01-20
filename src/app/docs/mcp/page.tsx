@@ -1,13 +1,8 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import {
   Sparkles,
-  Terminal,
   CheckCircle,
   AlertCircle,
-  Code,
-  ArrowRight,
-  ExternalLink,
 } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
@@ -58,34 +53,25 @@ function CodeBlock({ children, title }: { children: string; title?: string }) {
 
 export default function MCPDocsPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <div className="container max-w-4xl py-10 px-4 md:px-6">
       {/* Header */}
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-16">
-          <Link
-            href="/docs"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            Back to Documentation
-          </Link>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-border">
-              <Sparkles className="w-6 h-6 text-purple-400" />
-            </div>
-            <span className="px-3 py-1 rounded-full text-xs font-mono bg-purple-500/20 text-purple-400 border border-purple-500/30">
-              MCP Server
-            </span>
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-border">
+            <Sparkles className="w-6 h-6 text-purple-400" />
           </div>
-          <h1 className="text-4xl font-bold mb-4">MCP Integration</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            Use Unicon with Claude Desktop, Cursor, and other AI assistants via the Model Context Protocol.
-            Search and generate icon components using natural language.
-          </p>
+          <span className="px-3 py-1 rounded-full text-xs font-mono bg-purple-500/20 text-purple-400 border border-purple-500/30">
+            MCP Server
+          </span>
         </div>
+        <h1 className="text-4xl font-bold mb-4">MCP Integration</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Use Unicon with Claude Desktop, Cursor, and other AI assistants via the Model Context Protocol.
+          Search and generate icon components using natural language.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-16">
+      <div className="space-y-16">
         {/* What is MCP */}
         <section>
           <h2 className="text-2xl font-bold mb-4">What is MCP?</h2>
@@ -140,7 +126,7 @@ export default function MCPDocsPage() {
         </section>
 
         {/* Quick Start - Claude Desktop */}
-        <section>
+        <section id="claude-desktop">
           <h2 className="text-2xl font-bold mb-6">Quick Start: Claude Desktop</h2>
           
           <div className="space-y-6">
@@ -217,7 +203,7 @@ export default function MCPDocsPage() {
         </section>
 
         {/* Quick Start - Cursor */}
-        <section>
+        <section id="cursor">
           <h2 className="text-2xl font-bold mb-6">Quick Start: Cursor IDE</h2>
           
           <div className="space-y-6">
@@ -259,7 +245,7 @@ export default function MCPDocsPage() {
         </section>
 
         {/* Usage Examples */}
-        <section>
+        <section id="usage-examples">
           <h2 className="text-2xl font-bold mb-6">Usage Examples</h2>
           
           <div className="space-y-6">
@@ -411,7 +397,7 @@ export default function MCPDocsPage() {
         </section>
 
         {/* Troubleshooting */}
-        <section>
+        <section id="troubleshooting">
           <h2 className="text-2xl font-bold mb-6">Troubleshooting</h2>
           
           <div className="space-y-4">
@@ -511,56 +497,7 @@ export default function MCPDocsPage() {
           </div>
         </section>
 
-        {/* Related Links */}
-        <section className="border-t border-border pt-12">
-          <h2 className="text-2xl font-bold mb-6">Related Documentation</h2>
-          <div className="grid gap-3">
-            <Link
-              href="/cli"
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <Terminal className="w-5 h-5 text-cyan-400" />
-                <div>
-                  <h3 className="font-semibold">CLI Documentation</h3>
-                  <p className="text-sm text-muted-foreground">Command-line interface guide</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-            </Link>
-
-            <Link
-              href="/docs"
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <Code className="w-5 h-5 text-purple-400" />
-                <div>
-                  <h3 className="font-semibold">Overview</h3>
-                  <p className="text-sm text-muted-foreground">General Unicon documentation</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
-            </Link>
-
-            <a
-              href="https://github.com/WebRenew/unicon"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <ExternalLink className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <h3 className="font-semibold">GitHub Repository</h3>
-                  <p className="text-sm text-muted-foreground">Source code and issues</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-all" />
-            </a>
-          </div>
-        </section>
       </div>
-    </main>
+    </div>
   );
 }

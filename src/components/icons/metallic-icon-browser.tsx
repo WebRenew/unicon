@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Search,
-  Github,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -14,14 +13,12 @@ import {
   Check,
   ChevronsUpDown,
   PackagePlus,
-  Terminal,
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
@@ -346,9 +343,10 @@ export function MetallicIconBrowser({
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[hsl(0,0%,3%)] p-4 lg:px-20 xl:px-40 lg:pt-20 lg:pb-40 transition-colors">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-white dark:bg-[hsl(0,0%,3%)] lg:pt-14 transition-colors">
+      <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
+      {/* Quick Actions Bar */}
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
           <span className="text-2xl" aria-hidden="true">🦄</span>
           <span className="font-mono text-black/60 dark:text-white/60 text-xs tracking-widest uppercase">
@@ -368,25 +366,8 @@ export function MetallicIconBrowser({
               </span>
             )}
           </button>
-          <Link
-            href="/cli"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-xs font-mono"
-          >
-            <Terminal className="w-3.5 h-3.5" />
-            CLI
-          </Link>
-          <ThemeToggle />
-          <a
-            href="https://github.com/WebRenew/unicon"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View source on GitHub"
-            className="text-black/40 dark:text-white/40 hover:text-black/80 dark:hover:text-white/80 transition-colors"
-          >
-            <Github className="w-5 h-5" />
-          </a>
         </div>
-      </header>
+      </div>
 
       {/* Hero */}
       <h1 className="font-mono font-thin text-3xl md:text-4xl lg:text-5xl text-black dark:text-white mb-4 text-balance tracking-tighter leading-tight">
@@ -872,6 +853,7 @@ export function MetallicIconBrowser({
           Please review each brand&apos;s guidelines before use.
         </p>
       </footer>
+      </div>
     </div>
   );
 }

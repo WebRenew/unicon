@@ -77,24 +77,22 @@ function FeatureCard({ icon: Icon, title, description, href, external = false }:
 
 export default function DocsPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <div className="container max-w-4xl py-10 px-4 md:px-6">
       {/* Header */}
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-16 md:py-20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-border">
-              <FileCode className="w-6 h-6 text-cyan-400" />
-            </div>
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-border">
+            <FileCode className="w-6 h-6 text-cyan-400" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Documentation</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            Everything you need to know about using Unicon — from browsing icons in the web interface to 
-            integrating with your development workflow.
-          </p>
         </div>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">Documentation</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Everything you need to know about using Unicon — from browsing icons in the web interface to 
+          integrating with your development workflow.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-16">
+      <div className="space-y-16">
         {/* What is Unicon */}
         <section>
           <h2 className="text-2xl font-bold mb-6">What is Unicon?</h2>
@@ -152,7 +150,7 @@ export default function DocsPage() {
         </section>
 
         {/* Getting Started */}
-        <section>
+        <section id="getting-started">
           <h2 className="text-2xl font-bold mb-6">Getting Started</h2>
           <div className="grid gap-4">
             <FeatureCard
@@ -276,7 +274,7 @@ export default function DocsPage() {
         </section>
 
         {/* Why Unicon */}
-        <section>
+        <section id="why-unicon">
           <h2 className="text-2xl font-bold mb-6">Why Unicon?</h2>
           <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
             <div className="space-y-4">
@@ -363,6 +361,6 @@ export default function DocsPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Code, ArrowRight, Database, Search } from "lucide-react";
+import { Code } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
@@ -93,31 +93,22 @@ function ParamTable({ params }: ParamTableProps) {
 
 export default function APIDocsPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <div className="container max-w-4xl py-10 px-4 md:px-6">
       {/* Header */}
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-16">
-          <Link
-            href="/docs"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            Back to Documentation
-          </Link>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-border">
-              <Code className="w-6 h-6 text-cyan-400" />
-            </div>
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-border">
+            <Code className="w-6 h-6 text-cyan-400" />
           </div>
-          <h1 className="text-4xl font-bold mb-4">API Reference</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            REST API for programmatic access to Unicon&apos;s icon library. Search, filter, and retrieve icon data 
-            in JSON format.
-          </p>
         </div>
+        <h1 className="text-4xl font-bold mb-4">API Reference</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          REST API for programmatic access to Unicon&apos;s icon library. Search, filter, and retrieve icon data 
+          in JSON format.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-16">
+      <div className="space-y-16">
         {/* Base URL */}
         <section>
           <h2 className="text-2xl font-bold mb-4">Base URL</h2>
@@ -128,7 +119,7 @@ export default function APIDocsPage() {
         </section>
 
         {/* Rate Limits */}
-        <section>
+        <section id="rate-limits">
           <h2 className="text-2xl font-bold mb-4">Rate Limits</h2>
           <div className="p-5 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
             <div className="space-y-2 text-sm">
@@ -152,7 +143,7 @@ export default function APIDocsPage() {
         </section>
 
         {/* GET /api/icons */}
-        <section>
+        <section id="get-icons">
           <div className="flex items-center gap-3 mb-4">
             <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono text-xs">GET</span>
             <h2 className="text-2xl font-bold">/api/icons</h2>
@@ -228,7 +219,7 @@ export default function APIDocsPage() {
         </section>
 
         {/* POST /api/search */}
-        <section>
+        <section id="post-search">
           <div className="flex items-center gap-3 mb-4">
             <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-mono text-xs">POST</span>
             <h2 className="text-2xl font-bold">/api/search</h2>
@@ -427,7 +418,7 @@ export default function APIDocsPage() {
         </section>
 
         {/* Examples */}
-        <section>
+        <section id="examples">
           <h2 className="text-2xl font-bold mb-6">Complete Examples</h2>
 
           <div className="space-y-8">
@@ -495,40 +486,7 @@ curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" \\
           </div>
         </section>
 
-        {/* Related Links */}
-        <section className="border-t border-border pt-12">
-          <h2 className="text-2xl font-bold mb-6">Related Documentation</h2>
-          <div className="grid gap-3">
-            <Link
-              href="/docs/mcp"
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <Database className="w-5 h-5 text-purple-400" />
-                <div>
-                  <h3 className="font-semibold">MCP Integration</h3>
-                  <p className="text-sm text-muted-foreground">Use with AI assistants</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
-            </Link>
-
-            <Link
-              href="/cli"
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <Search className="w-5 h-5 text-cyan-400" />
-                <div>
-                  <h3 className="font-semibold">CLI Documentation</h3>
-                  <p className="text-sm text-muted-foreground">Command-line interface</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-            </Link>
-          </div>
-        </section>
       </div>
-    </main>
+    </div>
   );
 }

@@ -52,9 +52,9 @@ export const metadata: Metadata = {
 
 function CodeBlock({ children, title }: { children: string; title?: string }) {
   return (
-    <div className="group relative rounded-lg overflow-hidden border border-white/10 bg-black/40">
+    <div className="group relative rounded-lg overflow-hidden border border-border bg-muted/40">
       {title && (
-        <div className="px-3 py-2 border-b border-white/10 text-xs font-mono text-white/50 flex items-center justify-between">
+        <div className="px-3 py-2 border-b border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
           <span>{title}</span>
           <CopyButton value={children} />
         </div>
@@ -64,7 +64,7 @@ function CodeBlock({ children, title }: { children: string; title?: string }) {
           <CopyButton value={children} />
         </div>
       )}
-      <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm font-mono text-white/80 max-w-full">
+      <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm font-mono text-foreground/80 max-w-full">
         <code className="break-all md:break-normal">{children}</code>
       </pre>
     </div>
@@ -83,14 +83,14 @@ function CommandCard({
   example: string;
 }) {
   return (
-    <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors overflow-hidden">
+    <div className="p-4 md:p-5 rounded-xl border border-border bg-card hover:bg-accent transition-colors overflow-hidden">
       <div className="flex items-center gap-2 md:gap-3 mb-3">
-        <div className="p-1.5 md:p-2 rounded-lg bg-white/5 shrink-0">
+        <div className="p-1.5 md:p-2 rounded-lg bg-muted shrink-0">
           <Icon className="w-4 h-4 text-cyan-400" />
         </div>
-        <code className="text-white font-mono font-medium text-sm md:text-base break-all">{command}</code>
+        <code className="font-mono font-medium text-sm md:text-base break-all">{command}</code>
       </div>
-      <p className="text-white/60 text-sm mb-4">{description}</p>
+      <p className="text-muted-foreground text-sm mb-4">{description}</p>
       <CodeBlock>{example}</CodeBlock>
     </div>
   );
@@ -98,39 +98,37 @@ function CommandCard({
 
 export default function CLIPage() {
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,3%)] text-white">
+    <div className="container max-w-4xl py-10 px-4 md:px-6 bg-background text-foreground">
       {/* Header */}
-      <div className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-10 md:py-16">
-          <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
-            <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10">
-              <Terminal className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
-            </div>
-            <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-white/5 text-white/50">
-              @webrenew/unicon
-            </span>
+      <div className="mb-12">
+        <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
+          <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-border">
+            <Terminal className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
-          <p className="text-base md:text-xl text-white/60 max-w-2xl">
-            Search and bundle icons from 8 libraries via command line. Define your icon sets once, 
-            regenerate anytime with a single command.
-          </p>
+          <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-muted text-muted-foreground">
+            @webrenew/unicon
+          </span>
         </div>
+        <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
+        <p className="text-base md:text-xl text-muted-foreground max-w-2xl">
+          Search and bundle icons from 8 libraries via command line. Define your icon sets once, 
+          regenerate anytime with a single command.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12 space-y-10 md:space-y-16">
+      <div className="space-y-10 md:space-y-16">
         {/* Quick Start */}
-        <section>
-          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Quick Start</h2>
+        <section id="installation">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Installation</h2>
           <div className="space-y-4">
             <CodeBlock title="Install globally">npm install -g @webrenew/unicon</CodeBlock>
-            <p className="text-white/50 text-sm">Or use directly with npx:</p>
+            <p className="text-muted-foreground text-sm">Or use directly with npx:</p>
             <CodeBlock>npx @webrenew/unicon search &quot;dashboard&quot;</CodeBlock>
           </div>
         </section>
 
         {/* Commands */}
-        <section>
+        <section id="commands">
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Commands</h2>
           <div className="grid gap-4">
             <CommandCard
@@ -230,51 +228,51 @@ unicon cache --clear  # Clear all cached data`}
         </section>
 
         {/* Workflow */}
-        <section>
+        <section id="workflow">
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Typical Workflow</h2>
           <div className="space-y-3">
             <div className="flex gap-3 items-start">
               <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">1</span>
               <div>
-                <p className="text-white/80 text-sm font-medium">Initialize config</p>
-                <code className="text-xs text-white/50">unicon init</code>
+                <p className="text-foreground/80 text-sm font-medium">Initialize config</p>
+                <code className="text-xs text-muted-foreground">unicon init</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
               <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">2</span>
               <div>
-                <p className="text-white/80 text-sm font-medium">Search for icons you need</p>
-                <code className="text-xs text-white/50">unicon search &quot;dashboard&quot;</code>
+                <p className="text-foreground/80 text-sm font-medium">Search for icons you need</p>
+                <code className="text-xs text-muted-foreground">unicon search &quot;dashboard&quot;</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
               <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">3</span>
               <div>
-                <p className="text-white/80 text-sm font-medium">Add bundles to your config</p>
-                <code className="text-xs text-white/50">unicon add dashboard --category Dashboards</code>
+                <p className="text-foreground/80 text-sm font-medium">Add bundles to your config</p>
+                <code className="text-xs text-muted-foreground">unicon add dashboard --category Dashboards</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
               <span className="shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono flex items-center justify-center">4</span>
               <div>
-                <p className="text-white/80 text-sm font-medium">Generate all bundles</p>
-                <code className="text-xs text-white/50">unicon sync</code>
+                <p className="text-foreground/80 text-sm font-medium">Generate all bundles</p>
+                <code className="text-xs text-muted-foreground">unicon sync</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
               <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono flex items-center justify-center">✓</span>
               <div>
-                <p className="text-white/80 text-sm font-medium">Import and use</p>
-                <code className="text-xs text-white/50">{`import { Home, Settings } from "./icons/dashboard"`}</code>
+                <p className="text-foreground/80 text-sm font-medium">Import and use</p>
+                <code className="text-xs text-muted-foreground">{`import { Home, Settings } from "./icons/dashboard"`}</code>
               </div>
             </div>
           </div>
         </section>
 
         {/* Config File */}
-        <section>
+        <section id="config-file">
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Config File</h2>
-          <p className="text-white/60 mb-4 md:mb-6 text-sm md:text-base">
+          <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
             Define your icon bundles in <code className="text-cyan-400 text-xs md:text-sm">.uniconrc.json</code> and 
             regenerate them anytime with <code className="text-cyan-400 text-xs md:text-sm">unicon sync</code>.
           </p>
@@ -309,30 +307,30 @@ unicon cache --clear  # Clear all cached data`}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Output Formats</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono font-medium mb-2 text-cyan-400">react</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">TypeScript React components.</p>
-              <code className="text-xs text-white/40">.tsx</code>
+              <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">TypeScript React components.</p>
+              <code className="text-xs text-muted-foreground">.tsx</code>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono font-medium mb-2 text-green-400">vue</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Vue 3 SFC components.</p>
-              <code className="text-xs text-white/40">.vue</code>
+              <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Vue 3 SFC components.</p>
+              <code className="text-xs text-muted-foreground">.vue</code>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono font-medium mb-2 text-orange-400">svelte</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Svelte components.</p>
-              <code className="text-xs text-white/40">.svelte</code>
+              <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Svelte components.</p>
+              <code className="text-xs text-muted-foreground">.svelte</code>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono font-medium mb-2 text-emerald-400">svg</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup.</p>
-              <code className="text-xs text-white/40">.svg</code>
+              <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup.</p>
+              <code className="text-xs text-muted-foreground">.svg</code>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
+            <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono font-medium mb-2 text-purple-400">json</h3>
-              <p className="text-white/50 text-xs md:text-sm mb-2 md:mb-3">Icon data as JSON.</p>
-              <code className="text-xs text-white/40">.json</code>
+              <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Icon data as JSON.</p>
+              <code className="text-xs text-muted-foreground">.json</code>
             </div>
           </div>
         </section>
@@ -340,41 +338,41 @@ unicon cache --clear  # Clear all cached data`}
         {/* Sources */}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Icon Sources</h2>
-          <p className="text-white/60 mb-4 text-sm">
+          <p className="text-muted-foreground mb-4 text-sm">
             Access 14,700+ icons from 8 popular icon libraries:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl border border-orange-500/20 bg-orange-500/5">
               <h3 className="font-mono font-medium mb-1 text-orange-400">lucide</h3>
-              <p className="text-white/50 text-xs">1,456 icons</p>
+              <p className="text-muted-foreground text-xs">1,456 icons</p>
             </div>
             <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
               <h3 className="font-mono font-medium mb-1 text-emerald-400">phosphor</h3>
-              <p className="text-white/50 text-xs">7,488 icons</p>
+              <p className="text-muted-foreground text-xs">7,488 icons</p>
             </div>
             <div className="p-4 rounded-xl border border-violet-500/20 bg-violet-500/5">
               <h3 className="font-mono font-medium mb-1 text-violet-400">hugeicons</h3>
-              <p className="text-white/50 text-xs">3,000+ icons</p>
+              <p className="text-muted-foreground text-xs">3,000+ icons</p>
             </div>
             <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
               <h3 className="font-mono font-medium mb-1 text-blue-400">heroicons</h3>
-              <p className="text-white/50 text-xs">292 icons</p>
+              <p className="text-muted-foreground text-xs">292 icons</p>
             </div>
             <div className="p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
               <h3 className="font-mono font-medium mb-1 text-cyan-400">tabler</h3>
-              <p className="text-white/50 text-xs">3,000+ icons</p>
+              <p className="text-muted-foreground text-xs">3,000+ icons</p>
             </div>
             <div className="p-4 rounded-xl border border-gray-500/20 bg-gray-500/5">
               <h3 className="font-mono font-medium mb-1 text-gray-400">feather</h3>
-              <p className="text-white/50 text-xs">287 icons</p>
+              <p className="text-muted-foreground text-xs">287 icons</p>
             </div>
             <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5">
               <h3 className="font-mono font-medium mb-1 text-indigo-400">remix</h3>
-              <p className="text-white/50 text-xs">2,000+ icons</p>
+              <p className="text-muted-foreground text-xs">2,000+ icons</p>
             </div>
             <div className="p-4 rounded-xl border border-slate-500/20 bg-slate-500/5">
               <h3 className="font-mono font-medium mb-1 text-slate-400">simple-icons</h3>
-              <p className="text-white/50 text-xs">2,000+ brand logos</p>
+              <p className="text-muted-foreground text-xs">2,000+ brand logos</p>
             </div>
           </div>
         </section>
@@ -391,8 +389,8 @@ unicon cache --clear  # Clear all cached data`}
                 <Sparkles className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Use Unicon with Claude & Cursor</h3>
-                <p className="text-white/60 text-sm mb-4">
+                <h3 className="text-lg font-semibold mb-2">Use Unicon with Claude & Cursor</h3>
+                <p className="text-muted-foreground text-sm mb-4">
                   Connect Unicon to AI assistants via Model Context Protocol (MCP). 
                   Search and generate icon components using natural language.
                 </p>
@@ -401,12 +399,12 @@ unicon cache --clear  # Clear all cached data`}
 
             <div className="space-y-4">
               <div>
-                <p className="text-white/50 text-xs mb-2">Install the MCP server:</p>
+                <p className="text-muted-foreground text-xs mb-2">Install the MCP server:</p>
                 <CodeBlock>npx @webrenew/unicon-mcp-server</CodeBlock>
               </div>
 
               <div>
-                <p className="text-white/50 text-xs mb-2">Add to Claude Desktop config:</p>
+                <p className="text-muted-foreground text-xs mb-2">Add to Claude Desktop config:</p>
                 <CodeBlock title="claude_desktop_config.json">{`{
   "mcpServers": {
     "unicon": {
@@ -418,24 +416,24 @@ unicon cache --clear  # Clear all cached data`}
               </div>
 
               <div className="pt-2">
-                <p className="text-white/50 text-xs mb-3">Then ask Claude:</p>
+                <p className="text-muted-foreground text-xs mb-3">Then ask Claude:</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex gap-2 items-start">
                     <span className="text-purple-400">→</span>
-                    <span className="text-white/70">&quot;Search for dashboard icons in Lucide&quot;</span>
+                    <span className="text-muted-foreground">&quot;Search for dashboard icons in Lucide&quot;</span>
                   </div>
                   <div className="flex gap-2 items-start">
                     <span className="text-purple-400">→</span>
-                    <span className="text-white/70">&quot;Get the React component for lucide:home&quot;</span>
+                    <span className="text-muted-foreground">&quot;Get the React component for lucide:home&quot;</span>
                   </div>
                   <div className="flex gap-2 items-start">
                     <span className="text-purple-400">→</span>
-                    <span className="text-white/70">&quot;Generate Vue components for social media icons&quot;</span>
+                    <span className="text-muted-foreground">&quot;Generate Vue components for social media icons&quot;</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex gap-3 text-xs">
+              <div className="pt-2 border-t border-border flex gap-3 text-xs">
                 <a 
                   href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md" 
                   className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-1"
@@ -461,22 +459,22 @@ unicon cache --clear  # Clear all cached data`}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Tree-Shaking</h2>
           <div className="p-4 md:p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
-            <p className="text-white/80 text-sm mb-4">
-              Unlike <code className="text-white/60">npm install lucide-react</code> which downloads thousands of icons,
+            <p className="text-foreground/80 text-sm mb-4">
+              Unlike <code className="text-muted-foreground">npm install lucide-react</code> which downloads thousands of icons,
               the CLI generates <strong>only the icons you need</strong> as individual files.
             </p>
             <div className="space-y-3 text-sm">
               <div className="flex gap-3">
                 <span className="text-emerald-400">✓</span>
-                <span className="text-white/60">One component per file = true tree-shaking</span>
+                <span className="text-muted-foreground">One component per file = true tree-shaking</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-emerald-400">✓</span>
-                <span className="text-white/60">No external dependencies to ship</span>
+                <span className="text-muted-foreground">No external dependencies to ship</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-emerald-400">✓</span>
-                <span className="text-white/60">Import only what you use: <code className="text-cyan-400">{`import { Home } from "./icons"`}</code></span>
+                <span className="text-muted-foreground">Import only what you use: <code className="text-cyan-400">{`import { Home } from "./icons"`}</code></span>
               </div>
             </div>
           </div>
@@ -485,24 +483,24 @@ unicon cache --clear  # Clear all cached data`}
         {/* Caching */}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Offline Support</h2>
-          <div className="p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.02]">
-            <p className="text-white/60 text-sm mb-4">
+          <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
+            <p className="text-muted-foreground text-sm mb-4">
               The CLI automatically caches icon data locally at <code className="text-cyan-400">~/.unicon/cache</code> for 
               24 hours. This enables faster subsequent searches and partial offline usage.
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-mono">
-              <span className="px-2 py-1 rounded bg-white/5 text-white/50">unicon cache --stats</span>
-              <span className="px-2 py-1 rounded bg-white/5 text-white/50">unicon cache --clear</span>
+              <span className="px-2 py-1 rounded bg-muted text-muted-foreground">unicon cache --stats</span>
+              <span className="px-2 py-1 rounded bg-muted text-muted-foreground">unicon cache --clear</span>
             </div>
           </div>
         </section>
 
         {/* Footer CTA */}
         <section className="text-center py-8">
-          <p className="text-white/40 mb-4">Ready to bundle some icons?</p>
+          <p className="text-muted-foreground mb-4">Ready to bundle some icons?</p>
           <CodeBlock>npx @webrenew/unicon init</CodeBlock>
         </section>
       </div>
-    </main>
+    </div>
   );
 }
