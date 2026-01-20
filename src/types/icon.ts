@@ -27,7 +27,18 @@ export interface SourceData {
   extractedAt: Date | null;
 }
 
-export type IconLibrary = "lucide" | "phosphor" | "hugeicons";
+export type IconLibrary =
+  | "lucide"
+  | "phosphor"
+  | "hugeicons"
+  | "heroicons"
+  | "tabler"
+  | "radix"
+  | "feather"
+  | "remix"
+  | "iconoir"
+  | "teenyicons"
+  | "cssgg";
 
 export interface IconPreviewSettings {
   size: number;

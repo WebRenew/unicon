@@ -18,6 +18,14 @@ const sources: { id: IconLibrary | "all"; name: string; color: string }[] = [
   { id: "lucide", name: "Lucide", color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20" },
   { id: "phosphor", name: "Phosphor", color: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20" },
   { id: "hugeicons", name: "Huge Icons", color: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20" },
+  { id: "heroicons", name: "Heroicons", color: "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20" },
+  { id: "tabler", name: "Tabler Icons", color: "bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20" },
+  { id: "radix", name: "Radix Icons", color: "bg-purple-500/10 text-purple-600 hover:bg-purple-500/20" },
+  { id: "feather", name: "Feather Icons", color: "bg-pink-500/10 text-pink-600 hover:bg-pink-500/20" },
+  { id: "remix", name: "Remix Icon", color: "bg-red-500/10 text-red-600 hover:bg-red-500/20" },
+  { id: "iconoir", name: "Iconoir", color: "bg-amber-500/10 text-amber-600 hover:bg-amber-500/20" },
+  { id: "teenyicons", name: "Teenyicons", color: "bg-teal-500/10 text-teal-600 hover:bg-teal-500/20" },
+  { id: "cssgg", name: "css.gg", color: "bg-lime-500/10 text-lime-600 hover:bg-lime-500/20" },
 ];
 
 export function SearchFilters({

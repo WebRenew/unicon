@@ -18,7 +18,19 @@ import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
 
-from extractors import LucideExtractor, PhosphorExtractor, HugeIconsExtractor
+from extractors import (
+    LucideExtractor,
+    PhosphorExtractor,
+    HugeIconsExtractor,
+    HeroiconsExtractor,
+    TablerExtractor,
+    RadixExtractor,
+    FeatherExtractor,
+    RemixExtractor,
+    IconoirExtractor,
+    TeenyiconsExtractor,
+    CssGGExtractor,
+)
 from registry import IconRegistry
 from mapper import IconMapper
 
@@ -38,6 +50,46 @@ PACKAGES = {
     "hugeicons": {
         "npm": "hugeicons-react",
         "name": "HugeIcons",
+        "license": "MIT",
+    },
+    "heroicons": {
+        "npm": "heroicons",
+        "name": "Heroicons",
+        "license": "MIT",
+    },
+    "tabler": {
+        "npm": "@tabler/icons",
+        "name": "Tabler Icons",
+        "license": "MIT",
+    },
+    "radix": {
+        "npm": "@radix-ui/react-icons",
+        "name": "Radix Icons",
+        "license": "MIT",
+    },
+    "feather": {
+        "npm": "feather-icons",
+        "name": "Feather Icons",
+        "license": "MIT",
+    },
+    "remix": {
+        "npm": "remixicon",
+        "name": "Remix Icon",
+        "license": "Apache-2.0",
+    },
+    "iconoir": {
+        "npm": "iconoir",
+        "name": "Iconoir",
+        "license": "MIT",
+    },
+    "teenyicons": {
+        "npm": "teenyicons",
+        "name": "Teenyicons",
+        "license": "MIT",
+    },
+    "cssgg": {
+        "npm": "css.gg",
+        "name": "css.gg",
         "license": "MIT",
     },
 }
@@ -155,6 +207,180 @@ def extract_hugeicons(registry: IconRegistry, node_modules: Path) -> int:
     return inserted
 
 
+def extract_heroicons(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Heroicons icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Heroicons icons...")
+    print("=" * 50)
+
+    extractor = HeroiconsExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    base_icons = [i for i in icons if i.variant is None or i.variant == "outline"]
+
+    registry.insert_source(
+        "heroicons",
+        PACKAGES["heroicons"]["name"],
+        version,
+        PACKAGES["heroicons"]["license"],
+        len(base_icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_tabler(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Tabler Icons icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Tabler Icons icons...")
+    print("=" * 50)
+
+    extractor = TablerExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "tabler",
+        PACKAGES["tabler"]["name"],
+        version,
+        PACKAGES["tabler"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_radix(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Radix Icons icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Radix Icons icons...")
+    print("=" * 50)
+
+    extractor = RadixExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    if not icons:
+        print("⚠ No Radix Icons extracted (package structure may differ)")
+        return 0
+
+    registry.insert_source(
+        "radix",
+        PACKAGES["radix"]["name"],
+        version,
+        PACKAGES["radix"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_feather(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Feather Icons icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Feather Icons icons...")
+    print("=" * 50)
+
+    extractor = FeatherExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "feather",
+        PACKAGES["feather"]["name"],
+        version,
+        PACKAGES["feather"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_remix(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Remix Icon icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Remix Icon icons...")
+    print("=" * 50)
+
+    extractor = RemixExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "remix",
+        PACKAGES["remix"]["name"],
+        version,
+        PACKAGES["remix"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_iconoir(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Iconoir icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Iconoir icons...")
+    print("=" * 50)
+
+    extractor = IconoirExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "iconoir",
+        PACKAGES["iconoir"]["name"],
+        version,
+        PACKAGES["iconoir"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_teenyicons(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Teenyicons icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Teenyicons icons...")
+    print("=" * 50)
+
+    extractor = TeenyiconsExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "teenyicons",
+        PACKAGES["teenyicons"]["name"],
+        version,
+        PACKAGES["teenyicons"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
+def extract_cssgg(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract css.gg icons."""
+    print("\n" + "=" * 50)
+    print("Extracting css.gg icons...")
+    print("=" * 50)
+
+    extractor = CssGGExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    registry.insert_source(
+        "cssgg",
+        PACKAGES["cssgg"]["name"],
+        version,
+        PACKAGES["cssgg"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
 def run_mapping(turso_url: str, auth_token: str):
     """Run cross-library mapping."""
     print("\n" + "=" * 50)
@@ -173,7 +399,20 @@ def main():
     parser = argparse.ArgumentParser(description="Extract icons from icon libraries")
     parser.add_argument(
         "--source",
-        choices=["lucide", "phosphor", "hugeicons", "all"],
+        choices=[
+            "lucide",
+            "phosphor",
+            "hugeicons",
+            "heroicons",
+            "tabler",
+            "radix",
+            "feather",
+            "remix",
+            "iconoir",
+            "teenyicons",
+            "cssgg",
+            "all",
+        ],
         default="all",
         help="Which source to extract (default: all)",
     )
@@ -225,7 +464,19 @@ def main():
 
     # Determine sources to extract
     if args.source == "all":
-        sources = ["lucide", "phosphor", "hugeicons"]
+        sources = [
+            "lucide",
+            "phosphor",
+            "hugeicons",
+            "heroicons",
+            "tabler",
+            "radix",
+            "feather",
+            "remix",
+            "iconoir",
+            "teenyicons",
+            "cssgg",
+        ]
     else:
         sources = [args.source]
 
@@ -243,6 +494,30 @@ def main():
 
     if "hugeicons" in sources:
         total_extracted += extract_hugeicons(registry, node_modules)
+
+    if "heroicons" in sources:
+        total_extracted += extract_heroicons(registry, node_modules)
+
+    if "tabler" in sources:
+        total_extracted += extract_tabler(registry, node_modules)
+
+    if "radix" in sources:
+        total_extracted += extract_radix(registry, node_modules)
+
+    if "feather" in sources:
+        total_extracted += extract_feather(registry, node_modules)
+
+    if "remix" in sources:
+        total_extracted += extract_remix(registry, node_modules)
+
+    if "iconoir" in sources:
+        total_extracted += extract_iconoir(registry, node_modules)
+
+    if "teenyicons" in sources:
+        total_extracted += extract_teenyicons(registry, node_modules)
+
+    if "cssgg" in sources:
+        total_extracted += extract_cssgg(registry, node_modules)
 
     print("\n" + "=" * 50)
     print(f"EXTRACTION COMPLETE: {total_extracted} total icons")
