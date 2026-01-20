@@ -149,6 +149,21 @@ Semantic search using AI embeddings.
 }
 ```
 
+## CLI Tool
+
+A command-line interface for browsing and exporting icons is available at `packages/cli/`.
+
+**Quick access to CLI docs:**
+```bash
+# View full CLI documentation
+curl https://raw.githubusercontent.com/WebRenew/unicon/main/CLI.md
+
+# Or read locally
+cat CLI.md
+```
+
+See [CLI.md](./CLI.md) for complete CLI documentation.
+
 ## Contributing
 
 Contributions are welcome! Please read our contributing guidelines before submitting a PR.

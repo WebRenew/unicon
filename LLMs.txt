@@ -1,0 +1,676 @@
+# Unicon - LLMs.txt
+
+> AI-friendly documentation for the Unicon icon library platform
+
+## Project Overview
+
+**Unicon** is an open-source icon library aggregator that provides 14,700+ icons from 8 popular libraries (Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Remix, Simple Icons) in one unified platform. It's like shadcn/ui but for icons.
+
+**Key Features:**
+- AI-powered semantic search using embeddings
+- Bundle builder for exporting multiple icons
+- One-click copy for SVG, React components, or usage examples
+- Zero bloat - only ship icons you use
+- Direct integration with v0.dev
+- Light/dark mode support
+
+**Live Site:** https://unicon.webrenew.com
+**Repository:** https://github.com/WebRenew/unicon
+**License:** MIT
+
+## Tech Stack
+
+### Frontend
+- **Framework:** Next.js 16 (App Router, React 19)
+- **Styling:** Tailwind CSS 4
+- **UI Components:** Radix UI primitives
+- **Icons (UI):** Lucide React
+- **Theme:** next-themes for light/dark mode
+
+### Backend
+- **Database:** Turso (libSQL) with Drizzle ORM
+- **AI/ML:** Vercel AI SDK + Anthropic Claude
+- **Embeddings:** Vercel AI Gateway (OpenAI text-embedding-3-small)
+- **Deployment:** Vercel
+
+### Development
+- **Language:** TypeScript 5 (strict mode)
+- **Package Manager:** pnpm
+- **Linting:** ESLint 9
+- **Git Hooks:** Husky + lint-staged
+- **Extractor:** Python 3.12+
+
+## Architecture
+
+### Database Schema
+
+```
+sources (icon libraries)
+├─ id: text (primary key) - 'lucide', 'phosphor', etc.
+├─ name: text - Display name
+├─ version: text - Library version
+├─ license: text - License type
+├─ totalIcons: integer
+└─ extractedAt: timestamp
+
+icons (main icon table)
+├─ id: text (primary key) - 'lucide:arrow-right'
+├─ sourceId: text (foreign key to sources)
+├─ name: text - PascalCase 'ArrowRight'
+├─ normalizedName: text - kebab-case 'arrow-right'
+├─ category: text - 'arrows', 'ui', etc.
+├─ tags: json array - ['directional', 'navigation']
+├─ viewBox: text - '0 0 24 24'
+├─ content: text - Raw SVG inner content
+├─ pathData: json - Structured path elements
+├─ defaultStroke: boolean
+├─ defaultFill: boolean
+├─ strokeWidth: text
+├─ searchText: text - Combined text for embeddings
+├─ embedding: blob - Vector embedding (F32_BLOB)
+└─ brandColor: text - Hex color for brand icons
+
+variants (icon style variations)
+├─ id: text (primary key) - 'phosphor:arrow-right:bold'
+├─ iconId: text (foreign key to icons)
+├─ variant: text - 'bold', 'fill', 'duotone', etc.
+├─ content: text - SVG content for variant
+└─ pathData: json - Structured path elements
+
+mappings (cross-library equivalents)
+├─ id: integer (auto-increment)
+├─ canonicalName: text - 'arrow-right'
+├─ lucideId: text (nullable foreign key)
+├─ phosphorId: text (nullable foreign key)
+├─ hugeiconsId: text (nullable foreign key)
+├─ confidence: integer (0-100)
+└─ needsReview: boolean
+```
+
+### API Routes
+
+**GET /api/icons** - Paginated icon search
+Query Parameters:
+- `q` (string): Search query
+- `source` (string): Filter by library (lucide|phosphor|hugeicons|heroicons|tabler|feather|remix|simple-icons)
+- `limit` (number): Results per page (default: 100, max: 160)
+- `offset` (number): Pagination offset
+- `ai` (boolean): Enable AI search (default: true)
+
+**POST /api/search** - Semantic AI search using embeddings
+Request Body:
+```json
+{
+  "query": "business icons",
+  "sourceId": "lucide",
+  "limit": 50
+}
+```
+
+**POST /api/admin/generate-embeddings** - Generate embeddings for icons
+Headers: `x-admin-secret: <ADMIN_SECRET>`
+
+### Project Structure
+
+```
+unicon/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── api/
+│   │   │   ├── icons/route.ts        # Icon search endpoint
+│   │   │   ├── search/route.ts       # AI semantic search
+│   │   │   └── admin/
+│   │   │       └── generate-embeddings/route.ts
+│   │   ├── cli/page.tsx              # CLI documentation page
+│   │   ├── page.tsx                  # Main icon browser
+│   │   ├── layout.tsx                # Root layout
+│   │   └── globals.css               # Global styles
+│   ├── components/
+│   │   ├── icons/
+│   │   │   ├── icon-browser.tsx      # Main browser component
+│   │   │   ├── icon-card.tsx         # Individual icon card
+│   │   │   ├── icon-cart.tsx         # Bundle/cart management
+│   │   │   ├── icon-grid.tsx         # Virtualized icon grid
+│   │   │   ├── icon-preview.tsx      # Icon detail preview
+│   │   │   ├── icon-renderer.tsx     # SVG rendering logic
+│   │   │   ├── search-filters.tsx    # Search & filter UI
+│   │   │   └── styled-icon.tsx       # Icon with styling controls
+│   │   ├── theme-provider.tsx        # Theme context
+│   │   ├── theme-toggle.tsx          # Light/dark mode toggle
+│   │   └── ui/                       # Radix UI components
+│   ├── hooks/
+│   │   └── use-icon-search.ts        # Icon search hook
+│   ├── lib/
+│   │   ├── ai.ts                     # AI/embedding utilities
+│   │   ├── db.ts                     # Database client
+│   │   ├── queries.ts                # Database queries
+│   │   ├── schema.ts                 # Drizzle schema
+│   │   ├── icon-utils.ts             # Icon manipulation
+│   │   ├── synonyms.ts               # Search synonym groups
+│   │   ├── starter-packs.ts          # Curated icon collections
+│   │   └── utils.ts                  # General utilities
+│   └── types/
+│       └── icon.ts                   # TypeScript types
+├── extractor/                        # Python icon extraction pipeline
+│   ├── extractors/
+│   │   ├── base.py                   # Base extractor class
+│   │   ├── lucide.py                 # Lucide extractor
+│   │   ├── phosphor.py               # Phosphor extractor
+│   │   ├── hugeicons.py              # Hugeicons extractor
+│   │   ├── heroicons.py              # Heroicons extractor
+│   │   ├── tabler.py                 # Tabler extractor
+│   │   ├── feather.py                # Feather extractor
+│   │   ├── remix.py                  # Remix extractor
+│   │   └── simple_icons.py           # Simple Icons extractor
+│   ├── main.py                       # Extraction entry point
+│   └── tmp_extract/                  # Temporary extraction files
+├── packages/
+│   └── cli/                          # Unicon CLI tool (planned)
+├── drizzle/                          # Database migrations
+├── scripts/
+│   └── generate-embeddings.ts        # Embedding generation script
+├── .claude/                          # Claude AI skills & specs
+│   ├── skills/                       # AI assistant skills
+│   └── sprites/                      # Feature specifications
+├── drizzle.config.ts                 # Drizzle configuration
+├── next.config.ts                    # Next.js configuration
+├── tailwind.config.ts                # Tailwind configuration
+├── tsconfig.json                     # TypeScript configuration
+└── Kaizen.md                         # Continuous improvement log
+```
+
+## Key Concepts
+
+### Icon Extraction Pipeline
+
+The extractor is a Python application that:
+1. Downloads icon libraries from npm or GitHub
+2. Parses SVG files and extracts metadata
+3. Normalizes icon names to kebab-case
+4. Extracts path data, viewBox, and rendering hints
+5. Categorizes icons and generates tags
+6. Inserts data into the Turso database
+
+**Running the extractor:**
+```bash
+cd extractor
+pip install -e .
+python -m extractor.main
+```
+
+Each extractor inherits from `BaseExtractor` and implements:
+- `extract()`: Main extraction logic
+- `parse_svg()`: SVG parsing
+- `get_metadata()`: Icon metadata extraction
+- `get_category()`: Category inference
+
+### AI-Powered Search
+
+Unicon uses a hybrid search approach:
+
+1. **Client-side fuzzy search**: Instant results using pre-computed synonym groups (100+ term groups) for common queries
+2. **Semantic search**: AI embeddings (OpenAI text-embedding-3-small) for natural language queries
+3. **Exact-match boosting**: Combines semantic similarity with exact name matches
+
+**Search flow:**
+1. User types query → local synonym matching shows instant results
+2. Query debounced → API call generates embedding
+3. Vector similarity search in database (cosine similarity)
+4. Results merged with exact-match boost
+5. Icons sorted by relevance score
+
+**Generating embeddings:**
+```bash
+pnpm embeddings              # Generate for all icons
+pnpm embeddings:stats        # Show generation statistics
+```
+
+### Bundle Builder
+
+Users can:
+1. Select multiple icons from the browser
+2. View selected icons in the "cart" panel
+3. Export as:
+   - React components (.tsx)
+   - Vue components (.vue)
+   - Svelte components (.svelte)
+   - Plain SVG files
+   - JSON metadata
+4. One-click download as ZIP
+
+### Cross-Library Mapping
+
+The `mappings` table allows:
+- Finding equivalent icons across libraries
+- Suggesting alternatives when switching libraries
+- Confidence scoring for match quality
+- Manual review flagging for uncertain matches
+
+### Starter Packs
+
+Curated icon collections for common use cases:
+- Dashboard icons
+- E-commerce icons
+- Navigation icons
+- Social media icons
+- File type icons
+- etc.
+
+Users can browse starter packs and add all icons to their bundle at once.
+
+## Development Workflow
+
+### Setup
+
+```bash
+# Clone repository
+git clone https://github.com/WebRenew/unicon.git
+cd unicon
+
+# Install dependencies
+pnpm install
+
+# Copy environment variables
+cp .env.example .env.local
+```
+
+### Environment Variables
+
+```bash
+# Required
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+AI_GATEWAY_API_KEY=your-vercel-ai-gateway-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Optional
+ADMIN_SECRET=your-secret-for-admin-routes
+```
+
+### Database Setup
+
+```bash
+pnpm db:push      # Push schema to database
+pnpm db:studio    # Open Drizzle Studio UI
+pnpm db:generate  # Generate migrations
+pnpm db:migrate   # Run migrations
+```
+
+### Running Development Server
+
+```bash
+pnpm dev          # Start Next.js dev server (localhost:3000)
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+pnpm typecheck    # Run TypeScript type checking
+```
+
+### Extracting Icons
+
+```bash
+cd extractor
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -e .
+python -m extractor.main
+```
+
+## Code Style & Conventions
+
+### TypeScript Guidelines
+
+**From the Agentic-Coder Ruleset:**
+
+1. **Branded primitives** for type safety:
+   ```typescript
+   type IconId = Brand<string, "IconId">;
+   type SourceId = Brand<string, "SourceId">;
+   ```
+
+2. **Discriminated unions** for state:
+   ```typescript
+   type SearchState = 
+     | { status: 'idle' }
+     | { status: 'loading' }
+     | { status: 'success'; data: Icon[] }
+     | { status: 'error'; error: Error };
+   ```
+
+3. **Readonly value objects**:
+   ```typescript
+   interface Icon {
+     readonly id: string;
+     readonly name: string;
+     readonly content: string;
+   }
+   ```
+
+4. **Prefer `unknown` over `any`**
+5. **Never use `// @ts-ignore`** - use `@ts-expect-error` with ticket
+6. **Strict TypeScript settings**: Keep all strict flags enabled
+
+### React/Next.js Guidelines
+
+1. **Server Components by default** - use `'use client'` sparingly
+2. **Named exports** - avoid `export default`
+3. **Functional components** with TypeScript interfaces
+4. **Responsive design** - mobile-first with Tailwind
+5. **Performance**:
+   - Minimize `useEffect` and `setState`
+   - Wrap client components in `<Suspense>`
+   - Use dynamic loading for non-critical components
+   - Optimize images (WebP, size data, lazy loading)
+
+### File Organization
+
+1. **One module = one responsibility**
+2. **Keep files under 500 lines** (refactor if larger)
+3. **File structure**: exported component → subcomponents → helpers → types
+4. **Directory naming**: lowercase with dashes (`icon-browser/`)
+5. **Component naming**: PascalCase for files and components
+
+### Error Handling
+
+1. **Typed error hierarchy**:
+   ```typescript
+   class AppError extends Error {}
+   class NotFoundError extends AppError {}
+   class ValidationError extends AppError {}
+   ```
+
+2. **Always catch `unknown`**:
+   ```typescript
+   try {
+     await operation();
+   } catch (error) {
+     if (error instanceof NotFoundError) {
+       // Handle specific error
+     } else if (error instanceof Error) {
+       // Handle generic error
+     } else {
+       // Handle unknown error
+     }
+   }
+   ```
+
+3. **Never fail silently** - all errors should be logged
+
+### Testing & Quality
+
+1. **Build before committing**: `pnpm build`
+2. **Run linter**: `pnpm lint`
+3. **Type checking**: `pnpm typecheck`
+4. **Git hooks**: Husky + lint-staged for pre-commit checks
+
+## Common Tasks
+
+### Adding a New Icon Library
+
+1. Create extractor in `extractor/extractors/new-library.py`:
+   ```python
+   from .base import BaseExtractor
+   
+   class NewLibraryExtractor(BaseExtractor):
+       def __init__(self):
+           super().__init__(
+               source_id="new-library",
+               name="New Library",
+               version="1.0.0",
+               license="MIT"
+           )
+       
+       def extract(self):
+           # Implementation
+           pass
+   ```
+
+2. Register in `extractor/extractors/__init__.py`
+3. Run extractor: `python -m extractor.main`
+4. Generate embeddings: `pnpm embeddings`
+5. Test on development server
+
+### Adding a New API Endpoint
+
+1. Create route in `src/app/api/your-endpoint/route.ts`:
+   ```typescript
+   import { NextRequest, NextResponse } from "next/server";
+   import { db } from "@/lib/db";
+   
+   export async function GET(request: NextRequest) {
+     try {
+       // Implementation
+       return NextResponse.json({ data });
+     } catch (error) {
+       console.error("Error:", error);
+       return NextResponse.json(
+         { error: "Internal server error" },
+         { status: 500 }
+       );
+     }
+   }
+   ```
+
+2. Add corresponding query in `src/lib/queries.ts`
+3. Update API documentation in this file
+4. Test with curl or Postman
+
+### Adding a New UI Component
+
+1. Create component in `src/components/`:
+   ```typescript
+   import { type FC } from "react";
+   
+   interface ComponentProps {
+     // Props
+   }
+   
+   export function Component({ }: ComponentProps) {
+     return (
+       // JSX
+     );
+   }
+   ```
+
+2. Add to barrel export if part of a module
+3. Use in parent components
+4. Test responsiveness on mobile and desktop
+
+### Modifying Database Schema
+
+1. Update `src/lib/schema.ts`:
+   ```typescript
+   export const newTable = sqliteTable("new_table", {
+     id: text("id").primaryKey(),
+     // ...columns
+   });
+   ```
+
+2. Generate migration: `pnpm db:generate`
+3. Review generated SQL in `drizzle/` directory
+4. Push to database: `pnpm db:push`
+5. Update TypeScript types as needed
+
+## AI Search Implementation
+
+### Embedding Generation
+
+**Model:** OpenAI text-embedding-3-small (1536 dimensions)
+
+**Process:**
+1. Combine icon metadata: `name + normalizedName + category + tags.join(' ')`
+2. Generate embedding via Vercel AI Gateway
+3. Store as F32_BLOB in database
+4. Batch process icons in chunks of 100
+
+**Storage format:**
+```typescript
+// Convert array to Float32Array buffer
+const buffer = new Float32Array(embedding).buffer;
+// Store as blob
+await db.insert(icons).values({
+  embedding: Buffer.from(buffer)
+});
+```
+
+### Similarity Search
+
+**Algorithm:** Cosine similarity using SQLite vector extension
+
+```sql
+SELECT 
+  id,
+  name,
+  (embedding DOT PRODUCT query_embedding) / 
+  (||embedding|| * ||query_embedding||) AS similarity
+FROM icons
+WHERE similarity > 0.7
+ORDER BY similarity DESC
+LIMIT 50
+```
+
+### Synonym System
+
+Pre-computed synonym groups for instant client-side search:
+```typescript
+const synonymGroups = {
+  arrows: ["arrow", "chevron", "caret", "pointer"],
+  navigation: ["menu", "nav", "hamburger", "burger"],
+  // ...100+ groups
+};
+```
+
+Benefits:
+- Zero latency for common queries
+- No API calls for basic searches
+- Graceful fallback if AI search fails
+- Works offline
+
+## Deployment
+
+### Vercel
+
+**Production:** Automatically deployed from `main` branch
+
+**Environment Variables:**
+- Set all required variables in Vercel dashboard
+- Use Vercel-Turso integration for database connection
+- Configure Vercel AI Gateway for embeddings
+
+**Build Settings:**
+```json
+{
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install"
+}
+```
+
+### Self-Hosting
+
+1. Build application: `pnpm build`
+2. Set environment variables
+3. Run with Node.js: `pnpm start`
+4. Use reverse proxy (nginx) for HTTPS
+5. Configure CORS if needed
+
+## Contributing
+
+### Workflow
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Make changes following code style guidelines
+4. Build and test: `pnpm build && pnpm lint && pnpm typecheck`
+5. Commit with descriptive message
+6. Push to branch: `git push origin feature/amazing-feature`
+7. Open Pull Request with detailed description
+
+### Commit Guidelines
+
+- Use present tense ("Add feature" not "Added feature")
+- Use imperative mood ("Move cursor to..." not "Moves cursor to...")
+- Limit first line to 72 characters
+- Reference issues and PRs in description
+
+### Areas for Contribution
+
+- [ ] New icon library extractors
+- [ ] CLI tool implementation (in `packages/cli/`)
+- [ ] npm package generation
+- [ ] Icon variant support (weights, styles)
+- [ ] Advanced filtering (color, stroke width, etc.)
+- [ ] Icon customization (size, color, stroke in browser)
+- [ ] Export format improvements
+- [ ] Documentation improvements
+- [ ] Performance optimizations
+- [ ] Accessibility enhancements
+
+## Planned Features
+
+See `.claude/sprites/` directory for detailed feature specifications:
+
+- **02-icon-name-display.md** - ✅ Implemented
+- **03-icon-style-consistency.md** - Icon style picker
+- **05-cli-tool.md** - Command-line interface
+- **06-icon-library-integrations.md** - Framework integrations
+- **07-brand-logo-library.md** - Brand logo management
+- **08-multi-format-export.md** - Export formats
+- **11-npm-package.md** - npm package distribution
+
+## Troubleshooting
+
+### Common Issues
+
+**Icons not appearing:**
+- Check database connection (TURSO_DATABASE_URL)
+- Verify icons are extracted: `pnpm db:studio`
+- Check browser console for errors
+
+**AI search not working:**
+- Verify ANTHROPIC_API_KEY is set
+- Check AI_GATEWAY_API_KEY is configured
+- Ensure embeddings are generated: `pnpm embeddings`
+
+**Build errors:**
+- Clear `.next` directory: `rm -rf .next`
+- Reinstall dependencies: `rm -rf node_modules && pnpm install`
+- Check TypeScript errors: `pnpm typecheck`
+
+**Extractor failing:**
+- Check Python version (3.12+)
+- Verify virtual environment is activated
+- Install dependencies: `pip install -e .`
+- Check network connection for npm package downloads
+
+## Resources
+
+### Documentation
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Drizzle ORM](https://orm.drizzle.team)
+- [Turso Documentation](https://docs.turso.tech)
+- [Vercel AI SDK](https://sdk.vercel.ai)
+- [Radix UI](https://www.radix-ui.com/primitives/docs/overview/introduction)
+
+### Icon Libraries
+- [Lucide](https://lucide.dev) - ISC License
+- [Phosphor Icons](https://phosphoricons.com) - MIT License
+- [Huge Icons](https://hugeicons.com) - MIT License
+- [Heroicons](https://heroicons.com) - MIT License
+- [Tabler Icons](https://tabler.io/icons) - MIT License
+- [Feather Icons](https://feathericons.com) - MIT License
+- [Remix Icon](https://remixicon.com) - Apache-2.0 License
+- [Simple Icons](https://simpleicons.org) - CC0 1.0 Universal
+
+## Contact & Support
+
+- **Issues:** [GitHub Issues](https://github.com/WebRenew/unicon/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/WebRenew/unicon/discussions)
+- **Website:** [unicon.webrenew.com](https://unicon.webrenew.com)
+- **Company:** [WebRenew](https://webrenew.com)
+
+---
+
+**Last Updated:** 2026-01-20
+**Version:** 0.1.0
+**License:** MIT

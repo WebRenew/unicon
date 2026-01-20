@@ -2,6 +2,25 @@
 
 ## Agent Recommendations
 
+### 2026-01-20: LLMs.txt Documentation
+
+**What was improved:**
+- Created comprehensive LLMs.txt file for AI-friendly project documentation
+- Documented project overview, tech stack, architecture, and database schema
+- Detailed API routes, project structure, and development workflow
+- Included code style guidelines from Agentic-Coder Ruleset
+- Added common tasks, troubleshooting guide, and contribution guidelines
+- Documented AI search implementation (embeddings, similarity search, synonyms)
+
+**Future kaizen opportunities:**
+1. **Add API examples** - Include curl/fetch examples for each API endpoint
+2. **Expand troubleshooting** - Add more common issues and solutions as they arise
+3. **Performance benchmarks** - Document expected performance metrics and optimization tips
+4. **Video tutorials** - Create video guides for common workflows
+5. **Keep updated** - Review LLMs.txt quarterly and update with new features/changes
+
+---
+
 ### 2026-01-19: Context-Based Search Implementation
 
 **What was improved:**
