@@ -48,22 +48,15 @@ export function Footer() {
             </Link>
           </nav>
 
-          {/* Contact */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <a
-              href="mailto:contact@webrenew.io"
-              className="hover:text-foreground transition-colors"
-            >
-              contact@webrenew.io
-            </a>
-            <span className="text-muted-foreground/40">•</span>
+          {/* Social */}
+          <div className="text-sm text-muted-foreground">
             <a
               href="https://twitter.com/WebRenew_"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
-              @WebRenew_
+              X/Twitter
             </a>
           </div>
         </div>
