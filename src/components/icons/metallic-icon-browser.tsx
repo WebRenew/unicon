@@ -14,6 +14,7 @@ import {
   ChevronsUpDown,
   PackagePlus,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -551,6 +552,20 @@ export function MetallicIconBrowser({
                   </button>
                 </>
               )}
+
+              {/* Clear Bundle Button - visible when bundle has items */}
+              {cartItems.length > 0 && (
+                <>
+                  <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+                  <button
+                    onClick={clearCart}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear Bundle ({cartItems.length})
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -572,6 +587,19 @@ export function MetallicIconBrowser({
                   (+{iconsNotInBundle.length} new)
                 </span>
               )}
+            </button>
+          </div>
+        )}
+
+        {/* Clear Bundle action - visible when bundle has items and panel collapsed */}
+        {!filtersExpanded && cartItems.length > 0 && (
+          <div className="flex items-center gap-3 -mt-2 mb-2">
+            <button
+              onClick={clearCart}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear Bundle ({cartItems.length} icons)
             </button>
           </div>
         )}
