@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus, Terminal } from "lucide-react";
+import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus, Terminal, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Command,
   CommandEmpty,
@@ -180,15 +189,41 @@ export function MetallicIconBrowser({
     });
   }, []);
 
+  // Confirmation dialog for large bundles
+  const [confirmBundleOpen, setConfirmBundleOpen] = useState(false);
+  const [pendingBundleIcons, setPendingBundleIcons] = useState<IconData[]>([]);
+
   // Add multiple icons to bundle (skip duplicates)
-  const addAllToBundle = useCallback((iconsToAdd: IconData[]) => {
+  const performAddToBundle = useCallback((iconsToAdd: IconData[]) => {
     setCartItems((prev) => {
       const existingIds = new Set(prev.map((item) => item.id));
       const newIcons = iconsToAdd.filter((icon) => !existingIds.has(icon.id));
-      if (newIcons.length === 0) return prev;
+      if (newIcons.length === 0) {
+        toast.info("All icons already in bundle");
+        return prev;
+      }
+      toast.success(`Added ${newIcons.length} icon${newIcons.length > 1 ? "s" : ""} to bundle`);
       return [...prev, ...newIcons];
     });
   }, []);
+
+  // Show confirmation for large bundles (>50 icons)
+  const addAllToBundle = useCallback((iconsToAdd: IconData[]) => {
+    const existingIds = new Set(cartItems.map((item) => item.id));
+    const newIcons = iconsToAdd.filter((icon) => !existingIds.has(icon.id));
+    
+    if (newIcons.length === 0) {
+      toast.info("All icons already in bundle");
+      return;
+    }
+    
+    if (newIcons.length > 50) {
+      setPendingBundleIcons(newIcons);
+      setConfirmBundleOpen(true);
+    } else {
+      performAddToBundle(iconsToAdd);
+    }
+  }, [cartItems, performAddToBundle]);
 
   // Check if any filters are active
   const hasActiveFilters = selectedSource !== "all" || selectedCategory !== "all" || debouncedSearch.length > 0;
@@ -204,6 +239,37 @@ export function MetallicIconBrowser({
   const clearCart = useCallback(() => {
     setCartItems([]);
   }, []);
+
+  // Add icons by name (for starter packs)
+  const addIconsByName = useCallback(async (iconNames: string[]) => {
+    try {
+      // Fetch icons matching the names
+      const params = new URLSearchParams({
+        q: iconNames.join(" "),
+        limit: String(iconNames.length * 3), // Fetch extra to ensure we get matches
+      });
+      const res = await fetch(`/api/icons?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch icons");
+      
+      const data = await res.json();
+      const fetchedIcons: IconData[] = data.icons || [];
+      
+      // Filter to only include exact matches from the pack
+      const nameSet = new Set(iconNames.map(n => n.toLowerCase()));
+      const matchedIcons = fetchedIcons.filter((icon: IconData) => 
+        nameSet.has(icon.normalizedName.toLowerCase())
+      );
+      
+      if (matchedIcons.length > 0) {
+        performAddToBundle(matchedIcons);
+      } else {
+        toast.error("No icons found for this pack");
+      }
+    } catch (error) {
+      console.error("Failed to add starter pack:", error);
+      toast.error("Failed to add starter pack");
+    }
+  }, [performAddToBundle]);
 
   // Debounce search
   useEffect(() => {
@@ -726,6 +792,7 @@ export function MetallicIconBrowser({
         items={cartItems}
         onRemove={removeCartItem}
         onClear={clearCart}
+        onAddPack={addIconsByName}
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
       />
@@ -738,6 +805,41 @@ export function MetallicIconBrowser({
           aria-label="Close bundle drawer"
         />
       )}
+
+      {/* Confirmation Dialog for Large Bundles */}
+      <Dialog open={confirmBundleOpen} onOpenChange={setConfirmBundleOpen}>
+        <DialogContent className="bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Add {pendingBundleIcons.length} Icons?
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              You&apos;re about to add a large number of icons to your bundle. 
+              This may increase your bundle size significantly.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <button
+              onClick={() => setConfirmBundleOpen(false)}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                performAddToBundle(pendingBundleIcons);
+                setConfirmBundleOpen(false);
+                setPendingBundleIcons([]);
+                setIsCartOpen(true);
+              }}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+            >
+              Add All {pendingBundleIcons.length} Icons
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

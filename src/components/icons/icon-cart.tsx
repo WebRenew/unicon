@@ -1,22 +1,26 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink } from "lucide-react";
+import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink, ChevronDown, ChevronUp, Sparkles, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import { STARTER_PACKS, getPackColorClasses, type StarterPack } from "@/lib/starter-packs";
 import type { IconData } from "@/types/icon";
 
 interface IconCartProps {
   items: IconData[];
   onRemove: (id: string) => void;
   onClear: () => void;
+  onAddPack?: (iconNames: string[]) => void;
   isOpen: boolean;
   onClose: () => void;
 }
 
 type ExportFormat = "react" | "svg" | "json";
 
-export function IconCart({ items, onRemove, onClear, isOpen, onClose }: IconCartProps) {
+export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose }: IconCartProps) {
   const [copied, setCopied] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
+  const [starterPacksExpanded, setStarterPacksExpanded] = useState(false);
 
   const toPascalCase = (str: string) =>
     str
@@ -175,15 +179,82 @@ ${components.join("\n\n")}
         </div>
       </div>
 
+      {/* Bundle Size Warning */}
+      {items.length > 100 && (
+        <div className="mx-4 mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm text-amber-400 font-medium">Large bundle</p>
+              <p className="text-xs text-amber-400/70 mt-0.5">
+                {items.length} icons may increase your bundle size. Consider using the CLI for better tree-shaking.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Icons List */}
       <div className="flex-1 overflow-y-auto p-4">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="text-4xl mb-3 opacity-50">📦</div>
-            <p className="text-white/40 text-sm">Your bundle is empty</p>
-            <p className="text-white/30 text-xs mt-1">
-              Click icons to add them
-            </p>
+          <div className="flex flex-col h-full">
+            <div className="flex flex-col items-center justify-center text-center py-8">
+              <div className="text-4xl mb-3 opacity-50">📦</div>
+              <p className="text-white/40 text-sm">Your bundle is empty</p>
+              <p className="text-white/30 text-xs mt-1">
+                Click icons to add them, or try a starter pack
+              </p>
+            </div>
+
+            {/* Starter Packs */}
+            <div className="mt-4">
+              <button
+                onClick={() => setStarterPacksExpanded(!starterPacksExpanded)}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm text-white/70">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Starter Packs
+                </span>
+                {starterPacksExpanded ? (
+                  <ChevronUp className="w-4 h-4 text-white/40" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-white/40" />
+                )}
+              </button>
+
+              {starterPacksExpanded && (
+                <div className="mt-3 space-y-2">
+                  {STARTER_PACKS.map((pack) => {
+                    const colors = getPackColorClasses(pack.color);
+                    return (
+                      <button
+                        key={pack.id}
+                        onClick={() => {
+                          if (onAddPack) {
+                            onAddPack(pack.iconNames);
+                            toast.success(`Added "${pack.name}" pack`);
+                          }
+                        }}
+                        className={`w-full p-3 rounded-lg border ${colors.border} ${colors.bg} hover:opacity-80 transition-all text-left`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm font-medium ${colors.text}`}>
+                            {pack.name}
+                          </span>
+                          <span className="text-xs text-white/40">
+                            {pack.iconNames.length} icons
+                          </span>
+                        </div>
+                        <p className="text-xs text-white/50 mt-1">
+                          {pack.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-6 gap-2">
