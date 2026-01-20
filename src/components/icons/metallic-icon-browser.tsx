@@ -544,7 +544,7 @@ export function MetallicIconBrowser({
                       addAllToBundle(icons);
                       setIsCartOpen(true);
                     }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/20 dark:border-emerald-500/30 transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[#6EE7B7]/10 dark:bg-[#6EE7B7]/20 text-[#6EE7B7] hover:bg-[#6EE7B7]/20 dark:hover:bg-[#6EE7B7]/30 border border-[#6EE7B7]/20 dark:border-[#6EE7B7]/30 transition-all"
                   >
                     <PackagePlus className="w-3.5 h-3.5" />
                     Bundle All ({iconsNotInBundle.length})
@@ -563,12 +563,12 @@ export function MetallicIconBrowser({
                 addAllToBundle(icons);
                 setIsCartOpen(true);
               }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/20 dark:border-emerald-500/30 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[#6EE7B7]/10 dark:bg-[#6EE7B7]/20 text-[#6EE7B7] hover:bg-[#6EE7B7]/20 dark:hover:bg-[#6EE7B7]/30 border border-[#6EE7B7]/20 dark:border-[#6EE7B7]/30 transition-all"
             >
               <PackagePlus className="w-3.5 h-3.5" />
               Bundle All {icons.length} Filtered Icons
               {iconsNotInBundle.length < icons.length && (
-                <span className="text-emerald-600/70 dark:text-emerald-500/70">
+                <span className="text-[#6EE7B7]/70">
                   (+{iconsNotInBundle.length} new)
                 </span>
               )}
@@ -815,7 +815,7 @@ export function MetallicIconBrowser({
                 setPendingBundleIcons([]);
                 setIsCartOpen(true);
               }}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6EE7B7] text-black hover:bg-[#6EE7B7]/80 transition-colors"
             >
               Add All {pendingBundleIcons.length} Icons
             </button>
