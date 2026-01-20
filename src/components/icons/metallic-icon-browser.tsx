@@ -42,6 +42,14 @@ const SOURCE_COLORS: Record<string, string> = {
   lucide: "bg-orange-500",
   phosphor: "bg-emerald-500",
   hugeicons: "bg-violet-500",
+  heroicons: "bg-blue-500",
+  tabler: "bg-cyan-500",
+  radix: "bg-purple-500",
+  feather: "bg-pink-500",
+  remix: "bg-red-500",
+  iconoir: "bg-amber-500",
+  teenyicons: "bg-teal-500",
+  cssgg: "bg-lime-500",
 };
 
 // Icons per page - sized for large screens (4K: ~50 columns × 8 rows = 400)
