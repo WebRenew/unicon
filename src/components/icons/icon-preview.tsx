@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IconRenderer } from "./icon-renderer";
 import type { IconData, IconPreviewSettings } from "@/types/icon";
 import { cn } from "@/lib/utils";
+import { getBrandIconColor } from "@/lib/icon-utils";
 
 interface IconPreviewProps {
   icon: IconData | null;
@@ -27,12 +29,20 @@ const colors = [
 ];
 
 export function IconPreview({ icon, onClose }: IconPreviewProps) {
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
+  
   const [settings, setSettings] = useState<IconPreviewSettings>({
     size: 48,
     strokeWidth: 2,
     color: "currentColor",
   });
   const [copied, setCopied] = useState<string | null>(null);
+
+  // Compute effective color (adapts brand colors for dark mode)
+  const effectiveColor = icon?.brandColor 
+    ? getBrandIconColor(icon.brandColor, isDarkMode) || settings.color
+    : settings.color;
 
   if (!icon) {
     return (
@@ -94,7 +104,7 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
             viewBox={icon.viewBox}
             size={settings.size}
             strokeWidth={settings.strokeWidth}
-            color={settings.color}
+            color={effectiveColor}
           />
         </div>
       </div>

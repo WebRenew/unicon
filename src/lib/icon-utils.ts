@@ -347,3 +347,69 @@ export function generateUsageExample(iconName: string): string {
   const componentName = toPascalCase(iconName);
   return `<${componentName} className="size-5" />`;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brand Icon Color Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Convert hex color to RGB values
+ */
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result || !result[1] || !result[2] || !result[3]) {
+    return null;
+  }
+  return {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  };
+}
+
+/**
+ * Calculate relative luminance of a color (0 = darkest, 1 = lightest)
+ * Uses WCAG formula: https://www.w3.org/TR/WCAG20/#relativeluminancedef
+ */
+function getRelativeLuminance(r: number, g: number, b: number): number {
+  const rs = r / 255;
+  const gs = g / 255;
+  const bs = b / 255;
+  
+  const rLinear = rs <= 0.03928 ? rs / 12.92 : Math.pow((rs + 0.055) / 1.055, 2.4);
+  const gLinear = gs <= 0.03928 ? gs / 12.92 : Math.pow((gs + 0.055) / 1.055, 2.4);
+  const bLinear = bs <= 0.03928 ? bs / 12.92 : Math.pow((bs + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+}
+
+/**
+ * Determine if a hex color is dark (needs inversion in dark mode)
+ * Returns true if the color is too dark to see on a dark background
+ */
+export function isDarkColor(hexColor: string | null): boolean {
+  if (!hexColor) return false;
+  
+  const rgb = hexToRgb(hexColor);
+  if (!rgb) return false;
+  
+  const luminance = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
+  
+  // If luminance is below 0.3 (roughly #777777), it's too dark for dark mode
+  return luminance < 0.3;
+}
+
+/**
+ * Get the appropriate color for a brand icon based on theme
+ * Inverts dark colors in dark mode for visibility
+ */
+export function getBrandIconColor(brandColor: string | null, isDarkMode: boolean): string | undefined {
+  if (!brandColor) return undefined;
+  
+  // If in dark mode and the brand color is dark, return white instead
+  if (isDarkMode && isDarkColor(brandColor)) {
+    return "#ffffff";
+  }
+  
+  return brandColor;
+}

@@ -1,10 +1,12 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { IconRenderer } from "./icon-renderer";
 import type { IconData } from "@/types/icon";
 import { cn } from "@/lib/utils";
+import { getBrandIconColor } from "@/lib/icon-utils";
 
 interface IconCardProps {
   icon: IconData;
@@ -28,7 +30,12 @@ const tooltipLibraryColors: Record<string, string> = {
 };
 
 export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
+  const { resolvedTheme } = useTheme();
   const strokeWidth = icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2;
+  
+  // Get appropriate brand color for current theme (inverts dark colors in dark mode)
+  const isDarkMode = resolvedTheme === "dark";
+  const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
   const cardContent = (
     <button
@@ -51,6 +58,7 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
           viewBox={icon.viewBox} 
           size={32} 
           strokeWidth={strokeWidth}
+          {...(brandColor ? { color: brandColor } : {})}
         />
       </div>
 

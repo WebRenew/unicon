@@ -2,6 +2,30 @@
 
 ## Agent Recommendations
 
+### 2026-01-20: Auto-invert Dark Brand Icons in Dark Mode
+
+**What was improved:**
+- Added color luminance detection utility using WCAG relative luminance formula
+- Implemented automatic color inversion for dark brand icons (black, very dark colors) in dark mode
+- Updated icon rendering across all components (icon-card, styled-icon, icon-preview)
+- Dark brand icons now display as white in dark mode for visibility
+- Maintains original brand colors for light/colorful icons
+
+**Technical approach:**
+- `isDarkColor()` calculates relative luminance (0-1 scale)
+- Colors with luminance < 0.3 (darker than ~#777) are inverted in dark mode
+- `getBrandIconColor()` returns white for dark colors in dark mode, original otherwise
+- Integrates with next-themes `resolvedTheme` for theme detection
+
+**Future kaizen opportunities:**
+1. **User preference toggle** - Allow users to override auto-inversion per icon
+2. **Gradient handling** - Detect and adapt icons with gradient fills
+3. **Color palette extraction** - For multi-color brand icons, adapt entire palette
+4. **Contrast ratio display** - Show WCAG contrast ratio in icon preview
+5. **Custom inversion colors** - Let users choose inversion color (white, light gray, theme accent)
+
+---
+
 ### 2026-01-20: LLMs.txt Documentation
 
 **What was improved:**

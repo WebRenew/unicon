@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,6 +17,7 @@ import {
   generateRenderableSvg,
   generateRawSvg,
   generateUsageExample,
+  getBrandIconColor,
   DEFAULT_STROKE,
 } from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
@@ -106,10 +108,17 @@ export function StyledIcon({
   containerSize = 56,
 }: StyledIconProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
   const styles = ICON_STYLES[style];
+
+  // Determine if we're in dark mode
+  const isDarkMode = resolvedTheme === "dark";
 
   // Use provided strokeWeight, or fall back to icon's default
   const effectiveStrokeWidth = strokeWeight ?? (icon.strokeWidth ? parseFloat(icon.strokeWidth) : DEFAULT_STROKE.strokeWidth);
+  
+  // Get appropriate brand color for current theme (inverts dark colors in dark mode)
+  const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
   const handleClick = () => {
     if (onToggleCart) {
@@ -169,12 +178,12 @@ export function StyledIcon({
         >
           <div
             style={{ width: iconSize, height: iconSize }}
-            className={icon.brandColor ? undefined : styles.icon}
+            className={brandColor ? undefined : styles.icon}
             dangerouslySetInnerHTML={{
               __html: generateRenderableSvg(icon, { 
                 size: iconSize, 
                 strokeWidth: effectiveStrokeWidth,
-                ...(icon.brandColor ? { color: icon.brandColor } : {}),
+                ...(brandColor ? { color: brandColor } : {}),
               }),
             }}
           />
