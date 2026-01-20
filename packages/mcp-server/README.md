@@ -193,7 +193,8 @@ Use the `search_icons` tool first to find the exact icon ID.
 
 ## Support
 
-- 📖 Documentation: https://unicon.webrenew.com/docs
+- 📖 Quick Start: https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md
+- 📚 Full Documentation: https://github.com/WebRenew/unicon/blob/main/docs/mcp-integration.md
 - 🐛 Issues: https://github.com/webrenew/unicon/issues
 - 💬 Discussions: https://github.com/webrenew/unicon/discussions
 

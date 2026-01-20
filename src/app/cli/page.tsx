@@ -435,14 +435,22 @@ unicon cache --clear  # Clear all cached data`}
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10">
+              <div className="pt-2 border-t border-white/10 flex gap-3 text-xs">
                 <a 
-                  href="/docs/mcp-integration.md" 
-                  className="text-xs text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-1"
+                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md" 
+                  className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-1"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Full MCP documentation →
+                  Quick Start Guide →
+                </a>
+                <a 
+                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-integration.md" 
+                  className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Full Documentation →
                 </a>
               </div>
             </div>
