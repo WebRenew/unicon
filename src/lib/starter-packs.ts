@@ -220,46 +220,53 @@ export function getStarterPack(id: string): StarterPack | undefined {
 }
 
 /**
- * Get color classes for a pack
+ * Get color classes for a pack - uses consistent light/dark mode patterns
  */
 interface PackColorClasses {
   bg: string;
   border: string;
   text: string;
+  icon: string;
 }
 
 const DEFAULT_COLORS: PackColorClasses = {
-  bg: "bg-cyan-500/10",
-  border: "border-cyan-500/20",
-  text: "text-cyan-400",
+  bg: "bg-cyan-500/5 dark:bg-cyan-500/10",
+  border: "border-cyan-500/10 dark:border-cyan-500/20",
+  text: "text-cyan-700 dark:text-cyan-400",
+  icon: "text-cyan-500/60 dark:text-cyan-400/60",
 };
 
 const PACK_COLORS: Record<string, PackColorClasses> = {
   cyan: DEFAULT_COLORS,
   emerald: {
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    text: "text-emerald-400",
+    bg: "bg-emerald-500/5 dark:bg-emerald-500/10",
+    border: "border-emerald-500/10 dark:border-emerald-500/20",
+    text: "text-emerald-700 dark:text-emerald-400",
+    icon: "text-emerald-500/60 dark:text-emerald-400/60",
   },
   pink: {
-    bg: "bg-pink-500/10",
-    border: "border-pink-500/20",
-    text: "text-pink-400",
+    bg: "bg-pink-500/5 dark:bg-pink-500/10",
+    border: "border-pink-500/10 dark:border-pink-500/20",
+    text: "text-pink-700 dark:text-pink-400",
+    icon: "text-pink-500/60 dark:text-pink-400/60",
   },
   amber: {
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    text: "text-amber-400",
+    bg: "bg-amber-500/5 dark:bg-amber-500/10",
+    border: "border-amber-500/10 dark:border-amber-500/20",
+    text: "text-amber-700 dark:text-amber-400",
+    icon: "text-amber-500/60 dark:text-amber-400/60",
   },
   violet: {
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    text: "text-violet-400",
+    bg: "bg-violet-500/5 dark:bg-violet-500/10",
+    border: "border-violet-500/10 dark:border-violet-500/20",
+    text: "text-violet-700 dark:text-violet-400",
+    icon: "text-violet-500/60 dark:text-violet-400/60",
   },
   rose: {
-    bg: "bg-rose-500/10",
-    border: "border-rose-500/20",
-    text: "text-rose-400",
+    bg: "bg-rose-500/5 dark:bg-rose-500/10",
+    border: "border-rose-500/10 dark:border-rose-500/20",
+    text: "text-rose-700 dark:text-rose-400",
+    icon: "text-rose-500/60 dark:text-rose-400/60",
   },
 };
 
