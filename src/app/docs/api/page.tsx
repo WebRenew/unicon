@@ -72,11 +72,11 @@ function ParamTable({ params }: ParamTableProps) {
         <tbody>
           {params.map((param, i) => (
             <tr key={i} className="border-b border-border/50">
-              <td className="py-2 px-3 font-mono text-cyan-400">{param.name}</td>
+              <td className="py-2 px-3 font-mono text-[#7FD3E6]">{param.name}</td>
               <td className="py-2 px-3 font-mono text-muted-foreground">{param.type}</td>
               <td className="py-2 px-3">
                 {param.required ? (
-                  <span className="text-emerald-400">Yes</span>
+                  <span className="text-[#6EE7B7]">Yes</span>
                 ) : (
                   <span className="text-muted-foreground">No</span>
                 )}
@@ -97,8 +97,8 @@ export default function APIDocsPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-border">
-            <Code className="w-6 h-6 text-cyan-400" />
+          <div className="p-3 rounded-xl bg-[#7FD3E6]/10 border border-[#7FD3E6]/20">
+            <Code className="w-6 h-6 text-[#7FD3E6]" />
           </div>
         </div>
         <h1 className="text-4xl font-bold mb-4">API Reference</h1>
@@ -121,19 +121,19 @@ export default function APIDocsPage() {
         {/* Rate Limits */}
         <section id="rate-limits">
           <h2 className="text-2xl font-bold mb-4">Rate Limits</h2>
-          <div className="p-5 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+          <div className="p-5 rounded-xl border border-[#E6A8D7]/20 bg-[#E6A8D7]/5">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Icon search (GET /api/icons)</span>
-                <span className="font-mono text-yellow-400">100 req/hour</span>
+                <span className="font-mono text-[#E6A8D7]">100 req/hour</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Semantic search (POST /api/search)</span>
-                <span className="font-mono text-yellow-400">50 req/hour</span>
+                <span className="font-mono text-[#E6A8D7]">50 req/hour</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">MCP endpoints</span>
-                <span className="font-mono text-yellow-400">200 req/hour</span>
+                <span className="font-mono text-[#E6A8D7]">200 req/hour</span>
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
@@ -334,10 +334,10 @@ export default function APIDocsPage() {
             standard API endpoints.
           </p>
 
-          <div className="p-5 rounded-xl border border-purple-500/20 bg-purple-500/5">
+          <div className="p-5 rounded-xl border border-[#E6A8D7]/20 bg-[#E6A8D7]/5">
             <p className="text-sm text-muted-foreground">
               This endpoint is designed for MCP protocol communication. For easier integration, use the{" "}
-              <Link href="/docs/mcp" className="text-purple-400 hover:underline">
+              <Link href="/docs/mcp" className="text-[#E6A8D7] hover:underline">
                 MCP Server package
               </Link>{" "}
               which handles the protocol details for you.
@@ -349,8 +349,8 @@ export default function APIDocsPage() {
         <section>
           <h2 className="text-2xl font-bold mb-4">Icon Sources</h2>
           <p className="text-muted-foreground mb-6">
-            Available icon libraries for filtering. Use these IDs in the <code className="text-cyan-400">source</code> or{" "}
-            <code className="text-cyan-400">sourceId</code> parameters.
+            Available icon libraries for filtering. Use these IDs in the <code className="text-[#7FD3E6]">source</code> or{" "}
+            <code className="text-[#7FD3E6]">sourceId</code> parameters.
           </p>
 
           <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -375,7 +375,7 @@ export default function APIDocsPage() {
                   { id: "simple-icons", name: "Simple Icons", count: "3,300+", license: "CC0" },
                 ].map((source, i) => (
                   <tr key={i} className="border-b border-border/50">
-                    <td className="py-3 px-4 font-mono text-cyan-400">{source.id}</td>
+                    <td className="py-3 px-4 font-mono text-[#7FD3E6]">{source.id}</td>
                     <td className="py-3 px-4 text-muted-foreground">{source.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{source.count}</td>
                     <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{source.license}</td>

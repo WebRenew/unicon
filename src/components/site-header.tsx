@@ -17,14 +17,14 @@ export function SiteHeader() {
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
               href="/docs"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#E6A8D7] hover:bg-[#E6A8D7]/5 transition-colors"
             >
               <FileText className="w-3.5 h-3.5" />
               Docs
             </Link>
             <Link
               href="/cli"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#7FD3E6] hover:bg-[#7FD3E6]/5 transition-colors"
             >
               <Terminal className="w-3.5 h-3.5" />
               CLI

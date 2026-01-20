@@ -83,8 +83,8 @@ export function DocsSidebar() {
               className={cn(
                 "flex items-center gap-2 text-sm font-semibold mb-3 transition-colors",
                 pathname === section.href
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-[#E6A8D7]"
+                  : "text-muted-foreground hover:text-[#E6A8D7]"
               )}
             >
               {section.icon && <section.icon className="w-4 h-4" />}
@@ -99,7 +99,7 @@ export function DocsSidebar() {
                       className={cn(
                         "block text-sm transition-colors py-1",
                         pathname === item.href
-                          ? "text-foreground font-medium"
+                          ? "text-[#7FD3E6] font-medium"
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     >
