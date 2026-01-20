@@ -6,13 +6,10 @@ import { cn } from "@/lib/utils";
 import {
   FileText,
   Terminal,
-  Sparkles,
   Code,
   BookOpen,
-  Zap,
-  Package,
-  Search,
 } from "lucide-react";
+import { SparklesIcon } from "@/components/icons/sparkles-icon";
 
 interface NavItem {
   title: string;
@@ -47,7 +44,7 @@ const navigation: NavItem[] = [
   {
     title: "MCP Integration",
     href: "/docs/mcp",
-    icon: Sparkles,
+    icon: SparklesIcon,
     items: [
       { title: "Overview", href: "/docs/mcp" },
       { title: "Claude Desktop", href: "/docs/mcp#claude-desktop" },
