@@ -10,7 +10,7 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { Copy, Check, ExternalLink, Plus, Minus } from "lucide-react";
+import { Copy, Check, ExternalLink, Plus, Minus, Maximize2 } from "lucide-react";
 import {
   toPascalCase,
   getSvgAttributesJsx,
@@ -21,6 +21,7 @@ import {
   DEFAULT_STROKE,
 } from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
+import { IconDetailDialog } from "./icon-detail-dialog";
 
 export type IconStyle = "metal" | "brutal" | "glow";
 
@@ -108,6 +109,7 @@ export function StyledIcon({
   containerSize = 56,
 }: StyledIconProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const { resolvedTheme } = useTheme();
   const styles = ICON_STYLES[style];
 
@@ -167,97 +169,112 @@ export function StyledIcon({
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
-        <button
-          onClick={handleClick}
-          style={{ width: containerSize, height: containerSize }}
-          className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
-            isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
-          }`}
-        >
-          <div
-            style={{ width: iconSize, height: iconSize }}
-            className={brandColor ? undefined : styles.icon}
-            dangerouslySetInnerHTML={{
-              __html: generateRenderableSvg(icon, { 
-                size: iconSize, 
-                strokeWidth: effectiveStrokeWidth,
-                ...(brandColor ? { color: brandColor } : {}),
-              }),
-            }}
-          />
-          {isSelected && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-              <Check className="w-2.5 h-2.5 text-white" />
-            </div>
-          )}
-        </button>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-56 bg-popover border-border">
-        <ContextMenuLabel className="font-mono text-xs text-muted-foreground">
-          {icon.sourceId}:{icon.normalizedName}
-        </ContextMenuLabel>
-        <ContextMenuSeparator />
-        {onToggleCart && (
-          <ContextMenuItem onClick={() => onToggleCart(icon)}>
-            {isSelected ? (
-              <>
-                <Minus className="mr-2 h-4 w-4" />
-                Remove from bundle
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" />
-                Add to bundle
-              </>
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <button
+            onClick={handleClick}
+            style={{ width: containerSize, height: containerSize }}
+            className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
+              isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
+            }`}
+          >
+            <div
+              style={{ width: iconSize, height: iconSize }}
+              className={brandColor ? undefined : styles.icon}
+              dangerouslySetInnerHTML={{
+                __html: generateRenderableSvg(icon, { 
+                  size: iconSize, 
+                  strokeWidth: effectiveStrokeWidth,
+                  ...(brandColor ? { color: brandColor } : {}),
+                }),
+              }}
+            />
+            {isSelected && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                <Check className="w-2.5 h-2.5 text-white" />
+              </div>
             )}
+          </button>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-56 bg-popover border-border">
+          <ContextMenuLabel className="font-mono text-xs text-muted-foreground">
+            {icon.sourceId}:{icon.normalizedName}
+          </ContextMenuLabel>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => setShowDetailDialog(true)}>
+            <Maximize2 className="mr-2 h-4 w-4" />
+            View details
           </ContextMenuItem>
-        )}
-        <ContextMenuSeparator />
-        <ContextMenuItem onClick={handleCopySvg}>
-          {copied === "svg" ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
+          {onToggleCart && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={() => onToggleCart(icon)}>
+                {isSelected ? (
+                  <>
+                    <Minus className="mr-2 h-4 w-4" />
+                    Remove from bundle
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add to bundle
+                  </>
+                )}
+              </ContextMenuItem>
+            </>
           )}
-          Copy SVG
-        </ContextMenuItem>
-        <ContextMenuItem onClick={handleCopyComponent}>
-          {copied === "component" ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Copy React component
-        </ContextMenuItem>
-        <ContextMenuItem onClick={handleCopyUsage}>
-          {copied === "usage" ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Copy usage example
-        </ContextMenuItem>
-        {icon.brandColor && (
-          <ContextMenuItem onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}>
-            {copied === "color" ? (
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleCopySvg}>
+            {copied === "svg" ? (
               <Check className="mr-2 h-4 w-4" />
             ) : (
-              <div 
-                className="mr-2 h-4 w-4 rounded-full border border-border"
-                style={{ backgroundColor: icon.brandColor }}
-              />
+              <Copy className="mr-2 h-4 w-4" />
             )}
-            Copy brand color
+            Copy SVG
           </ContextMenuItem>
-        )}
-        <ContextMenuSeparator />
-        <ContextMenuItem onClick={handleOpenInV0}>
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Open in v0
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+          <ContextMenuItem onClick={handleCopyComponent}>
+            {copied === "component" ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Copy className="mr-2 h-4 w-4" />
+            )}
+            Copy React component
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleCopyUsage}>
+            {copied === "usage" ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Copy className="mr-2 h-4 w-4" />
+            )}
+            Copy usage example
+          </ContextMenuItem>
+          {icon.brandColor && (
+            <ContextMenuItem onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}>
+              {copied === "color" ? (
+                <Check className="mr-2 h-4 w-4" />
+              ) : (
+                <div 
+                  className="mr-2 h-4 w-4 rounded-full border border-border"
+                  style={{ backgroundColor: icon.brandColor }}
+                />
+              )}
+              Copy brand color
+            </ContextMenuItem>
+          )}
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleOpenInV0}>
+            <ExternalLink className="mr-2 h-4 w-4" />
+            Open in v0
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      
+      <IconDetailDialog
+        icon={icon}
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+      />
+    </>
   );
 }
