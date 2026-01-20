@@ -1,0 +1,56 @@
+TERMS OF SERVICE
+
+Last Updated: January 20, 2026
+
+AGREEMENT TO TERMS
+
+By accessing or using Unicon by WebRenew ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of the terms, you may not access the Service.
+
+USE LICENSE
+
+Permission is granted to use the Service and download icons for personal and commercial projects, subject to the following restrictions:
+
+1. Icons must be used in accordance with their original source library licenses (Lucide, Phosphor, Huge Icons, etc.)
+2. You may not claim ownership of the icons themselves
+3. You may not redistribute the Service or substantial portions of it
+4. Attribution is appreciated but not required for using individual icons
+
+DISCLAIMER OF WARRANTIES
+
+The Service is provided "as is" and "as available" without any warranties of any kind, either express or implied.
+
+USER RESPONSIBILITIES
+
+You are responsible for:
+- Ensuring your use of icons complies with their respective licenses
+- Reviewing brand guidelines before using brand logos
+- Verifying that icons meet your project requirements
+- Maintaining appropriate backups of your work
+
+INTELLECTUAL PROPERTY
+
+The Service itself (excluding the icon content) is owned by WebRenew. Icons are sourced from various open-source libraries and remain property of their respective creators.
+
+Brand logos from Simple Icons are trademarks of their respective owners.
+
+MODIFICATIONS TO SERVICE
+
+We reserve the right to modify or discontinue the Service at any time without notice. We shall not be liable to you or any third party for any modification, suspension, or discontinuance of the Service.
+
+LIMITATION OF LIABILITY
+
+In no event shall WebRenew, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+
+GOVERNING LAW
+
+These Terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law provisions.
+
+CHANGES TO TERMS
+
+We reserve the right to modify these Terms at any time. We will notify users of any material changes by posting the new Terms on this page.
+
+CONTACT INFORMATION
+
+For questions about these Terms, please contact:
+- Email: contact@webrenew.io
+- Twitter: @WebRenew_
