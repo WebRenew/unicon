@@ -56,7 +56,7 @@ export const metadata: Metadata = {
       "Browse 10,000+ icons from Lucide, Phosphor, and Huge Icons. Copy React components or SVGs. Bundle multiple icons for export.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Unicon — Icon Library for React",
@@ -68,8 +68,8 @@ export const metadata: Metadata = {
     title: "Unicon — Just the icons you need. Zero bloat.",
     description:
       "Browse 10,000+ icons from Lucide, Phosphor, and Huge Icons. Like shadcn, but for icons.",
-    images: ["/og-image.png"],
-    creator: "@webrenew",
+    images: ["/opengraph.png"],
+    creator: "@WebRenew_",
   },
   robots: {
     index: true,
