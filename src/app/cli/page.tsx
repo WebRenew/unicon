@@ -112,7 +112,7 @@ export default function CLIPage() {
           </div>
           <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
           <p className="text-base md:text-xl text-white/60 max-w-2xl">
-            Search and bundle icons from the command line. Define your icon sets once, 
+            Search and bundle icons from 8 libraries via command line. Define your icon sets once, 
             regenerate anytime with a single command.
           </p>
         </div>
@@ -214,8 +214,9 @@ unicon preview arrow --source phosphor`}
             <CommandCard
               icon={Layers}
               command="unicon sources"
-              description="List all available icon libraries (lucide, phosphor, hugeicons)."
-              example={`unicon sources`}
+              description="List all 8 available icon libraries with version info and icon counts."
+              example={`unicon sources
+unicon sources --json`}
             />
 
             <CommandCard
@@ -339,18 +340,41 @@ unicon cache --clear  # Clear all cached data`}
         {/* Sources */}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Icon Sources</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-            <div className="p-4 md:p-5 rounded-xl border border-orange-500/20 bg-orange-500/5">
-              <h3 className="font-mono font-medium mb-2 text-orange-400">lucide</h3>
-              <p className="text-white/50 text-xs md:text-sm">1,900+ beautiful & consistent icons</p>
+          <p className="text-white/60 mb-4 text-sm">
+            Access 14,700+ icons from 8 popular icon libraries:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-4 rounded-xl border border-orange-500/20 bg-orange-500/5">
+              <h3 className="font-mono font-medium mb-1 text-orange-400">lucide</h3>
+              <p className="text-white/50 text-xs">1,456 icons</p>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
-              <h3 className="font-mono font-medium mb-2 text-emerald-400">phosphor</h3>
-              <p className="text-white/50 text-xs md:text-sm">1,500+ flexible icons in 6 weights</p>
+            <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+              <h3 className="font-mono font-medium mb-1 text-emerald-400">phosphor</h3>
+              <p className="text-white/50 text-xs">7,488 icons</p>
             </div>
-            <div className="p-4 md:p-5 rounded-xl border border-violet-500/20 bg-violet-500/5">
-              <h3 className="font-mono font-medium mb-2 text-violet-400">hugeicons</h3>
-              <p className="text-white/50 text-xs md:text-sm">1,800+ modern outlined icons</p>
+            <div className="p-4 rounded-xl border border-violet-500/20 bg-violet-500/5">
+              <h3 className="font-mono font-medium mb-1 text-violet-400">hugeicons</h3>
+              <p className="text-white/50 text-xs">3,000+ icons</p>
+            </div>
+            <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
+              <h3 className="font-mono font-medium mb-1 text-blue-400">heroicons</h3>
+              <p className="text-white/50 text-xs">292 icons</p>
+            </div>
+            <div className="p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+              <h3 className="font-mono font-medium mb-1 text-cyan-400">tabler</h3>
+              <p className="text-white/50 text-xs">3,000+ icons</p>
+            </div>
+            <div className="p-4 rounded-xl border border-gray-500/20 bg-gray-500/5">
+              <h3 className="font-mono font-medium mb-1 text-gray-400">feather</h3>
+              <p className="text-white/50 text-xs">287 icons</p>
+            </div>
+            <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5">
+              <h3 className="font-mono font-medium mb-1 text-indigo-400">remix</h3>
+              <p className="text-white/50 text-xs">2,000+ icons</p>
+            </div>
+            <div className="p-4 rounded-xl border border-slate-500/20 bg-slate-500/5">
+              <h3 className="font-mono font-medium mb-1 text-slate-400">simple-icons</h3>
+              <p className="text-white/50 text-xs">2,000+ brand logos</p>
             </div>
           </div>
         </section>
