@@ -10,6 +10,10 @@ export function Footer() {
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
             © {currentYear} <Link href="https://webrenew.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">WebRenew</Link>
+            <span className="mx-2 text-muted-foreground/40">•</span>
+            <Link href="https://github.com/WebRenew/unicon" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Open Source
+            </Link>
           </div>
 
           {/* Legal Links */}

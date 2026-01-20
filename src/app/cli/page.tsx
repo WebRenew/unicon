@@ -17,7 +17,36 @@ import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
   title: "CLI | Unicon",
-  description: "Command-line interface for searching and bundling icons from Unicon",
+  description: "Command-line interface for searching and bundling icons. Install via npm, search 14,000+ icons, and generate tree-shakeable React, Vue, or Svelte components. Open source icon CLI tool.",
+  keywords: [
+    "icon cli",
+    "command line icons",
+    "npm icon tool",
+    "icon bundler",
+    "react icon cli",
+    "vue icon cli",
+    "svelte icon cli",
+    "tree shaking icons",
+    "icon generator",
+    "cli tool",
+    "developer tools",
+    "icon search cli",
+    "offline icon tool",
+  ],
+  alternates: {
+    canonical: "/cli",
+  },
+  openGraph: {
+    title: "Unicon CLI — Icon Bundler for Command Line",
+    description: "Search and bundle icons from the command line. Generate tree-shakeable components for React, Vue, and Svelte.",
+    url: "https://unicon.webrenew.com/cli",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Unicon CLI — Icon Bundler for Command Line",
+    description: "Search and bundle icons from the command line. Generate tree-shakeable components.",
+  },
 };
 
 function CodeBlock({ children, title }: { children: string; title?: string }) {
