@@ -85,8 +85,8 @@ function CommandCard({
   return (
     <div className="p-4 md:p-5 rounded-xl border border-border bg-card hover:bg-accent transition-colors overflow-hidden">
       <div className="flex items-center gap-2 md:gap-3 mb-3">
-        <div className="p-1.5 md:p-2 rounded-lg bg-[#7FD3E6]/10 shrink-0">
-          <Icon className="w-4 h-4 text-[#7FD3E6]" />
+        <div className="p-1.5 md:p-2 rounded-lg bg-[var(--accent-aqua)]/10 shrink-0">
+          <Icon className="w-4 h-4 text-[var(--accent-aqua)]" />
         </div>
         <code className="font-mono font-medium text-sm md:text-base break-all">{command}</code>
       </div>
@@ -102,8 +102,8 @@ export default function CLIPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
-          <div className="p-2 md:p-3 rounded-xl bg-[#7FD3E6]/10 border border-[#7FD3E6]/20">
-            <Terminal className="w-5 h-5 md:w-6 md:h-6 text-[#7FD3E6]" />
+          <div className="p-2 md:p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
+            <Terminal className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
           </div>
           <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-muted text-muted-foreground">
             @webrenew/unicon
@@ -232,35 +232,35 @@ unicon cache --clear  # Clear all cached data`}
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Typical Workflow</h2>
           <div className="space-y-3">
             <div className="flex gap-3 items-start">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-xs font-mono flex items-center justify-center">1</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-xs font-mono flex items-center justify-center">1</span>
               <div>
                 <p className="text-foreground/80 text-sm font-medium">Initialize config</p>
                 <code className="text-xs text-muted-foreground">unicon init</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-xs font-mono flex items-center justify-center">2</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-xs font-mono flex items-center justify-center">2</span>
               <div>
                 <p className="text-foreground/80 text-sm font-medium">Search for icons you need</p>
                 <code className="text-xs text-muted-foreground">unicon search &quot;dashboard&quot;</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-xs font-mono flex items-center justify-center">3</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-xs font-mono flex items-center justify-center">3</span>
               <div>
                 <p className="text-foreground/80 text-sm font-medium">Add bundles to your config</p>
                 <code className="text-xs text-muted-foreground">unicon add dashboard --category Dashboards</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-xs font-mono flex items-center justify-center">4</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-xs font-mono flex items-center justify-center">4</span>
               <div>
                 <p className="text-foreground/80 text-sm font-medium">Generate all bundles</p>
                 <code className="text-xs text-muted-foreground">unicon sync</code>
               </div>
             </div>
             <div className="flex gap-3 items-start">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-[#6EE7B7]/20 text-[#6EE7B7] text-xs font-mono flex items-center justify-center">✓</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] text-xs font-mono flex items-center justify-center">✓</span>
               <div>
                 <p className="text-foreground/80 text-sm font-medium">Import and use</p>
                 <code className="text-xs text-muted-foreground">{`import { Home, Settings } from "./icons/dashboard"`}</code>
@@ -308,27 +308,27 @@ unicon cache --clear  # Clear all cached data`}
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Output Formats</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono font-medium mb-2 text-[#7FD3E6]">react</h3>
+              <h3 className="font-mono font-medium mb-2 text-[var(--accent-aqua)]">react</h3>
               <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">TypeScript React components.</p>
               <code className="text-xs text-muted-foreground">.tsx</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono font-medium mb-2 text-[#6EE7B7]">vue</h3>
+              <h3 className="font-mono font-medium mb-2 text-[var(--accent-mint)]">vue</h3>
               <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Vue 3 SFC components.</p>
               <code className="text-xs text-muted-foreground">.vue</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono font-medium mb-2 text-[#E6A8D7]">svelte</h3>
+              <h3 className="font-mono font-medium mb-2 text-[var(--accent-lavender)]">svelte</h3>
               <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Svelte components.</p>
               <code className="text-xs text-muted-foreground">.svelte</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono font-medium mb-2 text-[#7FD3E6]">svg</h3>
+              <h3 className="font-mono font-medium mb-2 text-[var(--accent-aqua)]">svg</h3>
               <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Raw SVG markup.</p>
               <code className="text-xs text-muted-foreground">.svg</code>
             </div>
             <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono font-medium mb-2 text-[#E6A8D7]">json</h3>
+              <h3 className="font-mono font-medium mb-2 text-[var(--accent-lavender)]">json</h3>
               <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">Icon data as JSON.</p>
               <code className="text-xs text-muted-foreground">.json</code>
             </div>
@@ -383,10 +383,10 @@ unicon cache --clear  # Clear all cached data`}
             <h2 className="text-xl md:text-2xl font-bold">AI Assistant Integration</h2>
             <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-400 border border-purple-500/30">NEW</span>
           </div>
-          <div className="p-5 md:p-6 rounded-xl border border-[#E6A8D7]/20 bg-[#E6A8D7]/5">
+          <div className="p-5 md:p-6 rounded-xl border border-[var(--accent-lavender)]/20 bg-[var(--accent-lavender)]/5">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 rounded-lg bg-[#E6A8D7]/10 shrink-0">
-                <MCPIcon className="w-5 h-5 text-[#E6A8D7]" size={20} />
+              <div className="p-2 rounded-lg bg-[var(--accent-lavender)]/10 shrink-0">
+                <MCPIcon className="w-5 h-5 text-[var(--accent-lavender)]" size={20} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Use Unicon with Claude & Cursor</h3>
@@ -436,7 +436,7 @@ unicon cache --clear  # Clear all cached data`}
               <div className="pt-2 border-t border-border flex gap-3 text-xs">
                 <a 
                   href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md" 
-                  className="text-[#E6A8D7] hover:text-[#E6A8D7]/80 hover:underline inline-flex items-center gap-1"
+                  className="text-[var(--accent-lavender)] hover:text-[var(--accent-lavender)]/80 hover:underline inline-flex items-center gap-1"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -444,7 +444,7 @@ unicon cache --clear  # Clear all cached data`}
                 </a>
                 <a 
                   href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-integration.md" 
-                  className="text-[#E6A8D7] hover:text-[#E6A8D7]/80 hover:underline inline-flex items-center gap-1"
+                  className="text-[var(--accent-lavender)] hover:text-[var(--accent-lavender)]/80 hover:underline inline-flex items-center gap-1"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -458,23 +458,23 @@ unicon cache --clear  # Clear all cached data`}
         {/* Tree Shaking */}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Tree-Shaking</h2>
-          <div className="p-4 md:p-5 rounded-xl border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
+          <div className="p-4 md:p-5 rounded-xl border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
             <p className="text-foreground/80 text-sm mb-4">
               Unlike <code className="text-muted-foreground">npm install lucide-react</code> which downloads thousands of icons,
               the CLI generates <strong>only the icons you need</strong> as individual files.
             </p>
             <div className="space-y-3 text-sm">
               <div className="flex gap-3">
-                <span className="text-[#6EE7B7]">✓</span>
+                <span className="text-[var(--accent-mint)]">✓</span>
                 <span className="text-muted-foreground">One component per file = true tree-shaking</span>
               </div>
               <div className="flex gap-3">
-                <span className="text-[#6EE7B7]">✓</span>
+                <span className="text-[var(--accent-mint)]">✓</span>
                 <span className="text-muted-foreground">No external dependencies to ship</span>
               </div>
               <div className="flex gap-3">
-                <span className="text-[#6EE7B7]">✓</span>
-                <span className="text-muted-foreground">Import only what you use: <code className="text-[#7FD3E6]">{`import { Home } from "./icons"`}</code></span>
+                <span className="text-[var(--accent-mint)]">✓</span>
+                <span className="text-muted-foreground">Import only what you use: <code className="text-[var(--accent-aqua)]">{`import { Home } from "./icons"`}</code></span>
               </div>
             </div>
           </div>
@@ -485,7 +485,7 @@ unicon cache --clear  # Clear all cached data`}
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Offline Support</h2>
           <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
             <p className="text-muted-foreground text-sm mb-4">
-              The CLI automatically caches icon data locally at <code className="text-[#7FD3E6]">~/.unicon/cache</code> for 
+              The CLI automatically caches icon data locally at <code className="text-[var(--accent-aqua)]">~/.unicon/cache</code> for 
               24 hours. This enables faster subsequent searches and partial offline usage.
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-mono">

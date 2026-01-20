@@ -56,17 +56,17 @@ function FeatureCard({ icon: Icon, title, description, href, external = false }:
     <LinkWrapper
       href={href}
       {...extraProps}
-      className="group p-6 rounded-xl border border-border bg-card hover:bg-accent hover:border-[#7FD3E6]/30 transition-all"
+      className="group p-6 rounded-xl border border-border bg-card hover:bg-accent hover:border-[var(--accent-aqua)]/30 transition-all"
     >
       <div className="flex items-start gap-4">
-        <div className="p-2 rounded-lg bg-[#7FD3E6]/10 border border-[#7FD3E6]/20 shrink-0">
-          <Icon className="w-5 h-5 text-[#7FD3E6]" />
+        <div className="p-2 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20 shrink-0">
+          <Icon className="w-5 h-5 text-[var(--accent-aqua)]" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-lg font-semibold">{title}</h3>
             {external && <ExternalLink className="w-4 h-4 text-muted-foreground" />}
-            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[#7FD3E6] group-hover:translate-x-1 transition-all ml-auto" />
+            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] group-hover:translate-x-1 transition-all ml-auto" />
           </div>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
@@ -81,8 +81,8 @@ export default function DocsPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-[#E6A8D7]/10 border border-[#E6A8D7]/20">
-            <FileCode className="w-6 h-6 text-[#E6A8D7]" />
+          <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
+            <FileCode className="w-6 h-6 text-[var(--accent-lavender)]" />
           </div>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Documentation</h1>
@@ -180,7 +180,7 @@ export default function DocsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Search className="w-5 h-5 text-[#E6A8D7]" />
+                <Search className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">AI-Powered Search</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -191,7 +191,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Zap className="w-5 h-5 text-[#7FD3E6]" />
+                <Zap className="w-5 h-5 text-[var(--accent-aqua)]" />
                 <h3 className="font-semibold">Tree-Shakeable</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -201,7 +201,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Code className="w-5 h-5 text-[#E6A8D7]" />
+                <Code className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">Multi-Framework</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -211,7 +211,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Download className="w-5 h-5 text-[#6EE7B7]" />
+                <Download className="w-5 h-5 text-[var(--accent-mint)]" />
                 <h3 className="font-semibold">Zero Dependencies</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -221,7 +221,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Package className="w-5 h-5 text-[#7FD3E6]" />
+                <Package className="w-5 h-5 text-[var(--accent-aqua)]" />
                 <h3 className="font-semibold">Bundle Builder</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -231,7 +231,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Palette className="w-5 h-5 text-[#E6A8D7]" />
+                <Palette className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">Customizable</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -276,7 +276,7 @@ export default function DocsPage() {
         {/* Why Unicon */}
         <section id="why-unicon">
           <h2 className="text-2xl font-bold mb-6">Why Unicon?</h2>
-          <div className="p-6 rounded-xl border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
+          <div className="p-6 rounded-xl border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-2">Traditional Icon Packages</h3>
@@ -301,26 +301,26 @@ export default function DocsPage() {
               </div>
 
               <div className="border-t border-border pt-4">
-                <h3 className="font-semibold text-[#6EE7B7] mb-2">Unicon Approach</h3>
+                <h3 className="font-semibold text-[var(--accent-mint)] mb-2">Unicon Approach</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex gap-2">
-                    <span className="text-[#6EE7B7]">✓</span>
+                    <span className="text-[var(--accent-mint)]">✓</span>
                     <span>Generate only the icons you need</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-[#6EE7B7]">✓</span>
+                    <span className="text-[var(--accent-mint)]">✓</span>
                     <span>Zero bundle bloat</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-[#6EE7B7]">✓</span>
+                    <span className="text-[var(--accent-mint)]">✓</span>
                     <span>One file per icon = perfect tree-shaking</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-[#6EE7B7]">✓</span>
+                    <span className="text-[var(--accent-mint)]">✓</span>
                     <span>No external dependencies</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-[#6EE7B7]">✓</span>
+                    <span className="text-[var(--accent-mint)]">✓</span>
                     <span>Access 14,700+ icons from 8 libraries</span>
                   </div>
                 </div>

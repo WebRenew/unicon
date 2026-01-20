@@ -38,6 +38,11 @@
   --sidebar-accent-foreground: 0 0% 10%;
   --sidebar-border: 0 0% 80%;
   --sidebar-ring: 0 0% 60%;
+  
+  /* Brand Accent Colors */
+  --accent-lavender: #E6A8D7;
+  --accent-aqua: #7FD3E6;
+  --accent-mint: #6EE7B7;
 }
 
 .dark {
@@ -75,6 +80,11 @@
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 0 0% 20%;
   --sidebar-ring: 0 0% 40%;
+  
+  /* Brand Accent Colors - Same in both themes */
+  --accent-lavender: #E6A8D7;
+  --accent-aqua: #7FD3E6;
+  --accent-mint: #6EE7B7;
 }
 
 @theme inline {
@@ -118,6 +128,9 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-accent-lavender: var(--accent-lavender);
+  --color-accent-aqua: var(--accent-aqua);
+  --color-accent-mint: var(--accent-mint);
 }
 
 @layer base {

@@ -57,10 +57,10 @@ export default function MCPDocsPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-[#E6A8D7]/10 border border-[#E6A8D7]/20">
-            <MCPIcon className="w-6 h-6 text-[#E6A8D7]" size={24} />
+          <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
+            <MCPIcon className="w-6 h-6 text-[var(--accent-lavender)]" size={24} />
           </div>
-          <span className="px-3 py-1 rounded-full text-xs font-mono bg-[#E6A8D7]/10 text-[#E6A8D7] border border-[#E6A8D7]/30">
+          <span className="px-3 py-1 rounded-full text-xs font-mono bg-[var(--accent-lavender)]/10 text-[var(--accent-lavender)] border border-[var(--accent-lavender)]/30">
             MCP Server
           </span>
         </div>
@@ -81,7 +81,7 @@ export default function MCPDocsPage() {
                 href="https://modelcontextprotocol.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#E6A8D7] hover:text-[#E6A8D7]/80 underline"
+                className="text-[var(--accent-lavender)] hover:text-[var(--accent-lavender)]/80 underline"
               >
                 Model Context Protocol (MCP)
               </a>{" "}
@@ -132,7 +132,7 @@ export default function MCPDocsPage() {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">1</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">1</span>
                 Locate your config file
               </h3>
               <div className="space-y-2">
@@ -150,7 +150,7 @@ export default function MCPDocsPage() {
 
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">2</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">2</span>
                 Add Unicon to your config
               </h3>
               <CodeBlock title="claude_desktop_config.json">{`{
@@ -165,14 +165,14 @@ export default function MCPDocsPage() {
 
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">3</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">3</span>
                 Restart Claude Desktop
               </h3>
               <div className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5">
                 <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-[#E6A8D7] shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-[var(--accent-lavender)] shrink-0 mt-0.5" />
                   <div className="text-sm">
-                    <p className="text-[#E6A8D7] font-semibold mb-1">Important</p>
+                    <p className="text-[var(--accent-lavender)] font-semibold mb-1">Important</p>
                     <p className="text-muted-foreground">
                       You must completely quit and restart Claude (not just close the window). 
                       On macOS, use Cmd+Q. On Windows, right-click the system tray icon and select &quot;Quit&quot;.
@@ -189,7 +189,7 @@ export default function MCPDocsPage() {
               </h3>
               <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
                 <div className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-[#6EE7B7] shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
                   <div className="text-sm">
                     <p className="text-muted-foreground">
                       Look for the 🔌 icon in the bottom right corner of Claude Desktop. 
@@ -209,7 +209,7 @@ export default function MCPDocsPage() {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">1</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">1</span>
                 Open MCP settings
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
@@ -219,7 +219,7 @@ export default function MCPDocsPage() {
 
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">2</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">2</span>
                 Add server configuration
               </h3>
               <CodeBlock title="MCP Server Config">{`{
@@ -234,7 +234,7 @@ export default function MCPDocsPage() {
 
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7FD3E6]/20 text-[#7FD3E6] text-sm">3</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">3</span>
                 Restart Cursor
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -319,7 +319,7 @@ export default function MCPDocsPage() {
           
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#7FD3E6] font-semibold mb-2">search_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">search_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Search through 14,700+ icons using AI-powered semantic search.
               </p>
@@ -335,7 +335,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#7FD3E6] font-semibold mb-2">get_icon</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_icon</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve source code for a specific icon in any format.
               </p>
@@ -351,7 +351,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#7FD3E6] font-semibold mb-2">get_multiple_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_multiple_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve multiple icons in one request (max 50).
               </p>
@@ -374,21 +374,21 @@ export default function MCPDocsPage() {
           
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#E6A8D7] font-semibold mb-2">unicon://sources</h3>
+              <h3 className="font-mono text-[var(--accent-lavender)] font-semibold mb-2">unicon://sources</h3>
               <p className="text-sm text-muted-foreground">
                 List all icon libraries with metadata (version, license, icon count).
               </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#E6A8D7] font-semibold mb-2">unicon://categories</h3>
+              <h3 className="font-mono text-[var(--accent-lavender)] font-semibold mb-2">unicon://categories</h3>
               <p className="text-sm text-muted-foreground">
                 List all available icon categories for filtering.
               </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[#E6A8D7] font-semibold mb-2">unicon://stats</h3>
+              <h3 className="font-mono text-[var(--accent-lavender)] font-semibold mb-2">unicon://stats</h3>
               <p className="text-sm text-muted-foreground">
                 Get library statistics including total icon count and breakdown by source.
               </p>
@@ -407,17 +407,17 @@ export default function MCPDocsPage() {
                 <p>1. Verify your JSON config is valid (no trailing commas)</p>
                 <p>2. Completely restart the application (Cmd+Q on Mac)</p>
                 <p>3. Check Developer Console for errors</p>
-                <p>4. Try running manually: <code className="text-[#7FD3E6]">npx -y @webrenew/unicon-mcp-server</code></p>
+                <p>4. Try running manually: <code className="text-[var(--accent-aqua)]">npx -y @webrenew/unicon-mcp-server</code></p>
               </div>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="font-semibold mb-2">Icon not found</h3>
               <div className="text-sm text-muted-foreground space-y-2">
-                <p>1. Verify icon ID format: <code className="text-[#7FD3E6]">source:icon-name</code> (all lowercase)</p>
-                <p>2. Use <code className="text-[#7FD3E6]">search_icons</code> tool first to find the exact ID</p>
+                <p>1. Verify icon ID format: <code className="text-[var(--accent-aqua)]">source:icon-name</code> (all lowercase)</p>
+                <p>2. Use <code className="text-[var(--accent-aqua)]">search_icons</code> tool first to find the exact ID</p>
                 <p>3. Check icon exists at{" "}
-                  <a href="https://unicon.webrenew.com" className="text-[#E6A8D7] hover:underline">
+                  <a href="https://unicon.webrenew.com" className="text-[var(--accent-lavender)] hover:underline">
                     unicon.webrenew.com
                   </a>
                 </p>
@@ -463,32 +463,32 @@ export default function MCPDocsPage() {
           <h2 className="text-2xl font-bold mb-6">Best Practices</h2>
           
           <div className="space-y-3">
-            <div className="flex gap-3 p-4 rounded-lg border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
-              <CheckCircle className="w-5 h-5 text-[#6EE7B7] shrink-0 mt-0.5" />
+            <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
+              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Search before getting:</strong>
                 <span className="text-muted-foreground"> Always search first to find the right icon ID</span>
               </div>
             </div>
 
-            <div className="flex gap-3 p-4 rounded-lg border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
-              <CheckCircle className="w-5 h-5 text-[#6EE7B7] shrink-0 mt-0.5" />
+            <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
+              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Specify library:</strong>
                 <span className="text-muted-foreground"> Be specific about which library to use for focused results</span>
               </div>
             </div>
 
-            <div className="flex gap-3 p-4 rounded-lg border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
-              <CheckCircle className="w-5 h-5 text-[#6EE7B7] shrink-0 mt-0.5" />
+            <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
+              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Batch multiple icons:</strong>
                 <span className="text-muted-foreground"> Use get_multiple_icons for multiple icons in one request</span>
               </div>
             </div>
 
-            <div className="flex gap-3 p-4 rounded-lg border border-[#6EE7B7]/20 bg-[#6EE7B7]/5">
-              <CheckCircle className="w-5 h-5 text-[#6EE7B7] shrink-0 mt-0.5" />
+            <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
+              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Use semantic search:</strong>
                 <span className="text-muted-foreground"> Take advantage of AI search with descriptive queries</span>

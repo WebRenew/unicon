@@ -58,21 +58,21 @@ export function HomeHeader() {
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
               href="/docs"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#E6A8D7] hover:bg-[#E6A8D7]/5 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
             >
               <FileText className="w-3.5 h-3.5" />
               Docs
             </Link>
             <Link
               href="/cli"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#7FD3E6] hover:bg-[#7FD3E6]/5 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
             >
               <Terminal className="w-3.5 h-3.5" />
               CLI
             </Link>
             <Link
               href="/docs/mcp"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[#E6A8D7] hover:bg-[#E6A8D7]/5 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
             >
               <MCPIcon className="w-3.5 h-3.5" size={14} />
               MCP
@@ -83,12 +83,12 @@ export function HomeHeader() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleBundleClick}
-            className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#6EE7B7]/10 border border-[#6EE7B7]/20 text-foreground hover:bg-[#6EE7B7]/20 transition-colors text-sm font-medium"
+            className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/10 border border-[var(--accent-mint)]/20 text-foreground hover:bg-[var(--accent-mint)]/20 transition-colors text-sm font-medium"
           >
             <Package className="w-4 h-4" />
             <span className="hidden sm:inline">Bundle</span>
             {cartCount > 0 && (
-              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-[#6EE7B7] text-black text-xs rounded-full font-semibold">
+              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-[var(--accent-mint)] text-black text-xs rounded-full font-semibold">
                 {cartCount}
               </span>
             )}
