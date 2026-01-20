@@ -395,8 +395,10 @@ export function isDarkColor(hexColor: string | null): boolean {
   
   const luminance = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
   
-  // If luminance is below 0.3 (roughly #777777), it's too dark for dark mode
-  return luminance < 0.3;
+  // Only invert truly black/near-black colors (below 0.05 luminance)
+  // Examples: #000000 = 0.0, #1a1a1a ≈ 0.01, #333333 ≈ 0.05
+  // This prevents inverting dark grays and other non-black colors
+  return luminance < 0.05;
 }
 
 /**
