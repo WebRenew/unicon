@@ -2,14 +2,14 @@
 
 **Just the icons you need. Zero bloat.**
 
-Browse 11,000+ icons from popular libraries including [Lucide](https://lucide.dev), [Phosphor](https://phosphoricons.com), [Huge Icons](https://hugeicons.com), [Heroicons](https://heroicons.com), [Tabler](https://tabler.io/icons), [Radix](https://www.radix-ui.com/icons), [Feather](https://feathericons.com), [Remix Icon](https://remixicon.com), [Iconoir](https://iconoir.com), [Teenyicons](https://teenyicons.com), and [css.gg](https://css.gg). Copy React components, SVGs, or bundle multiple icons for export. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
+Browse 11,000+ icons from popular libraries including [Lucide](https://lucide.dev), [Phosphor](https://phosphoricons.com), [Huge Icons](https://hugeicons.com), [Heroicons](https://heroicons.com), [Tabler](https://tabler.io/icons), [Feather](https://feathericons.com), and [Remix Icon](https://remixicon.com). Copy React components, SVGs, or bundle multiple icons for export. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/WebRenew/unicon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
-- **11,000+ Icons** — Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Radix, Feather, Remix, Iconoir, Teenyicons, and css.gg in one place
+- **11,000+ Icons** — Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, and Remix in one place
 - **AI-Powered Search** — Describe what you need ("business icons", "celebration") and find relevant icons
 - **Bundle Builder** — Select multiple icons and export as React components, SVGs, or JSON
 - **Copy to Clipboard** — One-click copy for SVG, React component, or usage example
@@ -132,7 +132,7 @@ Fetch paginated icons with optional filters.
 | Parameter | Type   | Description                          |
 |-----------|--------|--------------------------------------|
 | `q`       | string | Search query                         |
-| `source`  | string | Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, radix, feather, remix, iconoir, teenyicons, cssgg) |
+| `source`  | string | Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix) |
 | `limit`   | number | Results per page (default: 100, max: 160) |
 | `offset`  | number | Pagination offset                    |
 | `ai`      | boolean | Enable AI search (default: true)    |
@@ -173,12 +173,8 @@ Icon libraries:
 - [Huge Icons](https://hugeicons.com) — MIT License
 - [Heroicons](https://heroicons.com) — MIT License
 - [Tabler Icons](https://tabler.io/icons) — MIT License
-- [Radix Icons](https://www.radix-ui.com/icons) — MIT License
 - [Feather Icons](https://feathericons.com) — MIT License
 - [Remix Icon](https://remixicon.com) — Apache-2.0 License
-- [Iconoir](https://iconoir.com) — MIT License
-- [Teenyicons](https://teenyicons.com) — MIT License
-- [css.gg](https://css.gg) — MIT License
 
 ---
 

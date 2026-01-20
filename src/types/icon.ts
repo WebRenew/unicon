@@ -33,12 +33,8 @@ export type IconLibrary =
   | "hugeicons"
   | "heroicons"
   | "tabler"
-  | "radix"
   | "feather"
-  | "remix"
-  | "iconoir"
-  | "teenyicons"
-  | "cssgg";
+  | "remix";
 
 export interface IconPreviewSettings {
   size: number;
