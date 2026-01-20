@@ -169,23 +169,19 @@ export function StyledIcon({
         >
           <div
             style={{ width: iconSize, height: iconSize }}
-            className={styles.icon}
+            className={icon.brandColor ? undefined : styles.icon}
             dangerouslySetInnerHTML={{
-              __html: generateRenderableSvg(icon, { size: iconSize, strokeWidth: effectiveStrokeWidth }),
+              __html: generateRenderableSvg(icon, { 
+                size: iconSize, 
+                strokeWidth: effectiveStrokeWidth,
+                ...(icon.brandColor ? { color: icon.brandColor } : {}),
+              }),
             }}
           />
           {isSelected && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
               <Check className="w-2.5 h-2.5 text-white" />
             </div>
-          )}
-          {/* Brand color chip for Simple Icons */}
-          {icon.brandColor && (
-            <div 
-              className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[hsl(0,0%,3%)] shadow-sm"
-              style={{ backgroundColor: icon.brandColor }}
-              title={`Brand color: ${icon.brandColor}`}
-            />
           )}
         </button>
       </ContextMenuTrigger>
