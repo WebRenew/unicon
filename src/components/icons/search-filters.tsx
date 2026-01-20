@@ -68,8 +68,8 @@ export function SearchFilters({
             {src.name}
           </button>
         ))}
-        
-        <span className="ml-auto text-sm text-muted-foreground">
+
+        <span className="sm:ml-auto text-sm text-muted-foreground w-full sm:w-auto text-left sm:text-right">
           {filteredCount === totalCount
             ? `${totalCount.toLocaleString()} icons`
             : `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()}`}
