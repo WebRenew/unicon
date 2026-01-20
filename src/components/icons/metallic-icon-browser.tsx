@@ -99,8 +99,15 @@ export function MetallicIconBrowser({
     setViewportWidth(window.innerWidth);
     
     const handleResize = () => setViewportWidth(window.innerWidth);
+    const handleOpenCart = () => setIsCartOpen(true);
+    
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('openCart', handleOpenCart);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('openCart', handleOpenCart);
+    };
   }, []);
 
   // Calculate columns based on viewport and known page padding
@@ -172,6 +179,8 @@ export function MetallicIconBrowser({
       } else {
         localStorage.removeItem("unicon-bundle");
       }
+      // Notify header of cart changes
+      window.dispatchEvent(new Event("cartUpdate"));
     } catch (error) {
       console.error("Failed to save bundle to localStorage:", error);
     }
@@ -345,29 +354,6 @@ export function MetallicIconBrowser({
   return (
     <div className="min-h-screen bg-white dark:bg-[hsl(0,0%,3%)] lg:pt-14 transition-colors">
       <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
-      {/* Quick Actions Bar */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl" aria-hidden="true">🦄</span>
-          <span className="font-mono text-black/60 dark:text-white/60 text-xs tracking-widest uppercase">
-            UNICON
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-sm font-mono"
-          >
-            <Package className="w-4 h-4" />
-            Bundle
-            {cartItems.length > 0 && (
-              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-emerald-500 text-white text-xs rounded-full">
-                {cartItems.length}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
 
       {/* Hero */}
       <h1 className="font-mono font-thin text-3xl md:text-4xl lg:text-5xl text-black dark:text-white mb-4 text-balance tracking-tighter leading-tight">

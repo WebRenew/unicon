@@ -1,5 +1,5 @@
 import { MetallicIconBrowser } from "@/components/icons/metallic-icon-browser";
-import { SiteHeader } from "@/components/site-header";
+import { HomeHeader } from "@/components/home-header";
 import { searchIcons, getTotalIconCount, getIconCountBySource, getCategories } from "@/lib/queries";
 
 // Revalidate every 1 hour (ISR)
@@ -15,7 +15,7 @@ export default async function Home() {
 
   return (
     <>
-      <SiteHeader />
+      <HomeHeader />
       <MetallicIconBrowser
         initialIcons={icons}
         totalCount={totalCount}
