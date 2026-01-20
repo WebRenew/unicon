@@ -82,7 +82,7 @@ export default function CLIPage() {
           <div className="space-y-4">
             <CodeBlock title="Install globally">npm install -g @webrenew/unicon</CodeBlock>
             <p className="text-white/50 text-sm">Or use directly with npx:</p>
-            <CodeBlock>npx @webrenew/unicon search "dashboard"</CodeBlock>
+            <CodeBlock>npx @webrenew/unicon search &quot;dashboard&quot;</CodeBlock>
           </div>
         </section>
 

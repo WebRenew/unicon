@@ -493,6 +493,7 @@ export function MetallicIconBrowser({
                     <button
                       role="combobox"
                       aria-expanded={categoryOpen}
+                      aria-controls="category-listbox"
                       className="flex h-7 items-center justify-between gap-2 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 text-xs font-mono text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 transition-colors min-w-[140px]"
                     >
                       {selectedCategory === "all"
@@ -504,7 +505,7 @@ export function MetallicIconBrowser({
                   <PopoverContent className="w-[200px] p-0" align="start">
                     <Command>
                       <CommandInput placeholder="Search categories..." className="text-xs" />
-                      <CommandList>
+                      <CommandList id="category-listbox">
                         <CommandEmpty>No category found.</CommandEmpty>
                         <CommandGroup>
                           <CommandItem
