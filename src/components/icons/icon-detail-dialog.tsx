@@ -162,6 +162,7 @@ defineProps<{
                   viewBox={icon.viewBox}
                   size={48}
                   strokeWidth={strokeWidth}
+                  renderMode={icon.defaultFill ? "fill" : "stroke"}
                   {...(brandColor ? { color: brandColor } : {})}
                 />
               </div>
@@ -174,6 +175,7 @@ defineProps<{
                   viewBox={icon.viewBox}
                   size={80}
                   strokeWidth={strokeWidth}
+                  renderMode={icon.defaultFill ? "fill" : "stroke"}
                   {...(brandColor ? { color: brandColor } : {})}
                 />
               </div>
@@ -186,6 +188,7 @@ defineProps<{
                   viewBox={icon.viewBox}
                   size={112}
                   strokeWidth={strokeWidth}
+                  renderMode={icon.defaultFill ? "fill" : "stroke"}
                   {...(brandColor ? { color: brandColor } : {})}
                 />
               </div>

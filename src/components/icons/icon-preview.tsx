@@ -60,7 +60,10 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
 
 <${toPascalCase(icon.normalizedName)} size={${settings.size}} strokeWidth={${settings.strokeWidth}} />`;
 
-  const svgCode = `<svg xmlns="http://www.w3.org/2000/svg" width="${settings.size}" height="${settings.size}" viewBox="${icon.viewBox}" fill="none" stroke="${settings.color}" stroke-width="${settings.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`;
+  // Use fill for fill-based icons (Simple Icons, etc.), stroke for others
+  const svgCode = icon.defaultFill
+    ? `<svg xmlns="http://www.w3.org/2000/svg" width="${settings.size}" height="${settings.size}" viewBox="${icon.viewBox}" fill="${effectiveColor}">${icon.content}</svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" width="${settings.size}" height="${settings.size}" viewBox="${icon.viewBox}" fill="none" stroke="${effectiveColor}" stroke-width="${settings.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${icon.content}</svg>`;
 
   async function copyToClipboard(text: string, type: string) {
     try {
@@ -105,6 +108,7 @@ export function IconPreview({ icon, onClose }: IconPreviewProps) {
             size={settings.size}
             strokeWidth={settings.strokeWidth}
             color={effectiveColor}
+            renderMode={icon.defaultFill ? "fill" : "stroke"}
           />
         </div>
       </div>

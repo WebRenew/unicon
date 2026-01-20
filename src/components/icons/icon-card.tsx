@@ -66,6 +66,7 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
           viewBox={icon.viewBox} 
           size={32} 
           strokeWidth={strokeWidth}
+          renderMode={icon.defaultFill ? "fill" : "stroke"}
           {...(brandColor ? { color: brandColor } : {})}
         />
       </div>
