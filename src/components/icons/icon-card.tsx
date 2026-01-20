@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useTheme } from "next-themes";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { IconRenderer } from "./icon-renderer";
+import { IconDetailDialog } from "./icon-detail-dialog";
 import type { IconData } from "@/types/icon";
 import { cn } from "@/lib/utils";
 import { getBrandIconColor } from "@/lib/icon-utils";
@@ -30,6 +32,7 @@ const tooltipLibraryColors: Record<string, string> = {
 };
 
 export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
+  const [showDialog, setShowDialog] = useState(false);
   const { resolvedTheme } = useTheme();
   const strokeWidth = icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2;
   
@@ -37,9 +40,14 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
   const isDarkMode = resolvedTheme === "dark";
   const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
+  const handleClick = () => {
+    setShowDialog(true);
+    onClick?.();
+  };
+
   const cardContent = (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         "group relative flex flex-col items-center rounded-xl border transition-all duration-200",
         // Responsive padding: smaller on mobile with text, larger on desktop without
@@ -84,17 +92,25 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
   // On desktop, wrap in tooltip to show name on hover
   // On mobile, tooltip won't trigger (no hover), but name is visible anyway
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        {cardContent}
-      </TooltipTrigger>
-      <TooltipContent side="bottom" className="hidden md:block">
-        <span className={cn("font-medium", tooltipLibraryColors[icon.sourceId])}>
-          {icon.sourceId}
-        </span>
-        <span className="opacity-50 mx-0.5">:</span>
-        <span className="font-medium">{icon.normalizedName}</span>
-      </TooltipContent>
-    </Tooltip>
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {cardContent}
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="hidden md:block">
+          <span className={cn("font-medium", tooltipLibraryColors[icon.sourceId])}>
+            {icon.sourceId}
+          </span>
+          <span className="opacity-50 mx-0.5">:</span>
+          <span className="font-medium">{icon.normalizedName}</span>
+        </TooltipContent>
+      </Tooltip>
+      
+      <IconDetailDialog
+        icon={icon}
+        open={showDialog}
+        onOpenChange={setShowDialog}
+      />
+    </>
   );
 }
