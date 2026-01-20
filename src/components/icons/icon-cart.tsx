@@ -138,7 +138,9 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         {items.length === 0 ? (
           <div className="flex flex-col h-full">
             <div className="flex flex-col items-center justify-center text-center py-8">
-              <div className="text-4xl mb-3 opacity-50">📦</div>
+              <div className="w-12 h-12 mb-3 flex items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                <Package className="w-6 h-6 text-white/30" />
+              </div>
               <p className="text-white/40 text-sm">Your bundle is empty</p>
               <p className="text-white/30 text-xs mt-1">
                 Click icons to add them, or try a starter pack
