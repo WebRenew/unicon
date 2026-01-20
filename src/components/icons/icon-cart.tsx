@@ -1,7 +1,19 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink, AlertTriangle, ArrowRight } from "lucide-react";
+import {
+  X,
+  Download,
+  Copy,
+  Check,
+  Trash2,
+  FileCode,
+  FileJson,
+  Package,
+  ExternalLink,
+  AlertTriangle,
+  ArrowRight,
+} from "lucide-react";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {

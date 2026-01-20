@@ -22,6 +22,7 @@ const sources: { id: IconLibrary | "all"; name: string; color: string }[] = [
   { id: "tabler", name: "Tabler Icons", color: "bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20" },
   { id: "feather", name: "Feather Icons", color: "bg-pink-500/10 text-pink-600 hover:bg-pink-500/20" },
   { id: "remix", name: "Remix Icon", color: "bg-red-500/10 text-red-600 hover:bg-red-500/20" },
+  { id: "simple-icons", name: "Simple Icons", color: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20" },
 ];
 
 export function SearchFilters({

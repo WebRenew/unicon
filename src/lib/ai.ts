@@ -128,4 +128,12 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / magnitude;
 }
 
+/**
+ * Convert embedding array to Turso vector format string.
+ * Turso expects format like '[0.1, 0.2, 0.3, ...]'
+ */
+export function embeddingToVectorString(embedding: number[]): string {
+  return `[${embedding.join(",")}]`;
+}
+
 export { EMBEDDING_DIMENSIONS };

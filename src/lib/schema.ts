@@ -36,6 +36,9 @@ export const icons = sqliteTable(
     // AI search
     searchText: text("search_text"), // Combined text for embedding: "arrow left back previous navigation"
     embedding: blob("embedding", { mode: "buffer" }), // Vector embedding (F32_BLOB)
+
+    // Brand icons (Simple Icons)
+    brandColor: text("brand_color"), // Hex color for brand icons, e.g. '#1DA1F2'
   },
   (table) => [
     index("icons_source_idx").on(table.sourceId),

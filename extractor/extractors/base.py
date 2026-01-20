@@ -19,6 +19,7 @@ class ExtractedIcon:
     category: str | None = None
     tags: list[str] = field(default_factory=list)
     variant: str | None = None  # For Phosphor weights
+    brand_color: str | None = None  # For Simple Icons brand colors (hex with #)
 
 
 class BaseExtractor(ABC):

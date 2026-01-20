@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { icons, sources, variants, mappings } from "./schema";
-import { eq, like, or, sql, desc, asc } from "drizzle-orm";
+import { eq, like, or, sql, asc } from "drizzle-orm";
 import type { IconData, SourceData } from "@/types/icon";
 
 /**
@@ -66,6 +66,7 @@ export async function searchIcons(params: {
       defaultStroke: icons.defaultStroke,
       defaultFill: icons.defaultFill,
       strokeWidth: icons.strokeWidth,
+      brandColor: icons.brandColor,
     })
     .from(icons)
     .where(conditions.length > 0 ? sql`${sql.join(conditions, sql` AND `)}` : undefined)
@@ -86,6 +87,7 @@ export async function searchIcons(params: {
     defaultStroke: row.defaultStroke ?? false,
     defaultFill: row.defaultFill ?? false,
     strokeWidth: row.strokeWidth,
+    brandColor: row.brandColor ?? null,
   }));
 }
 
@@ -127,6 +129,7 @@ export async function getIconsByNames(names: string[]): Promise<IconData[]> {
       defaultStroke: icons.defaultStroke,
       defaultFill: icons.defaultFill,
       strokeWidth: icons.strokeWidth,
+      brandColor: icons.brandColor,
     })
     .from(icons)
     .where(sql`lower(${icons.normalizedName}) IN ${normalizedNames}`)
@@ -145,6 +148,7 @@ export async function getIconsByNames(names: string[]): Promise<IconData[]> {
     defaultStroke: row.defaultStroke ?? false,
     defaultFill: row.defaultFill ?? false,
     strokeWidth: row.strokeWidth,
+    brandColor: row.brandColor ?? null,
   }));
 }
 
@@ -241,5 +245,6 @@ function mapIconRow(row: typeof icons.$inferSelect): IconData {
     defaultStroke: row.defaultStroke ?? false,
     defaultFill: row.defaultFill ?? false,
     strokeWidth: row.strokeWidth,
+    brandColor: row.brandColor ?? null,
   };
 }

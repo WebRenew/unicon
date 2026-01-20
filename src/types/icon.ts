@@ -11,6 +11,7 @@ export interface IconData {
   defaultStroke: boolean;
   defaultFill: boolean;
   strokeWidth: string | null;
+  brandColor: string | null;
 }
 
 export interface PathElement {
@@ -34,7 +35,8 @@ export type IconLibrary =
   | "heroicons"
   | "tabler"
   | "feather"
-  | "remix";
+  | "remix"
+  | "simple-icons";
 
 export interface IconPreviewSettings {
   size: number;

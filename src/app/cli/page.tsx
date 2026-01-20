@@ -1,5 +1,18 @@
 import { Metadata } from "next";
-import { Package, Terminal, FileCode, FolderSync, Plus, Search, List, Info, Download, Eye, Database, Layers } from "lucide-react";
+import {
+  Package,
+  Terminal,
+  FileCode,
+  FolderSync,
+  Plus,
+  Search,
+  List,
+  Info,
+  Download,
+  Eye,
+  Database,
+  Layers,
+} from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {

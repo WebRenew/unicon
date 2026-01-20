@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchIcons, getIconsByNames } from "@/lib/queries";
 import { db } from "@/lib/db";
-import { icons as iconsTable } from "@/lib/schema";
-import { getEmbedding, blobToEmbedding, cosineSimilarity, expandQueryWithAI } from "@/lib/ai";
+import { getEmbedding, embeddingToVectorString, expandQueryWithAI } from "@/lib/ai";
 import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
+
+/** Row type for vector search results */
+interface VectorSearchRow {
+  id: string;
+  name: string;
+  normalizedName: string;
+  sourceId: string;
+  category: string | null;
+  tags: string | string[] | null;
+  viewBox: string;
+  content: string;
+  defaultStroke: number | boolean | null;
+  defaultFill: number | boolean | null;
+  strokeWidth: string | null;
+  brandColor: string | null;
+  distance: number;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -88,8 +104,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/** Timeout helper for async operations */
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 /**
- * AI-powered semantic search using Claude for query expansion and embeddings for matching.
+ * AI-powered semantic search using Claude for query expansion and Turso's native vector search.
+ * Uses parallel execution for AI expansion and embedding to minimize latency.
  */
 async function aiSemanticSearch(
   query: string,
@@ -97,24 +122,44 @@ async function aiSemanticSearch(
   limit: number,
   offset: number
 ): Promise<{ icons: IconData[]; searchType: string; expandedQuery?: string }> {
-  let searchQuery = query;
-  let expandedQuery: string | undefined;
+  // Start AI expansion and original embedding in parallel for faster response
+  const aiExpansionPromise = process.env.ANTHROPIC_API_KEY
+    ? withTimeout(
+        expandQueryWithAI(query).catch((error) => {
+          console.error("AI expansion failed:", error);
+          return null;
+        }),
+        2000, // 2 second timeout for AI expansion
+        null
+      )
+    : Promise.resolve(null);
 
-  // Use Claude to expand the query for better semantic matching
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      expandedQuery = await expandQueryWithAI(query);
-      searchQuery = expandedQuery;
-      console.log(`AI expanded "${query}" to: ${expandedQuery}`);
-    } catch (aiError) {
-      console.error("AI expansion failed, using original query:", aiError);
-    }
-  }
+  const originalEmbeddingPromise = getEmbedding(query).catch(() => null);
 
-  // Get embedding for the (possibly expanded) query
+  // Wait for AI expansion (with timeout) to determine final search query
+  const [expandedQuery, originalEmbedding] = await Promise.all([
+    aiExpansionPromise,
+    originalEmbeddingPromise,
+  ]);
+
+  // Determine which query to use for semantic search
+  const searchQuery = expandedQuery ?? query;
+  
+  // Get embedding for the final search query
+  // If AI expansion succeeded, we need a new embedding; otherwise use the original
   let queryEmbedding: number[];
   try {
-    queryEmbedding = await getEmbedding(searchQuery);
+    if (expandedQuery && expandedQuery !== query) {
+      // AI expansion succeeded, get embedding for expanded query
+      queryEmbedding = await getEmbedding(expandedQuery);
+      console.log(`AI expanded "${query}" to: ${expandedQuery}`);
+    } else if (originalEmbedding) {
+      // Use the pre-fetched original embedding
+      queryEmbedding = originalEmbedding;
+    } else {
+      // Both failed, fall back to text search
+      throw new Error("Embedding generation failed");
+    }
   } catch {
     // Fall back to text search if embedding fails
     const searchParams: { query: string; sourceId?: string; limit: number; offset: number } = { 
@@ -127,53 +172,62 @@ async function aiSemanticSearch(
     return { icons: textResults, searchType: "text" };
   }
 
-  // Build query for icons with embeddings
-  const baseQuery = sourceId
-    ? db
-        .select()
-        .from(iconsTable)
-        .where(sql`${iconsTable.embedding} IS NOT NULL AND ${iconsTable.sourceId} = ${sourceId}`)
-    : db
-        .select()
-        .from(iconsTable)
-        .where(sql`${iconsTable.embedding} IS NOT NULL`);
+  // Convert embedding to Turso vector format
+  const vectorString = embeddingToVectorString(queryEmbedding);
+  
+  // Use Turso's native vector_distance_cos for database-level similarity search
+  // Fetch with offset support for pagination
+  const fetchLimit = limit + offset;
 
-  const allIcons = await baseQuery.limit(5000); // Cap for performance
+  const semanticResults = (sourceId
+    ? await db.all(sql`
+        SELECT 
+          id, name, normalized_name as normalizedName, source_id as sourceId,
+          category, tags, view_box as viewBox, content,
+          default_stroke as defaultStroke, default_fill as defaultFill,
+          stroke_width as strokeWidth, brand_color as brandColor,
+          vector_distance_cos(embedding, vector32(${vectorString})) as distance
+        FROM icons
+        WHERE embedding IS NOT NULL AND source_id = ${sourceId}
+        ORDER BY distance ASC
+        LIMIT ${fetchLimit}
+      `)
+    : await db.all(sql`
+        SELECT 
+          id, name, normalized_name as normalizedName, source_id as sourceId,
+          category, tags, view_box as viewBox, content,
+          default_stroke as defaultStroke, default_fill as defaultFill,
+          stroke_width as strokeWidth, brand_color as brandColor,
+          vector_distance_cos(embedding, vector32(${vectorString})) as distance
+        FROM icons
+        WHERE embedding IS NOT NULL
+        ORDER BY distance ASC
+        LIMIT ${fetchLimit}
+      `)) as VectorSearchRow[];
 
-  // Calculate similarity scores
-  const scored: Array<{ icon: IconData; score: number }> = [];
-
-  for (const icon of allIcons) {
-    if (!icon.embedding) continue;
-
-    const iconEmbedding = blobToEmbedding(icon.embedding as Buffer);
-    const score = cosineSimilarity(queryEmbedding, iconEmbedding);
-
-    scored.push({
-      icon: {
-        id: icon.id,
-        name: icon.name,
-        normalizedName: icon.normalizedName,
-        sourceId: icon.sourceId,
-        category: icon.category,
-        tags: (icon.tags as string[]) ?? [],
-        viewBox: icon.viewBox,
-        content: icon.content,
-        pathData: null,
-        defaultStroke: icon.defaultStroke ?? false,
-        defaultFill: icon.defaultFill ?? false,
-        strokeWidth: icon.strokeWidth,
-      },
-      score,
-    });
-  }
-
-  // Sort by score descending, apply offset/limit
-  scored.sort((a, b) => b.score - a.score);
-  const paged = scored.slice(offset, offset + limit);
+  // Apply offset and convert to IconData
+  const paged = semanticResults.slice(offset);
+  const icons: IconData[] = paged.map((row) => {
+    const tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      normalizedName: row.normalizedName as string,
+      sourceId: row.sourceId as string,
+      category: row.category as string | null,
+      tags: tags as string[],
+      viewBox: row.viewBox as string,
+      content: row.content as string,
+      pathData: null,
+      defaultStroke: Boolean(row.defaultStroke),
+      defaultFill: Boolean(row.defaultFill),
+      strokeWidth: row.strokeWidth as string | null,
+      brandColor: row.brandColor as string | null,
+    };
+  });
 
   const result: { icons: IconData[]; searchType: string; expandedQuery?: string } = {
-    icons: paged.map((s) => s.icon),
+    icons,
     searchType: "semantic",
   };
   

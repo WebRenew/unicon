@@ -26,6 +26,7 @@ from extractors import (
     TablerExtractor,
     FeatherExtractor,
     RemixExtractor,
+    SimpleIconsExtractor,
 )
 from registry import IconRegistry
 from mapper import IconMapper
@@ -67,6 +68,11 @@ PACKAGES = {
         "npm": "remixicon",
         "name": "Remix Icon",
         "license": "Apache-2.0",
+    },
+    "simple-icons": {
+        "npm": "simple-icons",
+        "name": "Simple Icons",
+        "license": "CC0-1.0",
     },
 }
 
@@ -269,6 +275,31 @@ def extract_remix(registry: IconRegistry, node_modules: Path) -> int:
     return inserted
 
 
+def extract_simple_icons(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Simple Icons brand logos."""
+    print("\n" + "=" * 50)
+    print("Extracting Simple Icons (brand logos)...")
+    print("=" * 50)
+
+    extractor = SimpleIconsExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    if not icons:
+        print("⚠ No Simple Icons extracted")
+        return 0
+
+    registry.insert_source(
+        "simple-icons",
+        PACKAGES["simple-icons"]["name"],
+        version,
+        PACKAGES["simple-icons"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
 def run_mapping(turso_url: str, auth_token: str):
     """Run cross-library mapping."""
     print("\n" + "=" * 50)
@@ -295,6 +326,7 @@ def main():
             "tabler",
             "feather",
             "remix",
+            "simple-icons",
             "all",
         ],
         default="all",
@@ -356,6 +388,7 @@ def main():
             "tabler",
             "feather",
             "remix",
+            "simple-icons",
         ]
     else:
         sources = [args.source]
@@ -386,6 +419,9 @@ def main():
 
     if "remix" in sources:
         total_extracted += extract_remix(registry, node_modules)
+
+    if "simple-icons" in sources:
+        total_extracted += extract_simple_icons(registry, node_modules)
 
     print("\n" + "=" * 50)
     print(f"EXTRACTION COMPLETE: {total_extracted} total icons")

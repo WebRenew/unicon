@@ -13,12 +13,10 @@ import { Copy, Check, ExternalLink, Plus, Minus } from "lucide-react";
 import {
   toPascalCase,
   getSvgAttributesJsx,
-  getSvgAttributesRaw,
   generateRenderableSvg,
   generateRawSvg,
   generateUsageExample,
   DEFAULT_STROKE,
-  getIconRenderMode,
 } from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
 
@@ -181,6 +179,14 @@ export function StyledIcon({
               <Check className="w-2.5 h-2.5 text-white" />
             </div>
           )}
+          {/* Brand color chip for Simple Icons */}
+          {icon.brandColor && (
+            <div 
+              className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[hsl(0,0%,3%)] shadow-sm"
+              style={{ backgroundColor: icon.brandColor }}
+              title={`Brand color: ${icon.brandColor}`}
+            />
+          )}
         </button>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56 bg-popover border-border">
@@ -228,6 +234,19 @@ export function StyledIcon({
           )}
           Copy usage example
         </ContextMenuItem>
+        {icon.brandColor && (
+          <ContextMenuItem onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}>
+            {copied === "color" ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <div 
+                className="mr-2 h-4 w-4 rounded-full border border-border"
+                style={{ backgroundColor: icon.brandColor }}
+              />
+            )}
+            Copy brand color
+          </ContextMenuItem>
+        )}
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleOpenInV0}>
           <ExternalLink className="mr-2 h-4 w-4" />

@@ -1,13 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { icons } from "@/lib/schema";
-import { getEmbedding, blobToEmbedding, cosineSimilarity, expandQueryWithAI } from "@/lib/ai";
+import { getEmbedding, embeddingToVectorString, expandQueryWithAI } from "@/lib/ai";
 import { expandQueryWithSynonyms, hasSynonyms } from "@/lib/synonyms";
 import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 
 interface SearchResult extends IconData {
   score: number;
+}
+
+/** Row type for vector search results */
+interface VectorSearchRow {
+  id: string;
+  name: string;
+  normalizedName: string;
+  sourceId: string;
+  category: string | null;
+  tags: string | string[] | null;
+  viewBox: string;
+  content: string;
+  pathData: string | null;
+  defaultStroke: number | boolean | null;
+  defaultFill: number | boolean | null;
+  strokeWidth: string | null;
+  brandColor: string | null;
+  distance: number;
+}
+
+/** Timeout helper for async operations */
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
 }
 
 /** Scoring weights for hybrid search */
@@ -26,6 +52,7 @@ const BOOSTS = {
   exactCategory: 0.2,
   containsCategory: 0.1,
 } as const;
+
 
 /**
  * POST /api/search
@@ -68,10 +95,17 @@ export async function POST(request: NextRequest) {
       // Only use AI expansion if explicitly requested AND synonyms didn't help
       if (useAI && !hasSynonyms(trimmedQuery) && process.env.ANTHROPIC_API_KEY) {
         try {
-          const aiExpanded = await expandQueryWithAI(trimmedQuery);
-          searchQuery = aiExpanded;
-          expandedTerms = aiExpanded;
-          console.log(`AI expanded "${trimmedQuery}" to: ${aiExpanded}`);
+          // Use timeout to prevent slow AI calls from blocking response
+          const aiExpanded = await withTimeout(
+            expandQueryWithAI(trimmedQuery),
+            2000, // 2 second timeout
+            null as string | null
+          );
+          if (aiExpanded) {
+            searchQuery = aiExpanded;
+            expandedTerms = aiExpanded;
+            console.log(`AI expanded "${trimmedQuery}" to: ${aiExpanded}`);
+          }
         } catch (aiError) {
           console.error("AI expansion failed, using synonym expansion:", aiError);
         }
@@ -161,6 +195,7 @@ function calculateExactMatchBoost(icon: {
 
 /**
  * Perform hybrid search combining semantic similarity with exact match boosting.
+ * Uses Turso's native vector_distance_cos for database-level similarity search.
  * 
  * @param originalQuery - The user's original query (for exact matching)
  * @param expandedQuery - The synonym-expanded query (for semantic search)
@@ -175,43 +210,62 @@ async function hybridSearch(
 ): Promise<SearchResult[]> {
   // Get embedding for the expanded query
   const queryEmbedding = await getEmbedding(expandedQuery);
+  const vectorString = embeddingToVectorString(queryEmbedding);
 
   // Prepare query tokens for exact matching
   const queryLower = originalQuery.toLowerCase();
   const queryTokens = queryLower.split(/\s+/).filter(Boolean);
 
-  // Get all icons with embeddings
-  // TODO: Use libSQL vector_distance_cos when available in Drizzle
-  let baseQuery = db
-    .select()
-    .from(icons)
-    .where(sql`${icons.embedding} IS NOT NULL`);
+  // Use Turso's native vector_distance_cos for database-level similarity search
+  // Fetch more than limit to allow for re-ranking with exact match boost
+  const fetchLimit = Math.min(limit * 3, 500);
 
-  if (sourceId) {
-    baseQuery = db
-      .select()
-      .from(icons)
-      .where(sql`${icons.embedding} IS NOT NULL AND ${icons.sourceId} = ${sourceId}`);
-  }
+  // Query with native vector distance calculation
+  // vector_distance_cos returns distance (1 - similarity), so lower is better
+  const semanticResults = (sourceId
+    ? await db.all(sql`
+        SELECT 
+          id, name, normalized_name as normalizedName, source_id as sourceId,
+          category, tags, view_box as viewBox, content, path_data as pathData,
+          default_stroke as defaultStroke, default_fill as defaultFill,
+          stroke_width as strokeWidth, brand_color as brandColor,
+          vector_distance_cos(embedding, vector32(${vectorString})) as distance
+        FROM icons
+        WHERE embedding IS NOT NULL AND source_id = ${sourceId}
+        ORDER BY distance ASC
+        LIMIT ${fetchLimit}
+      `)
+    : await db.all(sql`
+        SELECT 
+          id, name, normalized_name as normalizedName, source_id as sourceId,
+          category, tags, view_box as viewBox, content, path_data as pathData,
+          default_stroke as defaultStroke, default_fill as defaultFill,
+          stroke_width as strokeWidth, brand_color as brandColor,
+          vector_distance_cos(embedding, vector32(${vectorString})) as distance
+        FROM icons
+        WHERE embedding IS NOT NULL
+        ORDER BY distance ASC
+        LIMIT ${fetchLimit}
+      `)) as VectorSearchRow[];
 
-  const allIcons = await baseQuery.limit(5000); // Cap for performance
-
-  // Calculate hybrid scores
+  // Re-rank with hybrid scoring (semantic + exact match)
   const scored: SearchResult[] = [];
 
-  for (const icon of allIcons) {
-    if (!icon.embedding) continue;
-
-    const iconEmbedding = blobToEmbedding(icon.embedding as Buffer);
-    const semanticScore = cosineSimilarity(queryEmbedding, iconEmbedding);
+  for (const row of semanticResults) {
+    // Convert distance back to similarity (1 - distance)
+    const semanticScore = 1 - (row.distance as number);
+    
+    // Parse tags from JSON string if needed
+    const tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
+    const pathData = typeof row.pathData === "string" ? JSON.parse(row.pathData) : (row.pathData ?? null);
     
     // Calculate exact match boost
     const exactMatchBoost = calculateExactMatchBoost(
       {
-        normalizedName: icon.normalizedName,
-        name: icon.name,
-        tags: icon.tags as string[] | null,
-        category: icon.category,
+        normalizedName: row.normalizedName as string,
+        name: row.name as string,
+        tags: tags as string[] | null,
+        category: row.category as string | null,
       },
       queryLower,
       queryTokens
@@ -221,23 +275,24 @@ async function hybridSearch(
     const hybridScore = (semanticScore * WEIGHTS.semantic) + (exactMatchBoost * WEIGHTS.exactMatch);
 
     scored.push({
-      id: icon.id,
-      name: icon.name,
-      normalizedName: icon.normalizedName,
-      sourceId: icon.sourceId,
-      category: icon.category,
-      tags: (icon.tags as string[]) ?? [],
-      viewBox: icon.viewBox,
-      content: icon.content,
-      pathData: icon.pathData ?? null,
-      defaultStroke: icon.defaultStroke ?? false,
-      defaultFill: icon.defaultFill ?? false,
-      strokeWidth: icon.strokeWidth,
+      id: row.id as string,
+      name: row.name as string,
+      normalizedName: row.normalizedName as string,
+      sourceId: row.sourceId as string,
+      category: row.category as string | null,
+      tags: tags as string[],
+      viewBox: row.viewBox as string,
+      content: row.content as string,
+      pathData: pathData,
+      defaultStroke: Boolean(row.defaultStroke),
+      defaultFill: Boolean(row.defaultFill),
+      strokeWidth: row.strokeWidth as string | null,
+      brandColor: row.brandColor as string | null,
       score: hybridScore,
     });
   }
 
-  // Sort by score descending and return top results
+  // Sort by hybrid score descending and return top results
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, limit);
 }
@@ -289,6 +344,7 @@ async function textSearch(
     defaultStroke: icon.defaultStroke ?? false,
     defaultFill: icon.defaultFill ?? false,
     strokeWidth: icon.strokeWidth,
+    brandColor: icon.brandColor ?? null,
     score: 1, // Text matches get score of 1
   }));
 }

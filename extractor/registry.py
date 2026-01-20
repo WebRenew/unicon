@@ -50,13 +50,14 @@ class IconRegistry:
         self.conn.execute(
             """
             INSERT INTO icons 
-            (id, source_id, name, normalized_name, category, tags, view_box, content, path_data, default_stroke, default_fill, stroke_width)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, source_id, name, normalized_name, category, tags, view_box, content, path_data, default_stroke, default_fill, stroke_width, brand_color)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 category = excluded.category,
                 tags = excluded.tags,
                 content = excluded.content,
-                path_data = excluded.path_data
+                path_data = excluded.path_data,
+                brand_color = excluded.brand_color
             """,
             (
                 icon_id,
@@ -71,6 +72,7 @@ class IconRegistry:
                 1 if icon.default_stroke else 0,
                 1 if icon.default_fill else 0,
                 icon.stroke_width,
+                icon.brand_color,
             ),
         )
 

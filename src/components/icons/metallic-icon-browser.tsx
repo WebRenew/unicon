@@ -1,7 +1,22 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Github, Loader2, ChevronLeft, ChevronRight, Package, Sparkles, SlidersHorizontal, Filter, Check, ChevronsUpDown, PackagePlus, Terminal, AlertTriangle } from "lucide-react";
+import {
+  Search,
+  Github,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Package,
+  Sparkles,
+  SlidersHorizontal,
+  Filter,
+  Check,
+  ChevronsUpDown,
+  PackagePlus,
+  Terminal,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
@@ -46,6 +61,7 @@ const SOURCE_COLORS: Record<string, string> = {
   tabler: "bg-cyan-500",
   feather: "bg-pink-500",
   remix: "bg-red-500",
+  "simple-icons": "bg-gray-500",
 };
 
 // Icons per page - sized for large screens (4K: ~50 columns × 8 rows = 400)
@@ -468,7 +484,7 @@ export function MetallicIconBrowser({
                   Library
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(["all", "lucide", "phosphor", "hugeicons"] as const).map((source) => (
+                  {(["all", "lucide", "phosphor", "hugeicons", "heroicons", "tabler", "feather", "remix", "simple-icons"] as const).map((source) => (
                     <button
                       key={source}
                       onClick={() => setSelectedSource(source)}
@@ -708,7 +724,7 @@ export function MetallicIconBrowser({
             className="grid gap-3"
             style={{ 
               gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
-              justifyContent: 'center',
+              justifyContent: 'start',
             }}
           >
             {iconsToShow.map((icon) => (
@@ -839,6 +855,23 @@ export function MetallicIconBrowser({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Footer with trademark disclaimer */}
+      <footer className="mt-20 pt-8 border-t border-black/5 dark:border-white/5">
+        <p className="text-[10px] text-black/30 dark:text-white/30 max-w-xl leading-relaxed">
+          Brand logos from{" "}
+          <a 
+            href="https://simpleicons.org" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="underline hover:text-black/50 dark:hover:text-white/50"
+          >
+            Simple Icons
+          </a>
+          {" "}are trademarks of their respective owners. Use of these trademarks does not indicate endorsement. 
+          Please review each brand&apos;s guidelines before use.
+        </p>
+      </footer>
     </div>
   );
 }

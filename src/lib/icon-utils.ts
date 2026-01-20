@@ -58,12 +58,13 @@ export const BASE_SVG_PROPS = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Determines rendering mode based on icon source.
- * - Phosphor: fill-based (weight is baked into icon variant)
- * - Lucide/Hugeicons: stroke-based (supports dynamic strokeWidth)
+ * Determines rendering mode based on icon properties.
+ * - Fill-based icons (Phosphor, Bootstrap, Remix): use fill="currentColor"
+ * - Stroke-based icons (Lucide, Heroicons, Feather, Tabler): use stroke="currentColor"
  */
-export function getIconRenderMode(sourceId: string): IconRenderMode {
-  return sourceId === "phosphor" ? "fill" : "stroke";
+export function getIconRenderMode(icon: Pick<IconData, "defaultStroke" | "defaultFill">): IconRenderMode {
+  // Use defaultFill if true and defaultStroke is false
+  return icon.defaultFill && !icon.defaultStroke ? "fill" : "stroke";
 }
 
 /**
@@ -85,10 +86,10 @@ export function toPascalCase(str: string): string {
  * Sets stroke on <svg>, paths inherit.
  */
 export function getSvgAttributesRaw(
-  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "defaultStroke" | "defaultFill" | "strokeWidth">,
   overrideStrokeWidth?: number
 ): string {
-  const mode = getIconRenderMode(icon.sourceId);
+  const mode = getIconRenderMode(icon);
   
   if (mode === "fill") {
     return 'fill="currentColor"';
@@ -110,11 +111,11 @@ export function getSvgAttributesRaw(
  * Uses curly braces for numeric values (strokeWidth={2}).
  */
 export function getSvgAttributesJsx(
-  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "defaultStroke" | "defaultFill" | "strokeWidth">,
   overrideStrokeWidth?: number
 ): string {
-  const mode = getIconRenderMode(icon.sourceId);
-  
+  const mode = getIconRenderMode(icon);
+
   if (mode === "fill") {
     return 'fill="currentColor"';
   }
@@ -134,7 +135,7 @@ export function getSvgAttributesJsx(
  * Generate Vue template attributes (kebab-case, same as raw SVG).
  */
 export function getSvgAttributesVue(
-  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "defaultStroke" | "defaultFill" | "strokeWidth">,
   overrideStrokeWidth?: number
 ): string {
   return getSvgAttributesRaw(icon, overrideStrokeWidth);
@@ -144,7 +145,7 @@ export function getSvgAttributesVue(
  * Generate Svelte attributes (kebab-case, same as raw SVG).
  */
 export function getSvgAttributesSvelte(
-  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "defaultStroke" | "defaultFill" | "strokeWidth">,
   overrideStrokeWidth?: number
 ): string {
   return getSvgAttributesRaw(icon, overrideStrokeWidth);
@@ -158,12 +159,12 @@ export function getSvgAttributesSvelte(
  * Generate a complete raw SVG string (for copy/download).
  */
 export function generateRawSvg(
-  icon: Pick<IconData, "viewBox" | "content" | "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">,
   options: { width?: number; height?: number; strokeWidth?: number } = {}
 ): string {
   const { width = 24, height = 24, strokeWidth } = options;
   const attrs = getSvgAttributesRaw(icon, strokeWidth);
-  
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${icon.viewBox}" ${attrs} aria-hidden="true" focusable="false">${icon.content}</svg>`;
 }
 
@@ -171,11 +172,11 @@ export function generateRawSvg(
  * Generate a complete SVG string for rendering in React (dangerouslySetInnerHTML).
  */
 export function generateRenderableSvg(
-  icon: Pick<IconData, "viewBox" | "content" | "sourceId" | "strokeWidth">,
+  icon: Pick<IconData, "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">,
   options: { size?: number; strokeWidth?: number; color?: string } = {}
 ): string {
   const { size = 24, strokeWidth, color } = options;
-  const mode = getIconRenderMode(icon.sourceId);
+  const mode = getIconRenderMode(icon);
   const effectiveStrokeWidth = strokeWidth ?? (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
   
   let styleAttrs: string;
@@ -202,7 +203,7 @@ export function generateRenderableSvg(
  * Generate a React component string.
  */
 export function generateReactComponent(
-  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">
 ): string {
   const componentName = toPascalCase(icon.normalizedName);
   const attrs = getSvgAttributesJsx(icon);
@@ -228,7 +229,7 @@ export function generateReactComponent(
  * Generate a full React component file with imports.
  */
 export function generateReactFile(
-  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">[]
+  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">[]
 ): string {
   const components = icons.map(generateReactComponent);
   
@@ -246,7 +247,7 @@ ${components.join("\n\n")}
  * Generate a Vue 3 SFC component string.
  */
 export function generateVueComponent(
-  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">
 ): string {
   const attrs = getSvgAttributesVue(icon);
   
@@ -274,7 +275,7 @@ defineProps<{ className?: string }>();
  * Generate a Svelte component string.
  */
 export function generateSvelteComponent(
-  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">
 ): string {
   const attrs = getSvgAttributesSvelte(icon);
   
@@ -301,7 +302,7 @@ export function generateSvelteComponent(
  * Generate an SVG bundle (multiple SVGs concatenated).
  */
 export function generateSvgBundle(
-  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">[]
+  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">[]
 ): string {
   return icons
     .map((icon) => {
