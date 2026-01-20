@@ -36,7 +36,7 @@ export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
     <div className="flex h-[calc(100vh-12rem)] gap-6">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="space-y-2">
+        <div className="pt-6 space-y-2">
           <SearchFilters
             search={search}
             onSearchChange={setSearch}

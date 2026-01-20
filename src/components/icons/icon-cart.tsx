@@ -13,6 +13,7 @@ import {
   ExternalLink,
   AlertTriangle,
   ArrowRight,
+  Terminal,
 } from "lucide-react";
 
 // Spaceship icon from hugeicons
@@ -52,6 +53,7 @@ type TabType = "bundle" | "packs";
 
 export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose }: IconCartProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
 
@@ -119,6 +121,16 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       toast.success(`Added "${pack.name}" pack`);
       setActiveTab("bundle");
     }
+  };
+
+  const handleCopyPackCommand = async (pack: typeof STARTER_PACKS[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Generate command with first few icon names from the pack
+    const iconSample = pack.iconNames.slice(0, 5).join(" ");
+    const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length} --output ./icons`;
+    await navigator.clipboard.writeText(command);
+    setCopiedPackId(pack.id);
+    setTimeout(() => setCopiedPackId(null), 2000);
   };
 
   return (
@@ -257,30 +269,57 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           // Starter Packs Tab - Edge-to-edge grid
           <div className="-m-4">
             <div className="grid grid-cols-2">
-              {STARTER_PACKS.map((pack, index) => (
-                <button
-                  key={pack.id}
-                  onClick={() => handleAddPack(pack)}
-                  className={`group p-4 border-black/10 dark:border-white/10 bg-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-all text-left
-                    ${index % 2 === 0 ? "border-r" : ""}
-                    ${index < STARTER_PACKS.length - 2 ? "border-b" : ""}
-                    ${index === STARTER_PACKS.length - 2 || index === STARTER_PACKS.length - 1 ? "" : "border-b"}
-                  `}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-medium text-black dark:text-white">
-                      {pack.name}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+              {STARTER_PACKS.map((pack, index) => {
+                const iconSample = pack.iconNames.slice(0, 5).join(" ");
+                const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length}`;
+
+                return (
+                  <div
+                    key={pack.id}
+                    className={`group border-black/10 dark:border-white/10 bg-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-all
+                      ${index % 2 === 0 ? "border-r" : ""}
+                      ${index < STARTER_PACKS.length - 2 ? "border-b" : ""}
+                      ${index === STARTER_PACKS.length - 2 || index === STARTER_PACKS.length - 1 ? "" : "border-b"}
+                    `}
+                  >
+                    <button
+                      onClick={() => handleAddPack(pack)}
+                      className="w-full p-4 pb-2 text-left"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-sm font-medium text-black dark:text-white">
+                          {pack.name}
+                        </span>
+                        <ArrowRight className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+                      </div>
+                      <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-2">
+                        {pack.description}
+                      </p>
+                      <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
+                        {pack.iconNames.length} icons
+                      </span>
+                    </button>
+
+                    {/* CLI Command */}
+                    <div className="px-4 pb-3">
+                      <button
+                        onClick={(e) => handleCopyPackCommand(pack, e)}
+                        className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors group/cmd"
+                        title="Copy CLI command"
+                      >
+                        {copiedPackId === pack.id ? (
+                          <Check className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
+                        ) : (
+                          <Terminal className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
+                        )}
+                        <span className="text-[9px] font-mono text-black/50 dark:text-white/50 truncate">
+                          {command}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-3">
-                    {pack.description}
-                  </p>
-                  <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
-                    {pack.iconNames.length} icons
-                  </span>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
