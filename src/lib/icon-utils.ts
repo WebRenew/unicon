@@ -1,0 +1,348 @@
+/**
+ * Shared icon generation utilities for consistent SVG output.
+ * 
+ * This module normalizes stroke attributes, accessibility props, and
+ * output generation across all export paths (CLI, UI, components).
+ */
+
+import type { IconData } from "@/types/icon";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Icon source identifiers */
+export type IconSource = "lucide" | "phosphor" | "hugeicons";
+
+/** Determines how the icon renders: fill-based or stroke-based */
+export type IconRenderMode = "fill" | "stroke";
+
+/** Default stroke configuration for consistent rendering */
+export interface StrokeConfig {
+  stroke: string;
+  strokeWidth: number;
+  strokeLinecap: "round" | "butt" | "square";
+  strokeLinejoin: "round" | "miter" | "bevel";
+}
+
+/** SVG base props shared across all generated icons */
+export interface BaseSvgProps {
+  xmlns: string;
+  viewBox: string;
+  fill: string;
+  "aria-hidden": boolean;
+  focusable: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Default stroke configuration - matches Lucide/Feather icon conventions */
+export const DEFAULT_STROKE: StrokeConfig = {
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+/** Base SVG props applied to all icons */
+export const BASE_SVG_PROPS = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "aria-hidden": true,
+  focusable: false,
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Determines rendering mode based on icon source.
+ * - Phosphor: fill-based (weight is baked into icon variant)
+ * - Lucide/Hugeicons: stroke-based (supports dynamic strokeWidth)
+ */
+export function getIconRenderMode(sourceId: string): IconRenderMode {
+  return sourceId === "phosphor" ? "fill" : "stroke";
+}
+
+/**
+ * Convert kebab-case to PascalCase for component names.
+ */
+export function toPascalCase(str: string): string {
+  return str
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join("");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SVG Attribute Generators
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Generate raw SVG attributes (kebab-case) for use in .svg files and dangerouslySetInnerHTML.
+ * Sets stroke on <svg>, paths inherit.
+ */
+export function getSvgAttributesRaw(
+  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  overrideStrokeWidth?: number
+): string {
+  const mode = getIconRenderMode(icon.sourceId);
+  
+  if (mode === "fill") {
+    return 'fill="currentColor"';
+  }
+  
+  const strokeWidth = overrideStrokeWidth ?? (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
+  
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `stroke-width="${strokeWidth}"`,
+    `stroke-linecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
+  ].join(" ");
+}
+
+/**
+ * Generate JSX attributes (camelCase) for React components.
+ * Uses curly braces for numeric values (strokeWidth={2}).
+ */
+export function getSvgAttributesJsx(
+  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  overrideStrokeWidth?: number
+): string {
+  const mode = getIconRenderMode(icon.sourceId);
+  
+  if (mode === "fill") {
+    return 'fill="currentColor"';
+  }
+  
+  const strokeWidth = overrideStrokeWidth ?? (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
+  
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `strokeWidth={${strokeWidth}}`,
+    `strokeLinecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `strokeLinejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
+  ].join(" ");
+}
+
+/**
+ * Generate Vue template attributes (kebab-case, same as raw SVG).
+ */
+export function getSvgAttributesVue(
+  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  overrideStrokeWidth?: number
+): string {
+  return getSvgAttributesRaw(icon, overrideStrokeWidth);
+}
+
+/**
+ * Generate Svelte attributes (kebab-case, same as raw SVG).
+ */
+export function getSvgAttributesSvelte(
+  icon: Pick<IconData, "sourceId" | "strokeWidth">,
+  overrideStrokeWidth?: number
+): string {
+  return getSvgAttributesRaw(icon, overrideStrokeWidth);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full SVG Generation
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Generate a complete raw SVG string (for copy/download).
+ */
+export function generateRawSvg(
+  icon: Pick<IconData, "viewBox" | "content" | "sourceId" | "strokeWidth">,
+  options: { width?: number; height?: number; strokeWidth?: number } = {}
+): string {
+  const { width = 24, height = 24, strokeWidth } = options;
+  const attrs = getSvgAttributesRaw(icon, strokeWidth);
+  
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${icon.viewBox}" ${attrs} aria-hidden="true" focusable="false">${icon.content}</svg>`;
+}
+
+/**
+ * Generate a complete SVG string for rendering in React (dangerouslySetInnerHTML).
+ */
+export function generateRenderableSvg(
+  icon: Pick<IconData, "viewBox" | "content" | "sourceId" | "strokeWidth">,
+  options: { size?: number; strokeWidth?: number; color?: string } = {}
+): string {
+  const { size = 24, strokeWidth, color } = options;
+  const mode = getIconRenderMode(icon.sourceId);
+  const effectiveStrokeWidth = strokeWidth ?? (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
+  
+  let styleAttrs: string;
+  if (mode === "fill") {
+    styleAttrs = `fill="${color || "currentColor"}"`;
+  } else {
+    styleAttrs = [
+      'fill="none"',
+      `stroke="${color || "currentColor"}"`,
+      `stroke-width="${effectiveStrokeWidth}"`,
+      `stroke-linecap="${DEFAULT_STROKE.strokeLinecap}"`,
+      `stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
+    ].join(" ");
+  }
+  
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${styleAttrs} aria-hidden="true" focusable="false">${icon.content}</svg>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Component Code Generation
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Generate a React component string.
+ */
+export function generateReactComponent(
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+): string {
+  const componentName = toPascalCase(icon.normalizedName);
+  const attrs = getSvgAttributesJsx(icon);
+  
+  return `export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="${icon.viewBox}"
+      ${attrs}
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+      {...props}
+    >
+      ${icon.content}
+    </svg>
+  );
+}`;
+}
+
+/**
+ * Generate a full React component file with imports.
+ */
+export function generateReactFile(
+  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">[]
+): string {
+  const components = icons.map(generateReactComponent);
+  
+  return `/**
+ * Icon components generated by @webrenew/unicon
+ * @see https://unicon.webrenew.com
+ */
+import type { SVGProps } from "react";
+
+${components.join("\n\n")}
+`;
+}
+
+/**
+ * Generate a Vue 3 SFC component string.
+ */
+export function generateVueComponent(
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+): string {
+  const attrs = getSvgAttributesVue(icon);
+  
+  return `<!-- Generated by @webrenew/unicon -->
+<template>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="${icon.viewBox}"
+    ${attrs}
+    aria-hidden="true"
+    :focusable="false"
+    :class="className"
+    v-bind="$attrs"
+  >
+    ${icon.content}
+  </svg>
+</template>
+
+<script setup lang="ts">
+defineProps<{ className?: string }>();
+</script>`;
+}
+
+/**
+ * Generate a Svelte component string.
+ */
+export function generateSvelteComponent(
+  icon: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">
+): string {
+  const attrs = getSvgAttributesSvelte(icon);
+  
+  return `<!-- Generated by @webrenew/unicon -->
+<script lang="ts">
+  let className: string = "";
+  export { className as class };
+</script>
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="${icon.viewBox}"
+  ${attrs}
+  aria-hidden="true"
+  focusable="false"
+  class={className}
+  {...$$restProps}
+>
+  ${icon.content}
+</svg>`;
+}
+
+/**
+ * Generate an SVG bundle (multiple SVGs concatenated).
+ */
+export function generateSvgBundle(
+  icons: Pick<IconData, "normalizedName" | "viewBox" | "content" | "sourceId" | "strokeWidth">[]
+): string {
+  return icons
+    .map((icon) => {
+      const attrs = getSvgAttributesRaw(icon);
+      return `<!-- ${icon.normalizedName} -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs} aria-hidden="true" focusable="false">
+  ${icon.content}
+</svg>`;
+    })
+    .join("\n\n");
+}
+
+/**
+ * Generate a JSON export.
+ */
+export function generateJsonBundle(
+  icons: Pick<IconData, "id" | "normalizedName" | "sourceId" | "viewBox" | "content" | "tags" | "category">[]
+): string {
+  return JSON.stringify(
+    icons.map((icon) => ({
+      id: icon.id,
+      name: icon.normalizedName,
+      source: icon.sourceId,
+      viewBox: icon.viewBox,
+      content: icon.content,
+      tags: icon.tags,
+      category: icon.category,
+    })),
+    null,
+    2
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Usage Example Generation
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Generate a usage example for a React component.
+ */
+export function generateUsageExample(iconName: string): string {
+  const componentName = toPascalCase(iconName);
+  return `<${componentName} className="size-5" />`;
+}

@@ -3,7 +3,15 @@
 import { useState, useMemo } from "react";
 import { X, Download, Copy, Check, Trash2, FileCode, FileJson, Package, ExternalLink, ChevronDown, ChevronUp, Sparkles, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { STARTER_PACKS, getPackColorClasses, type StarterPack } from "@/lib/starter-packs";
+import { STARTER_PACKS, getPackColorClasses } from "@/lib/starter-packs";
+import {
+  toPascalCase,
+  getSvgAttributesRaw,
+  generateReactFile,
+  generateSvgBundle,
+  generateJsonBundle,
+  generateRenderableSvg,
+} from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
 
 interface IconCartProps {
@@ -22,83 +30,17 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [starterPacksExpanded, setStarterPacksExpanded] = useState(false);
 
-  const toPascalCase = (str: string) =>
-    str
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join("");
-
-  const getSvgAttributes = (icon: IconData) => {
-    if (icon.sourceId === "phosphor") {
-      return 'fill="currentColor"';
-    }
-    if (icon.sourceId === "hugeicons") {
-      return 'stroke="currentColor" fill="none"';
-    }
-    return `fill="none" stroke="currentColor" strokeWidth="${icon.strokeWidth || "2"}" strokeLinecap="round" strokeLinejoin="round"`;
-  };
-
-  const getSvgAttributesRaw = (icon: IconData) => {
-    if (icon.sourceId === "phosphor") {
-      return 'fill="currentColor"';
-    }
-    if (icon.sourceId === "hugeicons") {
-      return 'stroke="currentColor" fill="none"';
-    }
-    return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
-  };
-
   // Memoize export content to ensure it uses the latest items
   const exportContent = useMemo(() => {
     if (items.length === 0) return "";
 
     switch (exportFormat) {
-      case "react": {
-        const components = items.map((icon) => {
-          const name = toPascalCase(icon.normalizedName);
-          const attrs = getSvgAttributes(icon);
-          return `export function ${name}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="${icon.viewBox}"
-      ${attrs}
-      className={className}
-      {...props}
-    >
-      ${icon.content}
-    </svg>
-  );
-}`;
-        });
-        return `import * as React from "react";
-
-${components.join("\n\n")}
-`;
-      }
+      case "react":
+        return generateReactFile(items);
       case "svg":
-        return items
-          .map((icon) => {
-            const attrs = getSvgAttributesRaw(icon);
-            return `<!-- ${icon.normalizedName} (${icon.sourceId}) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
-  ${icon.content}
-</svg>`;
-          })
-          .join("\n\n");
+        return generateSvgBundle(items);
       case "json":
-        return JSON.stringify(
-          items.map((icon) => ({
-            id: icon.id,
-            name: icon.normalizedName,
-            source: icon.sourceId,
-            viewBox: icon.viewBox,
-            content: icon.content,
-            tags: icon.tags,
-          })),
-          null,
-          2
-        );
+        return generateJsonBundle(items);
     }
   }, [items, exportFormat]);
 
@@ -137,10 +79,7 @@ ${components.join("\n\n")}
   const handleOpenInV0 = () => {
     const iconNames = items.map((icon) => toPascalCase(icon.normalizedName)).join(", ");
     const svgBundle = items
-      .map((icon) => {
-        const attrs = getSvgAttributesRaw(icon);
-        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>${icon.content}</svg>`;
-      })
+      .map((icon) => generateRenderableSvg(icon))
       .join("\n");
     
     const prompt = encodeURIComponent(
@@ -266,7 +205,7 @@ ${components.join("\n\n")}
                 <div
                   className="w-5 h-5 text-white/70"
                   dangerouslySetInnerHTML={{
-                    __html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="${icon.viewBox}" ${getSvgAttributesRaw(icon)}>${icon.content}</svg>`,
+                    __html: generateRenderableSvg(icon, { size: 20 }),
                   }}
                 />
                 <button

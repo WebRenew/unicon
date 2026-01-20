@@ -12,6 +12,14 @@ var API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
 var CONFIG_FILE = ".uniconrc.json";
 var CACHE_DIR = join(homedir(), ".unicon", "cache");
 var CACHE_TTL = 24 * 60 * 60 * 1e3;
+var DEFAULT_STROKE = {
+  strokeWidth: 2,
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+};
+function getIconRenderMode(sourceId) {
+  return sourceId === "phosphor" ? "fill" : "stroke";
+}
 function findConfigFile() {
   const configPath = resolve(process.cwd(), CONFIG_FILE);
   return existsSync(configPath) ? configPath : null;
@@ -247,22 +255,32 @@ function toPascalCase(str) {
   return str.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join("");
 }
 function getSvgAttributes(icon) {
-  if (icon.sourceId === "phosphor") {
+  const mode = getIconRenderMode(icon.sourceId);
+  if (mode === "fill") {
     return 'fill="currentColor"';
   }
-  if (icon.sourceId === "hugeicons") {
-    return 'stroke="currentColor" fill="none"';
-  }
-  return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
+  const strokeWidth = parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth;
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `stroke-width="${strokeWidth}"`,
+    `stroke-linecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`
+  ].join(" ");
 }
 function getJsxAttributes(icon) {
-  if (icon.sourceId === "phosphor") {
+  const mode = getIconRenderMode(icon.sourceId);
+  if (mode === "fill") {
     return 'fill="currentColor"';
   }
-  if (icon.sourceId === "hugeicons") {
-    return 'stroke="currentColor" fill="none"';
-  }
-  return `fill="none" stroke="currentColor" strokeWidth={${icon.strokeWidth || 2}} strokeLinecap="round" strokeLinejoin="round"`;
+  const strokeWidth = parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth;
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `strokeWidth={${strokeWidth}}`,
+    `strokeLinecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `strokeLinejoin="${DEFAULT_STROKE.strokeLinejoin}"`
+  ].join(" ");
 }
 function generateReactComponents(icons) {
   const components = icons.map((icon) => {
@@ -274,6 +292,8 @@ function generateReactComponents(icons) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${attrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >
@@ -294,8 +314,8 @@ ${components.join("\n\n")}
 function generateSvgBundle(icons) {
   return icons.map((icon) => {
     const attrs = getSvgAttributes(icon);
-    return `<!-- ${icon.normalizedName} (${icon.sourceId}) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
+    return `<!-- ${icon.normalizedName} -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs} aria-hidden="true" focusable="false">
   ${icon.content}
 </svg>`;
   }).join("\n\n");
@@ -421,7 +441,7 @@ program.command("get <name>").description("Get a single icon by name (outputs to
     const jsxAttrs = getJsxAttributes(icon);
     switch (options.format) {
       case "svg":
-        content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>
+        content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs} aria-hidden="true" focusable="false">
   ${icon.content}
 </svg>`;
         break;
@@ -440,6 +460,8 @@ program.command("get <name>").description("Get a single icon by name (outputs to
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
     ${svgAttrs}
+    aria-hidden="true"
+    :focusable="false"
     :class="className"
     v-bind="$attrs"
   >
@@ -462,6 +484,8 @@ defineProps<{ className?: string }>();
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
   ${svgAttrs}
+  aria-hidden="true"
+  focusable="false"
   class={className}
   {...$$restProps}
 >
@@ -479,6 +503,8 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${jsxAttrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >
@@ -561,7 +587,7 @@ program.command("bundle").description("Bundle icons for tree-shakeable imports (
         let content2;
         switch (options.format) {
           case "svg":
-            content2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>
+            content2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs} aria-hidden="true" focusable="false">
   ${icon.content}
 </svg>`;
             break;
@@ -580,6 +606,8 @@ program.command("bundle").description("Bundle icons for tree-shakeable imports (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
     ${svgAttrs}
+    aria-hidden="true"
+    :focusable="false"
     :class="className"
     v-bind="$attrs"
   >
@@ -603,6 +631,8 @@ defineProps<{ className?: string }>();
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
   ${svgAttrs}
+  aria-hidden="true"
+  focusable="false"
   class={className}
   {...$$restProps}
 >
@@ -621,6 +651,8 @@ export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${jsxAttrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >

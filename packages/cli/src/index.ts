@@ -13,6 +13,26 @@ const CONFIG_FILE = ".uniconrc.json";
 const CACHE_DIR = join(homedir(), ".unicon", "cache");
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Normalized SVG Generation Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Default stroke configuration - matches Lucide/Feather conventions */
+const DEFAULT_STROKE = {
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+/**
+ * Determines rendering mode based on icon source.
+ * - Phosphor: fill-based (weight is baked into icon variant)
+ * - Lucide/Hugeicons: stroke-based (supports dynamic strokeWidth)
+ */
+function getIconRenderMode(sourceId: string): "fill" | "stroke" {
+  return sourceId === "phosphor" ? "fill" : "stroke";
+}
+
 // Config file types
 interface BundleConfig {
   name: string;
@@ -365,26 +385,48 @@ function toPascalCase(str: string): string {
     .join("");
 }
 
-// For raw SVG output (kebab-case attributes)
+/**
+ * Generate raw SVG attributes (kebab-case) for use in .svg files.
+ * Includes normalized stroke defaults for consistency.
+ */
 function getSvgAttributes(icon: Icon): string {
-  if (icon.sourceId === "phosphor") {
+  const mode = getIconRenderMode(icon.sourceId);
+  
+  if (mode === "fill") {
     return 'fill="currentColor"';
   }
-  if (icon.sourceId === "hugeicons") {
-    return 'stroke="currentColor" fill="none"';
-  }
-  return `fill="none" stroke="currentColor" stroke-width="${icon.strokeWidth || "2"}" stroke-linecap="round" stroke-linejoin="round"`;
+  
+  const strokeWidth = parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth;
+  
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `stroke-width="${strokeWidth}"`,
+    `stroke-linecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
+  ].join(" ");
 }
 
-// For React JSX output (camelCase attributes)
+/**
+ * Generate JSX attributes (camelCase) for React components.
+ * Uses curly braces for numeric values (strokeWidth={2}).
+ */
 function getJsxAttributes(icon: Icon): string {
-  if (icon.sourceId === "phosphor") {
+  const mode = getIconRenderMode(icon.sourceId);
+  
+  if (mode === "fill") {
     return 'fill="currentColor"';
   }
-  if (icon.sourceId === "hugeicons") {
-    return 'stroke="currentColor" fill="none"';
-  }
-  return `fill="none" stroke="currentColor" strokeWidth={${icon.strokeWidth || 2}} strokeLinecap="round" strokeLinejoin="round"`;
+  
+  const strokeWidth = parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth;
+  
+  return [
+    'fill="none"',
+    'stroke="currentColor"',
+    `strokeWidth={${strokeWidth}}`,
+    `strokeLinecap="${DEFAULT_STROKE.strokeLinecap}"`,
+    `strokeLinejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
+  ].join(" ");
 }
 
 function generateReactComponents(icons: Icon[]): string {
@@ -397,6 +439,8 @@ function generateReactComponents(icons: Icon[]): string {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${attrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >
@@ -420,8 +464,8 @@ function generateSvgBundle(icons: Icon[]): string {
   return icons
     .map((icon) => {
       const attrs = getSvgAttributes(icon);
-      return `<!-- ${icon.normalizedName} (${icon.sourceId}) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs}>
+      return `<!-- ${icon.normalizedName} -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${attrs} aria-hidden="true" focusable="false">
   ${icon.content}
 </svg>`;
     })
@@ -454,6 +498,8 @@ function generateVueComponents(icons: Icon[]): string {
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
     ${attrs}
+    aria-hidden="true"
+    :focusable="false"
     :class="className"
     v-bind="$attrs"
   >
@@ -487,6 +533,8 @@ function generateSvelteComponents(icons: Icon[]): string {
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
   ${attrs}
+  aria-hidden="true"
+  focusable="false"
   class={className}
   {...$$restProps}
 >
@@ -652,7 +700,7 @@ program
 
       switch (options.format) {
         case "svg":
-          content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>
+          content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs} aria-hidden="true" focusable="false">
   ${icon.content}
 </svg>`;
           break;
@@ -671,6 +719,8 @@ program
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
     ${svgAttrs}
+    aria-hidden="true"
+    :focusable="false"
     :class="className"
     v-bind="$attrs"
   >
@@ -693,6 +743,8 @@ defineProps<{ className?: string }>();
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
   ${svgAttrs}
+  aria-hidden="true"
+  focusable="false"
   class={className}
   {...$$restProps}
 >
@@ -710,6 +762,8 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${jsxAttrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >
@@ -821,7 +875,7 @@ program
 
           switch (options.format) {
             case "svg":
-              content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs}>\n  ${icon.content}\n</svg>`;
+              content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs} aria-hidden="true" focusable="false">\n  ${icon.content}\n</svg>`;
               break;
             case "json":
               content = JSON.stringify({
@@ -838,6 +892,8 @@ program
     xmlns="http://www.w3.org/2000/svg"
     viewBox="${icon.viewBox}"
     ${svgAttrs}
+    aria-hidden="true"
+    :focusable="false"
     :class="className"
     v-bind="$attrs"
   >
@@ -861,6 +917,8 @@ defineProps<{ className?: string }>();
   xmlns="http://www.w3.org/2000/svg"
   viewBox="${icon.viewBox}"
   ${svgAttrs}
+  aria-hidden="true"
+  focusable="false"
   class={className}
   {...$$restProps}
 >
@@ -879,6 +937,8 @@ export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
       ${jsxAttrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >

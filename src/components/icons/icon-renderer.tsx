@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { DEFAULT_STROKE } from "@/lib/icon-utils";
 
 interface IconRendererProps {
   svgContent: string;
@@ -9,28 +10,31 @@ interface IconRendererProps {
   strokeWidth?: number;
   color?: string;
   className?: string;
+  /** Set to "fill" for fill-based icons (e.g., Phosphor) */
+  renderMode?: "stroke" | "fill";
 }
 
 export function IconRenderer({
   svgContent,
   viewBox = "0 0 24 24",
   size = 24,
-  strokeWidth = 2,
+  strokeWidth = DEFAULT_STROKE.strokeWidth,
   color = "currentColor",
   className,
+  renderMode = "stroke",
 }: IconRendererProps) {
-  // Build a complete SVG with the inner content
-  const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${viewBox}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgContent}</svg>`;
+  // Build consistent stroke attributes
+  const strokeAttrs = renderMode === "fill"
+    ? `fill="${color}"`
+    : `fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="${DEFAULT_STROKE.strokeLinecap}" stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`;
 
-  // Replace colors in the content
-  const modifiedSvg = fullSvg
-    .replace(/stroke="currentColor"/g, `stroke="${color}"`)
-    .replace(/fill="currentColor"/g, `fill="${color}"`);
+  // Build a complete SVG with accessibility attributes
+  const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${viewBox}" ${strokeAttrs} aria-hidden="true" focusable="false">${svgContent}</svg>`;
 
   return (
     <div
       className={cn("inline-flex items-center justify-center", className)}
-      dangerouslySetInnerHTML={{ __html: modifiedSvg }}
+      dangerouslySetInnerHTML={{ __html: fullSvg }}
     />
   );
 }

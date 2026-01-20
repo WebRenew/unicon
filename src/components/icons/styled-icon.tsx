@@ -10,6 +10,16 @@ import {
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { Copy, Check, ExternalLink, Plus, Minus } from "lucide-react";
+import {
+  toPascalCase,
+  getSvgAttributesJsx,
+  getSvgAttributesRaw,
+  generateRenderableSvg,
+  generateRawSvg,
+  generateUsageExample,
+  DEFAULT_STROKE,
+  getIconRenderMode,
+} from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
 
 export type IconStyle = "metal" | "brutal" | "glow";
@@ -101,7 +111,7 @@ export function StyledIcon({
   const styles = ICON_STYLES[style];
 
   // Use provided strokeWeight, or fall back to icon's default
-  const effectiveStrokeWidth = strokeWeight ?? (icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2);
+  const effectiveStrokeWidth = strokeWeight ?? (icon.strokeWidth ? parseFloat(icon.strokeWidth) : DEFAULT_STROKE.strokeWidth);
 
   const handleClick = () => {
     if (onToggleCart) {
@@ -109,12 +119,6 @@ export function StyledIcon({
     }
     onSelect?.();
   };
-
-  const toPascalCase = (str: string) =>
-    str
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join("");
 
   const componentName = toPascalCase(icon.normalizedName);
 
@@ -124,43 +128,17 @@ export function StyledIcon({
     setTimeout(() => setCopied(null), 1500);
   };
 
-  // Different icon libraries need different rendering approaches
-  // - Lucide: stroke-based, supports stroke-width
-  // - Hugeicons: stroke-based, supports stroke-width
-  // - Phosphor: fill-based (weight is baked into the icon variant), stroke-width has no effect
-  const getSvgAttributesJsx = () => {
-    if (icon.sourceId === "phosphor") {
-      // Phosphor icons are fill-based - weight is determined by the icon variant (thin/light/regular/bold/fill)
-      return 'fill="currentColor"';
-    }
-    if (icon.sourceId === "hugeicons") {
-      return `stroke="currentColor" fill="none" strokeWidth={${effectiveStrokeWidth}} strokeLinecap="round" strokeLinejoin="round"`;
-    }
-    return `fill="none" stroke="currentColor" strokeWidth={${effectiveStrokeWidth}} strokeLinecap="round" strokeLinejoin="round"`;
-  };
-
-  const getSvgAttributesRaw = () => {
-    if (icon.sourceId === "phosphor") {
-      // Phosphor icons are fill-based - weight is determined by the icon variant (thin/light/regular/bold/fill)
-      return 'fill="currentColor"';
-    }
-    if (icon.sourceId === "hugeicons") {
-      return `stroke="currentColor" fill="none" stroke-width="${effectiveStrokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
-    }
-    return `fill="none" stroke="currentColor" stroke-width="${effectiveStrokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
-  };
-
-  const getFullSvg = () => {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`;
-  };
-
+  // Generate React component code with accessibility attributes
   const getReactComponent = () => {
-    return `export function ${componentName}({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+    const attrs = getSvgAttributesJsx(icon, effectiveStrokeWidth);
+    return `export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="${icon.viewBox}"
-      ${getSvgAttributesJsx()}
+      ${attrs}
+      aria-hidden="true"
+      focusable="false"
       className={className}
       {...props}
     >
@@ -170,17 +148,13 @@ export function StyledIcon({
 }`;
   };
 
-  const getUsageExample = () => {
-    return `<${componentName} className="w-5 h-5 text-foreground" />`;
-  };
-
-  const handleCopySvg = () => handleCopy(getFullSvg(), "svg");
+  const handleCopySvg = () => handleCopy(generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth }), "svg");
   const handleCopyComponent = () => handleCopy(getReactComponent(), "component");
-  const handleCopyUsage = () => handleCopy(getUsageExample(), "usage");
+  const handleCopyUsage = () => handleCopy(generateUsageExample(icon.normalizedName), "usage");
 
   const handleOpenInV0 = () => {
     const prompt = encodeURIComponent(
-      `Create a beautiful component using this icon:\n\n${getFullSvg()}\n\nMake it interactive with hover states.`
+      `Create a beautiful component using this icon:\n\n${generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth })}\n\nMake it interactive with hover states.`
     );
     window.open(`https://v0.dev/?q=${prompt}`, "_blank");
   };
@@ -199,7 +173,7 @@ export function StyledIcon({
             style={{ width: iconSize, height: iconSize }}
             className={styles.icon}
             dangerouslySetInnerHTML={{
-              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="${icon.viewBox}" ${getSvgAttributesRaw()}>${icon.content}</svg>`,
+              __html: generateRenderableSvg(icon, { size: iconSize, strokeWidth: effectiveStrokeWidth }),
             }}
           />
           {isSelected && (
