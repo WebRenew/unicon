@@ -675,11 +675,11 @@ export function MetallicIconBrowser({
                           strokeWidth={STROKE_PRESETS[preset].value * 1.2}
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className="opacity-70"
+                          className="opacity-70 hidden sm:block"
                         >
                           <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
-                        <span className="hidden sm:inline">{STROKE_PRESETS[preset].label}</span>
+                        {STROKE_PRESETS[preset].label}
                       </span>
                     </button>
                   ))}
