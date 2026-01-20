@@ -18,6 +18,7 @@ import {
   getTotalIconCount,
 } from "@/lib/queries";
 import { convertIconToFormat } from "@/lib/icon-converters";
+import { STARTER_PACKS } from "@/lib/starter-packs";
 
 /**
  * GET /api/mcp - Server info and capabilities
@@ -28,8 +29,8 @@ export async function GET() {
     version: "1.0.0",
     description: "REST API for Unicon icon library with MCP compatibility",
     capabilities: {
-      tools: ["search_icons", "get_icon", "get_multiple_icons"],
-      resources: ["sources", "categories", "stats"],
+      tools: ["search_icons", "get_icon", "get_multiple_icons", "get_starter_pack"],
+      resources: ["sources", "categories", "stats", "starter_packs"],
     },
     usage: {
       direct: "POST /api/mcp with { action, params }",
@@ -123,6 +124,27 @@ export async function POST(request: Request) {
                 required: ["iconIds"],
               },
             },
+            {
+              name: "get_starter_pack",
+              description: "Get a curated starter pack of icons for common use cases (e.g., dashboard, ecommerce, social media). Returns all icons in the pack.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  packId: {
+                    type: "string",
+                    description: "Starter pack ID (e.g., 'dashboard', 'ecommerce', 'social', 'brand-ai'). Use the starter_packs resource to see all available packs.",
+                  },
+                  format: {
+                    type: "string",
+                    enum: ["svg", "react", "vue", "svelte", "json"],
+                    default: "react",
+                  },
+                  size: { type: "number", default: 24 },
+                  strokeWidth: { type: "number", default: 2 },
+                },
+                required: ["packId"],
+              },
+            },
           ],
         });
 
@@ -145,6 +167,12 @@ export async function POST(request: Request) {
               uri: "unicon://stats",
               name: "Library Statistics",
               description: "Total icon count and stats",
+              mimeType: "application/json",
+            },
+            {
+              uri: "unicon://starter_packs",
+              name: "Starter Packs",
+              description: "Curated icon packs for common use cases",
               mimeType: "application/json",
             },
           ],
@@ -180,6 +208,22 @@ export async function POST(request: Request) {
                   id: s.id,
                   name: s.name,
                   count: s.totalIcons,
+                })),
+              },
+            });
+          }
+
+          case "starter_packs": {
+            return Response.json({
+              contents: {
+                total: STARTER_PACKS.length,
+                packs: STARTER_PACKS.map((pack) => ({
+                  id: pack.id,
+                  name: pack.name,
+                  description: pack.description,
+                  color: pack.color,
+                  iconCount: pack.iconNames.length,
+                  icons: pack.iconNames,
                 })),
               },
             });
@@ -323,6 +367,80 @@ export async function POST(request: Request) {
             return Response.json({
               result: {
                 format,
+                icons: results,
+              },
+            });
+          }
+
+          case "get_starter_pack": {
+            const pack = STARTER_PACKS.find((p) => p.id === args.packId);
+            if (!pack) {
+              throw new Error(`Starter pack not found: ${args.packId}. Use the starter_packs resource to see available packs.`);
+            }
+
+            const format = (args.format || "react") as "svg" | "react" | "vue" | "svelte" | "json";
+            const results: Array<{
+              name: string;
+              code: string;
+              error?: string;
+            }> = [];
+
+            // Search for each icon in the pack
+            for (const iconName of pack.iconNames) {
+              try {
+                const searchResults = await searchIcons({
+                  query: iconName,
+                  limit: 1,
+                });
+
+                const icon = searchResults.find(
+                  (i) => i.normalizedName === iconName || i.name === iconName
+                );
+
+                if (!icon) {
+                  results.push({
+                    name: iconName,
+                    code: "",
+                    error: "Icon not found",
+                  });
+                  continue;
+                }
+
+                const convertProps: {
+                  size?: number;
+                  strokeWidth?: number;
+                } = {};
+
+                if (args.size !== undefined) {
+                  convertProps.size = args.size;
+                }
+                if (args.strokeWidth !== undefined) {
+                  convertProps.strokeWidth = args.strokeWidth;
+                }
+
+                const code = await convertIconToFormat(icon, format, convertProps);
+
+                results.push({
+                  name: icon.normalizedName,
+                  code,
+                });
+              } catch (error) {
+                results.push({
+                  name: iconName,
+                  code: "",
+                  error: error instanceof Error ? error.message : "Unknown error",
+                });
+              }
+            }
+
+            return Response.json({
+              result: {
+                packId: pack.id,
+                packName: pack.name,
+                description: pack.description,
+                format,
+                totalIcons: pack.iconNames.length,
+                retrievedIcons: results.filter((r) => !r.error).length,
                 icons: results,
               },
             });
