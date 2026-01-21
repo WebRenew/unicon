@@ -24,21 +24,8 @@
   --border: 0 0% 86%;
   --input: 0 0% 86%;
   --ring: 0 0% 60%;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
   --radius: 0.625rem;
-  --sidebar: 0 0% 95%;
-  --sidebar-foreground: 0 0% 10%;
-  --sidebar-primary: 0 0% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 0 0% 85%;
-  --sidebar-accent-foreground: 0 0% 10%;
-  --sidebar-border: 0 0% 80%;
-  --sidebar-ring: 0 0% 60%;
-  
+
   /* Brand Accent Colors */
   --accent-lavender: #E6A8D7;
   --accent-aqua: #7FD3E6;
@@ -66,21 +53,8 @@
   --border: 0 0% 20%;
   --input: 0 0% 14%;
   --ring: 0 0% 40%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
   --radius: 0.625rem;
-  --sidebar: 0 0% 6%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 0 0% 98%;
-  --sidebar-primary-foreground: 0 0% 14%;
-  --sidebar-accent: 0 0% 15%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 20%;
-  --sidebar-ring: 0 0% 40%;
-  
+
   /* Brand Accent Colors - Same in both themes */
   --accent-lavender: #E6A8D7;
   --accent-aqua: #7FD3E6;
@@ -90,7 +64,6 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-tiny5: var(--font-tiny5);
   --color-background: hsl(var(--background));
   --color-background-secondary: hsl(var(--background-secondary));
   --color-foreground: hsl(var(--foreground));
@@ -111,23 +84,10 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
   --color-accent-lavender: var(--accent-lavender);
   --color-accent-aqua: var(--accent-aqua);
   --color-accent-mint: var(--accent-mint);
