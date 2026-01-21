@@ -364,7 +364,7 @@ export function MetallicIconBrowser({
       </p>
 
       {/* Stats */}
-      <div className="flex gap-4 text-xs mb-8">
+      <div className="hidden md:flex gap-4 text-xs mb-8">
         {Object.entries(countBySource).map(([source, count]) => (
           <div key={source} className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${SOURCE_COLORS[source]}`} />
@@ -414,191 +414,191 @@ export function MetallicIconBrowser({
       {/* Filters & Controls */}
       <div className="flex flex-col gap-3 mb-8">
         {/* Row 1: Filters (collapsible) */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Filters toggle button */}
-          <button
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
-          >
-            <Filter className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-mono uppercase tracking-wider">
-              Filters
-            </span>
-            <svg 
-              className={`w-3 h-3 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor" 
-              strokeWidth={2}
+        <div className="flex flex-wrap items-center gap-3 justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Filters toggle button */}
+            <button
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-            {/* Show active filter count */}
-            {(selectedSource !== "all" || selectedCategory !== "all") && (
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-black/10 dark:bg-white/10 rounded">
-                {(selectedSource !== "all" ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0)}
+              <Filter className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-mono uppercase tracking-wider">
+                Filters
               </span>
-            )}
-          </button>
-
-          {/* Filters content - visible when expanded */}
-          {filtersExpanded && (
-            <>
-              {/* Library */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                  Library
+              <svg
+                className={`w-3 h-3 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+              {/* Show active filter count */}
+              {(selectedSource !== "all" || selectedCategory !== "all") && (
+                <span className="ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-black/10 dark:bg-white/10 rounded">
+                  {(selectedSource !== "all" ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0)}
                 </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {(["all", "lucide", "phosphor", "hugeicons", "heroicons", "tabler", "feather", "remix", "simple-icons"] as const).map((source) => (
-                    <button
-                      key={source}
-                      onClick={() => setSelectedSource(source)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${
-                        selectedSource === source
-                          ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
-                          : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
-                      }`}
-                    >
-                      {source === "all" ? "All" : source}
-                    </button>
-                  ))}
+              )}
+            </button>
+
+            {/* Filters content - visible when expanded */}
+            {filtersExpanded && (
+              <>
+                {/* Library */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                    Library
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(["all", "lucide", "phosphor", "hugeicons", "heroicons", "tabler", "feather", "remix", "simple-icons"] as const).map((source) => (
+                      <button
+                        key={source}
+                        onClick={() => setSelectedSource(source)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${
+                          selectedSource === source
+                            ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
+                            : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
+                        }`}
+                      >
+                        {source === "all" ? "All" : source}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Separator */}
-              <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+                {/* Separator */}
+                <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
 
-              {/* Category Combobox */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                  Category
-                </span>
-                <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      role="combobox"
-                      aria-expanded={categoryOpen}
-                      aria-controls="category-listbox"
-                      className="flex h-7 items-center justify-between gap-2 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 text-xs font-mono text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 transition-colors min-w-[140px]"
-                    >
-                      {selectedCategory === "all"
-                        ? "All Categories"
-                        : toTitleCase(selectedCategory)}
-                      <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Search categories..." className="text-xs" />
-                      <CommandList id="category-listbox">
-                        <CommandEmpty>No category found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all"
-                            onSelect={() => {
-                              setSelectedCategory("all");
-                              setCategoryOpen(false);
-                            }}
-                            className="text-xs font-mono"
-                          >
-                            <Check
-                              className={`mr-2 h-3 w-3 ${
-                                selectedCategory === "all" ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            All Categories
-                          </CommandItem>
-                          {categories.map((cat) => (
+                {/* Category Combobox */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                    Category
+                  </span>
+                  <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        role="combobox"
+                        aria-expanded={categoryOpen}
+                        aria-controls="category-listbox"
+                        className="flex h-7 items-center justify-between gap-2 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 text-xs font-mono text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 transition-colors min-w-[140px]"
+                      >
+                        {selectedCategory === "all"
+                          ? "All Categories"
+                          : toTitleCase(selectedCategory)}
+                        <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search categories..." className="text-xs" />
+                        <CommandList id="category-listbox">
+                          <CommandEmpty>No category found.</CommandEmpty>
+                          <CommandGroup>
                             <CommandItem
-                              key={cat}
-                              value={cat}
+                              value="all"
                               onSelect={() => {
-                                setSelectedCategory(cat);
+                                setSelectedCategory("all");
                                 setCategoryOpen(false);
                               }}
                               className="text-xs font-mono"
                             >
                               <Check
                                 className={`mr-2 h-3 w-3 ${
-                                  selectedCategory === cat ? "opacity-100" : "opacity-0"
+                                  selectedCategory === "all" ? "opacity-100" : "opacity-0"
                                 }`}
                               />
-                              {toTitleCase(cat)}
+                              All Categories
                             </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                            {categories.map((cat) => (
+                              <CommandItem
+                                key={cat}
+                                value={cat}
+                                onSelect={() => {
+                                  setSelectedCategory(cat);
+                                  setCategoryOpen(false);
+                                }}
+                                className="text-xs font-mono"
+                              >
+                                <Check
+                                  className={`mr-2 h-3 w-3 ${
+                                    selectedCategory === cat ? "opacity-100" : "opacity-0"
+                                  }`}
+                                />
+                                {toTitleCase(cat)}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              {/* Bundle All Button - visible when filters active */}
-              {canBundleAll && (
-                <>
-                  <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-                  <button
-                    onClick={() => {
-                      addAllToBundle(icons);
-                      setIsCartOpen(true);
-                    }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
-                  >
-                    <PackagePlus className="w-3.5 h-3.5" />
-                    Bundle All ({iconsNotInBundle.length})
-                  </button>
-                </>
-              )}
-
-              {/* Clear Bundle Button - visible when bundle has items */}
-              {cartItems.length > 0 && (
-                <>
-                  <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-                  <button
-                    onClick={clearCart}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Clear Bundle ({cartItems.length})
-                  </button>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Bundle All action - visible when filters active but panel collapsed */}
-        {!filtersExpanded && canBundleAll && (
-          <div className="flex items-center gap-3 -mt-2 mb-2">
-            <button
-              onClick={() => {
-                addAllToBundle(icons);
-                setIsCartOpen(true);
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
-            >
-              <PackagePlus className="w-3.5 h-3.5" />
-              Bundle All {icons.length} Filtered Icons
-              {iconsNotInBundle.length < icons.length && (
-                <span className="text-[var(--accent-mint)]/70">
-                  (+{iconsNotInBundle.length} new)
-                </span>
-              )}
-            </button>
+                {/* Bundle All Button - visible when filters active */}
+                {canBundleAll && (
+                  <>
+                    <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+                    <button
+                      onClick={() => {
+                        addAllToBundle(icons);
+                        setIsCartOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
+                    >
+                      <PackagePlus className="w-3.5 h-3.5" />
+                      Bundle All ({iconsNotInBundle.length})
+                    </button>
+                  </>
+                )}
+              </>
+            )}
           </div>
-        )}
 
-        {/* Clear Bundle action - visible when bundle has items and panel collapsed */}
-        {!filtersExpanded && cartItems.length > 0 && (
-          <div className="flex items-center gap-3 -mt-2 mb-2">
+          {/* Clear Bundle Button - visible when bundle has items - positioned on the right */}
+          {cartItems.length > 0 && (
             <button
               onClick={clearCart}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              Clear Bundle ({cartItems.length} icons)
+              Clear Bundle ({cartItems.length})
             </button>
+          )}
+        </div>
+
+        {/* Actions when panel collapsed */}
+        {!filtersExpanded && (canBundleAll || cartItems.length > 0) && (
+          <div className="flex items-center justify-between gap-3 -mt-2 mb-2">
+            {/* Bundle All action - visible when filters active */}
+            {canBundleAll && (
+              <button
+                onClick={() => {
+                  addAllToBundle(icons);
+                  setIsCartOpen(true);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
+              >
+                <PackagePlus className="w-3.5 h-3.5" />
+                Bundle All {icons.length} Filtered Icons
+                {iconsNotInBundle.length < icons.length && (
+                  <span className="text-[var(--accent-mint)]/70">
+                    (+{iconsNotInBundle.length} new)
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Clear Bundle action - positioned on the right */}
+            {cartItems.length > 0 && (
+              <button
+                onClick={clearCart}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all ml-auto"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Clear Bundle ({cartItems.length} icons)
+              </button>
+            )}
           </div>
         )}
 
