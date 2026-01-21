@@ -9,7 +9,6 @@ import type { IconData } from "@/types/icon";
 
 export function HomeHeader() {
   const [cartCount, setCartCount] = useState(0);
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     // Update cart count from localStorage

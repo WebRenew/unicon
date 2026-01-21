@@ -6,7 +6,6 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Package,
   Sparkles,
   SlidersHorizontal,
   Filter,
@@ -16,7 +15,6 @@ import {
   AlertTriangle,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
 import { IconCart } from "./icon-cart";

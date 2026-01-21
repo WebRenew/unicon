@@ -3,10 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { IconData } from "@/types/icon";
 
-interface SearchResult extends IconData {
-  score: number;
-}
-
 interface UseIconSearchOptions {
   initialIcons: IconData[];
   debounceMs?: number;
