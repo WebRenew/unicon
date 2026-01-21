@@ -380,14 +380,16 @@ export function MetallicIconBrowser({
   useEffect(() => {
     setPage(0);
     fetchIcons(0);
-  }, [fetchIcons]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, selectedSource, selectedCategory]);
 
-  // Fetch when page changes
+  // Fetch when page changes (but not when filters change, since that's handled above)
   useEffect(() => {
     if (page > 0) {
       fetchIcons(page);
     }
-  }, [page, fetchIcons]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const goToPage = (newPage: number) => {
     if (newPage >= 0 && newPage < totalPages) {
