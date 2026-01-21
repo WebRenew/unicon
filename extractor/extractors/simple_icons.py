@@ -38,10 +38,25 @@ class SimpleIconsExtractor(BaseExtractor):
         with open(self.data_file) as f:
             icon_data = json.load(f)
 
+        # Validate JSON structure
+        if not isinstance(icon_data, list):
+            raise TypeError(f"Expected icon data to be a list, got {type(icon_data).__name__}")
+
+        if not icon_data:
+            raise ValueError("Icon data list is empty")
+
         print(f"Found {len(icon_data)} Simple Icons in metadata")
 
-        # Create lookup by slug
-        metadata_by_slug = {item["slug"]: item for item in icon_data}
+        # Create lookup by slug with validation
+        metadata_by_slug = {}
+        for item in icon_data:
+            if not isinstance(item, dict):
+                print(f"  Warning: Skipping non-dict item: {item}")
+                continue
+            if "slug" not in item:
+                print(f"  Warning: Skipping item without 'slug' field: {item}")
+                continue
+            metadata_by_slug[item["slug"]] = item
 
         # Process each SVG file
         svg_files = list(self.icons_dir.glob("*.svg"))
@@ -122,15 +137,16 @@ class SimpleIconsExtractor(BaseExtractor):
 
     def _title_to_pascal(self, title: str) -> str:
         """Convert brand title to PascalCase name.
-        
+
         Examples:
             ".NET" -> "DotNet"
             "1Password" -> "1Password"
             "Adobe After Effects" -> "AdobeAfterEffects"
+            "C++" -> "CPlusPlus"
         """
         import re
 
-        # Replace special characters with words
+        # Replace special characters with words (do this for ALL occurrences)
         replacements = {
             ".": "Dot",
             "+": "Plus",
@@ -141,18 +157,19 @@ class SimpleIconsExtractor(BaseExtractor):
 
         result = title
         for char, word in replacements.items():
-            # Only replace at start of title or when followed by letter/space
+            # Replace all occurrences, adding space before/after for proper word splitting
+            # Handle start of string
             if result.startswith(char):
-                result = word + result[1:]
-            result = result.replace(f" {char}", f" {word}")
-            result = result.replace(f"{char} ", f"{word} ")
+                result = word + " " + result[1:]
+            # Replace char with space-padded word for proper splitting
+            result = result.replace(char, f" {word} ")
 
         # Remove remaining special characters except alphanumeric and spaces
         result = re.sub(r"[^a-zA-Z0-9\s]", "", result)
 
-        # Split on spaces and capitalize each word
-        words = result.split()
-        pascal = "".join(word.capitalize() if word[0].isalpha() else word for word in words)
+        # Split on spaces, remove empty strings, and capitalize each word
+        words = [w for w in result.split() if w]
+        pascal = "".join(word.capitalize() if word and word[0].isalpha() else word for word in words)
 
         return pascal
 

@@ -25,18 +25,39 @@ class PhosphorExtractor(BaseExtractor):
             return "unknown"
 
     def extract_all(self) -> list[ExtractedIcon]:
-        """Extract all Phosphor icons (all weights)."""
+        """Extract all Phosphor icons (all weights).
+
+        Uses two-pass approach to prevent orphaned variants:
+        1. First extract all base (regular) icons
+        2. Then extract variants only for icons that have a base
+        """
         icons = []
-        
+        base_icon_names = set()
+
         if not self.core_dir.exists():
             raise FileNotFoundError(f"Phosphor icons directory not found: {self.core_dir}")
 
+        # First pass: Extract base (regular) icons
+        regular_dir = self.core_dir / self.PRIMARY_WEIGHT
+        if regular_dir.exists():
+            svg_files = list(regular_dir.glob("*.svg"))
+            print(f"Found {len(svg_files)} Phosphor icons ({self.PRIMARY_WEIGHT})")
+
+            for svg_file in svg_files:
+                try:
+                    icon = self.extract_one(svg_file, self.PRIMARY_WEIGHT)
+                    icons.append(icon)
+                    base_icon_names.add(icon.normalized_name)
+                except Exception as e:
+                    print(f"Error extracting {svg_file.name}: {e}")
+
+        # Second pass: Extract variant icons (non-regular weights)
         for weight_dir in self.core_dir.iterdir():
             if not weight_dir.is_dir():
                 continue
-            
+
             weight = weight_dir.name
-            if weight not in self.WEIGHTS:
+            if weight not in self.WEIGHTS or weight == self.PRIMARY_WEIGHT:
                 continue
 
             svg_files = list(weight_dir.glob("*.svg"))
@@ -45,7 +66,12 @@ class PhosphorExtractor(BaseExtractor):
             for svg_file in svg_files:
                 try:
                     icon = self.extract_one(svg_file, weight)
-                    icons.append(icon)
+
+                    # Only add variant if base icon exists
+                    if icon.normalized_name in base_icon_names:
+                        icons.append(icon)
+                    else:
+                        print(f"  Warning: Skipping {weight} variant of '{icon.normalized_name}' (no base icon)")
                 except Exception as e:
                     print(f"Error extracting {svg_file.name}: {e}")
 
