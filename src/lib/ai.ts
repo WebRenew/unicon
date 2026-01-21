@@ -55,7 +55,12 @@ function getEmbeddingModel() {
     throw new Error("Either OPENAI_API_KEY or AI_GATEWAY_API_KEY must be configured");
   }
 
-  const openai = createOpenAI({ apiKey });
+  // Use Vercel AI Gateway baseURL if using gateway key
+  const config = gatewayKey && !openaiKey
+    ? { apiKey, baseURL: "https://ai-gateway.vercel.sh/v3/ai" }
+    : { apiKey };
+
+  const openai = createOpenAI(config);
   return openai.embedding("text-embedding-3-small");
 }
 
