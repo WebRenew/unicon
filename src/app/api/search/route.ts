@@ -230,9 +230,9 @@ async function hybridSearch(
   const queryTokens = queryLower.split(/\s+/).filter(Boolean);
 
   // Use Turso's native vector_distance_cos for database-level similarity search
-  // Fetch more than limit to allow for re-ranking with exact match boost
-  // Add offset to fetch the right page
-  const fetchLimit = Math.min((limit + offset) * 3, 1000);
+  // Fetch more than needed to allow for re-ranking with exact match boost
+  // We need to fetch enough results to properly rank up to offset + limit
+  const fetchLimit = Math.min((offset + limit) * 2, 1000);
 
   // Query with native vector distance calculation
   // vector_distance_cos returns distance (1 - similarity), so lower is better

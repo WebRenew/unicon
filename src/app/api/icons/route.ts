@@ -171,14 +171,12 @@ async function aiSemanticSearch(
 
   // Convert embedding to Turso vector format
   const vectorString = embeddingToVectorString(queryEmbedding);
-  
-  // Use Turso's native vector_distance_cos for database-level similarity search
-  // Fetch with offset support for pagination
-  const fetchLimit = limit + offset;
 
+  // Use Turso's native vector_distance_cos for database-level similarity search
+  // Use SQL LIMIT and OFFSET for efficient pagination
   const semanticResults = (sourceId
     ? await db.all(sql`
-        SELECT 
+        SELECT
           id, name, normalized_name as normalizedName, source_id as sourceId,
           category, tags, view_box as viewBox, content,
           default_stroke as defaultStroke, default_fill as defaultFill,
@@ -187,10 +185,10 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL AND source_id = ${sourceId}
         ORDER BY distance ASC
-        LIMIT ${fetchLimit}
+        LIMIT ${limit} OFFSET ${offset}
       `)
     : await db.all(sql`
-        SELECT 
+        SELECT
           id, name, normalized_name as normalizedName, source_id as sourceId,
           category, tags, view_box as viewBox, content,
           default_stroke as defaultStroke, default_fill as defaultFill,
@@ -199,12 +197,11 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL
         ORDER BY distance ASC
-        LIMIT ${fetchLimit}
+        LIMIT ${limit} OFFSET ${offset}
       `)) as VectorSearchRow[];
 
-  // Apply offset and convert to IconData
-  const paged = semanticResults.slice(offset);
-  const icons: IconData[] = paged.map((row) => {
+  // Convert to IconData (no need to slice since database handles offset)
+  const icons: IconData[] = semanticResults.map((row) => {
     const tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
     return {
       id: row.id as string,

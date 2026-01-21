@@ -334,7 +334,7 @@ export function MetallicIconBrowser({
   useEffect(() => {
     setPage(0);
     fetchIcons(0);
-  }, [debouncedSearch, selectedSource, selectedCategory, fetchIcons]);
+  }, [fetchIcons]);
 
   // Fetch when page changes
   useEffect(() => {
