@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { logger } from "@/lib/logger";
 import { CopyIcon } from "@/components/icons/ui/copy";
 import { CheckIcon } from "@/components/icons/ui/check";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export function CopyButton({ value, className }: CopyButtonProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy to clipboard:", error);
+      logger.error("Failed to copy to clipboard:", error);
     }
   }, [value]);
 

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getEmbedding, embeddingToVectorString, expandQueryWithAI } from "@/lib/ai";
 import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
+import { logger } from "@/lib/logger";
 
 /** Row type for vector search results */
 interface VectorSearchRow {
@@ -99,7 +100,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("Error fetching icons:", error);
+    logger.error("Error fetching icons:", error);
     return NextResponse.json({ error: "Failed to fetch icons" }, { status: 500 });
   }
 }
@@ -126,7 +127,7 @@ async function aiSemanticSearch(
   const aiExpansionPromise = process.env.ANTHROPIC_API_KEY
     ? withTimeout(
         expandQueryWithAI(query).catch((error) => {
-          console.error("AI expansion failed:", error);
+          logger.error("AI expansion failed:", error);
           return null;
         }),
         2000, // 2 second timeout for AI expansion
@@ -149,7 +150,7 @@ async function aiSemanticSearch(
     if (expandedQuery && expandedQuery !== query) {
       // AI expansion succeeded, get embedding for expanded query
       queryEmbedding = await getEmbedding(expandedQuery);
-      console.log(`AI expanded "${query}" to: ${expandedQuery}`);
+      logger.log(`AI expanded "${query}" to: ${expandedQuery}`);
     } else if (originalEmbedding) {
       // Use the pre-fetched original embedding
       queryEmbedding = originalEmbedding;

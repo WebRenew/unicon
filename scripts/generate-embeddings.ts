@@ -9,7 +9,7 @@
  */
 import { config } from "dotenv";
 import { createClient } from "@libsql/client";
-import { embed, embedMany } from "ai";
+import { embedMany } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 
 // Load .env.local
@@ -33,12 +33,6 @@ interface IconRow {
   normalized_name: string;
   category: string | null;
   tags: string | null;
-}
-
-interface EmbeddingStats {
-  source_id: string;
-  total: number;
-  with_embedding: number;
 }
 
 async function main() {

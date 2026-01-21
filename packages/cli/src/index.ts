@@ -311,10 +311,6 @@ interface SearchResponse {
   expandedQuery?: string;
 }
 
-interface CategoriesResponse {
-  categories: string[];
-}
-
 async function fetchIcons(
   params: {
     query?: string | undefined;

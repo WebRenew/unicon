@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { icons } from "@/lib/schema";
 import { getEmbeddings, embeddingToBlob } from "@/lib/ai";
 import { sql, isNull } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 const BATCH_SIZE = 100;
 const MAX_BATCHES_PER_REQUEST = 10; // Process up to 1000 icons per request
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       complete: remaining === 0,
     });
   } catch (error) {
-    console.error("Embedding generation error:", error);
+    logger.error("Embedding generation error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Generation failed" },
       { status: 500 }
@@ -126,7 +127,7 @@ export async function GET() {
       percentage: totalIcons > 0 ? Math.round((totalWithEmbedding / totalIcons) * 100) : 0,
     });
   } catch (error) {
-    console.error("Stats error:", error);
+    logger.error("Stats error:", error);
     return NextResponse.json(
       { error: "Failed to get stats" },
       { status: 500 }
