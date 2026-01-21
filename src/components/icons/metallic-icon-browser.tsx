@@ -437,19 +437,6 @@ export function MetallicIconBrowser({
             </button>
           ))}
 
-          {/* Bundle All Button - shown when a library filter is active */}
-          {canBundleAll && selectedSource !== "all" && (
-            <button
-              onClick={() => {
-                addAllToBundle(icons);
-                setIsCartOpen(true);
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all ml-auto"
-            >
-              <PackagePlusIcon className="w-3.5 h-3.5" />
-              Bundle All on Page ({iconsNotInBundle.length})
-            </button>
-          )}
         </div>
 
         {/* Search */}
@@ -612,23 +599,6 @@ export function MetallicIconBrowser({
                       </PopoverContent>
                     </Popover>
                   </div>
-
-                  {/* Bundle All Button - visible when filters active (but not library filter, since that's in stats row) */}
-                  {canBundleAll && selectedSource === "all" && (
-                    <>
-                      <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-                      <button
-                        onClick={() => {
-                          addAllToBundle(icons);
-                          setIsCartOpen(true);
-                        }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
-                      >
-                        <PackagePlusIcon className="w-3.5 h-3.5" />
-                        Bundle All on Page ({iconsNotInBundle.length})
-                      </button>
-                    </>
-                  )}
                 </>
               )}
             </div>
@@ -646,37 +616,16 @@ export function MetallicIconBrowser({
           </div>
 
           {/* Actions when panel collapsed */}
-          {!filtersExpanded && (canBundleAll || cartItems.length > 0) && (
+          {!filtersExpanded && cartItems.length > 0 && (
             <div className="flex items-center justify-between gap-3 -mt-2 mb-2">
-              {/* Bundle All action - visible when filters active (but not library filter, since that's in stats row) */}
-              {canBundleAll && selectedSource === "all" && (
-                <button
-                  onClick={() => {
-                    addAllToBundle(icons);
-                    setIsCartOpen(true);
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
-                >
-                  <PackagePlusIcon className="w-3.5 h-3.5" />
-                  Bundle All on Page ({icons.length})
-                  {iconsNotInBundle.length < icons.length && (
-                    <span className="text-black/60 dark:text-[var(--accent-mint)]/70">
-                      • {iconsNotInBundle.length} new
-                    </span>
-                  )}
-                </button>
-              )}
-
               {/* Clear Bundle action - positioned on the right */}
-              {cartItems.length > 0 && (
-                <button
-                  onClick={clearCart}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all ml-auto"
-                >
-                  <Trash2Icon className="w-3.5 h-3.5" />
-                  Clear Bundle ({cartItems.length} icons)
-                </button>
-              )}
+              <button
+                onClick={clearCart}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all ml-auto"
+              >
+                <Trash2Icon className="w-3.5 h-3.5" />
+                Clear Bundle ({cartItems.length} icons)
+              </button>
             </div>
           )}
 
@@ -769,6 +718,23 @@ export function MetallicIconBrowser({
                     ))}
                   </div>
                 </div>
+
+                {/* Bundle All Button - shown when there are icons to bundle */}
+                {canBundleAll && (
+                  <>
+                    <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+                    <button
+                      onClick={() => {
+                        addAllToBundle(icons);
+                        setIsCartOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
+                    >
+                      <PackagePlusIcon className="w-3.5 h-3.5" />
+                      Bundle All on Page ({iconsNotInBundle.length})
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
