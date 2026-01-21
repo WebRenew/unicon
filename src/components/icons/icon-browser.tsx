@@ -23,7 +23,9 @@ export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
     isSearching,
     searchType,
     error,
+    hasMore,
     search: performSearch,
+    loadMore,
   } = useIconSearch({ initialIcons });
 
   // Trigger search when query or source changes
@@ -70,6 +72,26 @@ export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
             selectedIcon={selectedIcon}
             onSelectIcon={setSelectedIcon}
           />
+
+          {/* Load More Button */}
+          {hasMore && !isSearching && search.length >= 3 && (
+            <div className="flex justify-center py-8">
+              <button
+                onClick={loadMore}
+                className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Load More
+              </button>
+            </div>
+          )}
+
+          {isSearching && icons.length > 0 && (
+            <div className="flex justify-center py-8 text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <span className="animate-pulse">●</span> Loading more...
+              </span>
+            </div>
+          )}
         </ScrollArea>
       </div>
 

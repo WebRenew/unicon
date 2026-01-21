@@ -64,10 +64,11 @@ const BOOSTS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, sourceId, limit = 50, useAI = false } = body as {
+    const { query, sourceId, limit = 50, offset = 0, useAI = false } = body as {
       query: string;
       sourceId?: string;
       limit?: number;
+      offset?: number;
       useAI?: boolean;
     };
 
@@ -82,8 +83,12 @@ export async function POST(request: NextRequest) {
 
     // For very short queries, use text search
     if (trimmedQuery.length < 3) {
-      const results = await textSearch(trimmedQuery, sourceId, limit);
-      return NextResponse.json({ results, searchType: "text" });
+      const results = await textSearch(trimmedQuery, sourceId, limit, offset);
+      return NextResponse.json({
+        results,
+        searchType: "text",
+        hasMore: results.length === limit,
+      });
     }
 
     // Try semantic search with synonym expansion
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
       // First, expand using pre-computed synonyms (instant, no API call)
       let searchQuery = expandQueryWithSynonyms(trimmedQuery);
       let expandedTerms: string | undefined = searchQuery !== trimmedQuery ? searchQuery : undefined;
-      
+
       // Only use AI expansion if explicitly requested AND synonyms didn't help
       if (useAI && !hasSynonyms(trimmedQuery) && process.env.ANTHROPIC_API_KEY) {
         try {
@@ -111,16 +116,22 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const results = await hybridSearch(trimmedQuery, searchQuery, sourceId, limit);
-      return NextResponse.json({ 
-        results, 
+      const results = await hybridSearch(trimmedQuery, searchQuery, sourceId, limit, offset);
+      return NextResponse.json({
+        results,
         searchType: "semantic",
         expandedQuery: expandedTerms,
+        hasMore: results.length === limit,
       });
     } catch (error) {
       console.error("Semantic search failed, falling back to text:", error);
-      const results = await textSearch(trimmedQuery, sourceId, limit);
-      return NextResponse.json({ results, searchType: "text", fallback: true });
+      const results = await textSearch(trimmedQuery, sourceId, limit, offset);
+      return NextResponse.json({
+        results,
+        searchType: "text",
+        fallback: true,
+        hasMore: results.length === limit,
+      });
     }
   } catch (error) {
     console.error("Search error:", error);
@@ -196,17 +207,19 @@ function calculateExactMatchBoost(icon: {
 /**
  * Perform hybrid search combining semantic similarity with exact match boosting.
  * Uses Turso's native vector_distance_cos for database-level similarity search.
- * 
+ *
  * @param originalQuery - The user's original query (for exact matching)
  * @param expandedQuery - The synonym-expanded query (for semantic search)
  * @param sourceId - Optional source filter
  * @param limit - Max results to return
+ * @param offset - Number of results to skip
  */
 async function hybridSearch(
   originalQuery: string,
   expandedQuery: string,
   sourceId: string | undefined,
-  limit: number
+  limit: number,
+  offset: number = 0
 ): Promise<SearchResult[]> {
   // Get embedding for the expanded query
   const queryEmbedding = await getEmbedding(expandedQuery);
@@ -218,7 +231,8 @@ async function hybridSearch(
 
   // Use Turso's native vector_distance_cos for database-level similarity search
   // Fetch more than limit to allow for re-ranking with exact match boost
-  const fetchLimit = Math.min(limit * 3, 500);
+  // Add offset to fetch the right page
+  const fetchLimit = Math.min((limit + offset) * 3, 1000);
 
   // Query with native vector distance calculation
   // vector_distance_cos returns distance (1 - similarity), so lower is better
@@ -292,9 +306,9 @@ async function hybridSearch(
     });
   }
 
-  // Sort by hybrid score descending and return top results
+  // Sort by hybrid score descending, apply offset, and return requested page
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, limit);
+  return scored.slice(offset, offset + limit);
 }
 
 /**
@@ -303,7 +317,8 @@ async function hybridSearch(
 async function textSearch(
   query: string,
   sourceId: string | undefined,
-  limit: number
+  limit: number,
+  offset: number = 0
 ): Promise<SearchResult[]> {
   const searchTerm = `%${query.toLowerCase()}%`;
 
@@ -321,14 +336,16 @@ async function textSearch(
       .from(icons)
       .where(sql`${eq(icons.sourceId, sourceId)} AND (${or(...conditions)})`)
       .orderBy(asc(icons.normalizedName))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
   } else {
     results = await db
       .select()
       .from(icons)
       .where(or(...conditions))
       .orderBy(asc(icons.normalizedName))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
   }
 
   return results.map((icon) => ({

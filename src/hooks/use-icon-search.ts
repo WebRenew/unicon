@@ -19,7 +19,9 @@ interface UseIconSearchReturn {
   isSearching: boolean;
   searchType: "local" | "text" | "semantic";
   error: string | null;
+  hasMore: boolean;
   search: (query: string, sourceId?: string) => void;
+  loadMore: () => void;
   clearSearch: () => void;
 }
 
@@ -135,7 +137,9 @@ export function useIconSearch({
   const [isSearching, setIsSearching] = useState(false);
   const [searchType, setSearchType] = useState<"local" | "text" | "semantic">("local");
   const [error, setError] = useState<string | null>(null);
-  
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const apiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -143,7 +147,7 @@ export function useIconSearch({
   const lastSourceRef = useRef<string | undefined>(undefined);
 
   const performSearch = useCallback(
-    async (query: string, sourceId?: string) => {
+    async (query: string, sourceId?: string, currentOffset: number = 0, append: boolean = false) => {
       // Cancel any pending request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -160,36 +164,48 @@ export function useIconSearch({
         setSearchType("local");
         setError(null);
         setIsSearching(false);
+        setHasMore(false);
+        setOffset(0);
         return;
       }
 
-      // Always perform local fuzzy search first (optimistic UI)
-      const localResults = fuzzyLocalSearch(initialIcons, trimmedQuery, sourceId);
-      setIcons(localResults);
-      setSearchType("local");
-      setError(null);
+      // Always perform local fuzzy search first (optimistic UI) - but only on initial search
+      if (currentOffset === 0) {
+        const localResults = fuzzyLocalSearch(initialIcons, trimmedQuery, sourceId);
+        setIcons(localResults);
+        setSearchType("local");
+        setError(null);
+        setHasMore(false);
 
-      // For very short queries or when we have enough local results, skip API
-      const shouldSkipApi = trimmedQuery.length < 3 || localResults.length >= minLocalResults;
-      
-      if (shouldSkipApi) {
-        setIsSearching(false);
-        return;
+        // For very short queries or when we have enough local results, skip API
+        const shouldSkipApi = trimmedQuery.length < 3 || localResults.length >= minLocalResults;
+
+        if (shouldSkipApi) {
+          setIsSearching(false);
+          setOffset(0);
+          return;
+        }
       }
 
       // Trigger API search after a delay to allow local results to be seen
       setIsSearching(true);
-      
+
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Delay API call slightly so local results show first
+      // Delay API call slightly so local results show first (only for initial search)
+      const delay = currentOffset === 0 ? 100 : 0;
       apiTimeoutRef.current = setTimeout(async () => {
         try {
           const response = await fetch("/api/search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: trimmedQuery, sourceId, limit: 100 }),
+            body: JSON.stringify({
+              query: trimmedQuery,
+              sourceId,
+              limit: 100,
+              offset: currentOffset,
+            }),
             signal: controller.signal,
           });
 
@@ -198,11 +214,17 @@ export function useIconSearch({
           }
 
           const data = await response.json();
-          
+
           // Only update if this is still the current query
           if (lastQueryRef.current === query && lastSourceRef.current === sourceId) {
-            setIcons(data.results);
+            if (append) {
+              setIcons((prev) => [...prev, ...data.results]);
+            } else {
+              setIcons(data.results);
+            }
             setSearchType(data.searchType === "semantic" ? "semantic" : "text");
+            setHasMore(data.hasMore || false);
+            setOffset(currentOffset + data.results.length);
           }
         } catch (err) {
           if (err instanceof Error && err.name === "AbortError") {
@@ -215,7 +237,7 @@ export function useIconSearch({
         } finally {
           setIsSearching(false);
         }
-      }, 100); // Small delay for optimistic UI
+      }, delay);
     },
     [initialIcons, minLocalResults]
   );
@@ -230,13 +252,22 @@ export function useIconSearch({
         clearTimeout(timeoutRef.current);
       }
 
+      // Reset offset for new search
+      setOffset(0);
+
       // Debounce the search
       timeoutRef.current = setTimeout(() => {
-        performSearch(query, sourceId);
+        performSearch(query, sourceId, 0, false);
       }, debounceMs);
     },
     [performSearch, debounceMs]
   );
+
+  const loadMore = useCallback(() => {
+    if (!isSearching && hasMore && lastQueryRef.current) {
+      performSearch(lastQueryRef.current, lastSourceRef.current, offset, true);
+    }
+  }, [performSearch, offset, isSearching, hasMore]);
 
   const clearSearch = useCallback(() => {
     if (timeoutRef.current) {
@@ -254,6 +285,8 @@ export function useIconSearch({
     setSearchType("local");
     setError(null);
     setIsSearching(false);
+    setHasMore(false);
+    setOffset(0);
   }, [initialIcons]);
 
   // Cleanup on unmount
@@ -276,7 +309,9 @@ export function useIconSearch({
     isSearching,
     searchType,
     error,
+    hasMore,
     search,
+    loadMore,
     clearSearch,
   };
 }
