@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { logger } from "@/lib/logger";
+import { iconSearchCache } from "@/lib/search-cache";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
@@ -319,6 +320,27 @@ export function MetallicIconBrowser({
     async (pageNum: number) => {
       setIsLoading(true);
       try {
+        const cacheKey = {
+          q: debouncedSearch || '',
+          source: selectedSource,
+          category: selectedCategory,
+          limit: ICONS_PER_PAGE,
+          offset: pageNum * ICONS_PER_PAGE,
+        };
+
+        // Check cache first
+        const cached = iconSearchCache.get(cacheKey);
+        if (cached) {
+          setIcons(cached.icons);
+          setSearchType(cached.searchType ?? "text");
+          setExpandedQuery(cached.expandedQuery ?? null);
+          if (!cached.hasMore && cached.icons.length < ICONS_PER_PAGE) {
+            setTotalResults(pageNum * ICONS_PER_PAGE + cached.icons.length);
+          }
+          setIsLoading(false);
+          return;
+        }
+
         const params = new URLSearchParams({
           limit: String(ICONS_PER_PAGE),
           offset: String(pageNum * ICONS_PER_PAGE),
@@ -329,6 +351,14 @@ export function MetallicIconBrowser({
 
         const res = await fetch(`/api/icons?${params}`);
         const data = await res.json();
+
+        // Cache the result
+        iconSearchCache.set(cacheKey, {
+          icons: data.icons,
+          searchType: data.searchType,
+          expandedQuery: data.expandedQuery,
+          hasMore: data.hasMore,
+        });
 
         setIcons(data.icons);
         setSearchType(data.searchType ?? "text");

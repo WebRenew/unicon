@@ -5,6 +5,7 @@ import { getEmbedding, embeddingToVectorString, expandQueryWithAI } from "@/lib/
 import { expandQueryWithSynonyms, hasSynonyms } from "@/lib/synonyms";
 import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
+import { logger } from "@/lib/logger";
 
 interface SearchResult extends IconData {
   score: number;
@@ -84,11 +85,18 @@ export async function POST(request: NextRequest) {
     // For very short queries, use text search
     if (trimmedQuery.length < 3) {
       const results = await textSearch(trimmedQuery, sourceId, limit, offset);
-      return NextResponse.json({
-        results,
-        searchType: "text",
-        hasMore: results.length === limit,
-      });
+      return NextResponse.json(
+        {
+          results,
+          searchType: "text",
+          hasMore: results.length === limit,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        }
+      );
     }
 
     // Try semantic search with synonym expansion
@@ -109,32 +117,52 @@ export async function POST(request: NextRequest) {
           if (aiExpanded) {
             searchQuery = aiExpanded;
             expandedTerms = aiExpanded;
-            console.log(`AI expanded "${trimmedQuery}" to: ${aiExpanded}`);
+            logger.log(`AI expanded "${trimmedQuery}" to: ${aiExpanded}`);
           }
         } catch (aiError) {
-          console.error("AI expansion failed, using synonym expansion:", aiError);
+          logger.error("AI expansion failed, using synonym expansion:", aiError);
         }
       }
 
       const results = await hybridSearch(trimmedQuery, searchQuery, sourceId, limit, offset);
-      return NextResponse.json({
-        results,
-        searchType: "semantic",
-        expandedQuery: expandedTerms,
-        hasMore: results.length === limit,
-      });
+
+      // Use shorter cache for AI-expanded queries since results may vary
+      const cacheControl = useAI && expandedTerms
+        ? "public, s-maxage=60, stale-while-revalidate=300"
+        : "public, s-maxage=3600, stale-while-revalidate=86400";
+
+      return NextResponse.json(
+        {
+          results,
+          searchType: "semantic",
+          expandedQuery: expandedTerms,
+          hasMore: results.length === limit,
+        },
+        {
+          headers: {
+            "Cache-Control": cacheControl,
+          },
+        }
+      );
     } catch (error) {
-      console.error("Semantic search failed, falling back to text:", error);
+      logger.error("Semantic search failed, falling back to text:", error);
       const results = await textSearch(trimmedQuery, sourceId, limit, offset);
-      return NextResponse.json({
-        results,
-        searchType: "text",
-        fallback: true,
-        hasMore: results.length === limit,
-      });
+      return NextResponse.json(
+        {
+          results,
+          searchType: "text",
+          fallback: true,
+          hasMore: results.length === limit,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        }
+      );
     }
   } catch (error) {
-    console.error("Search error:", error);
+    logger.error("Search error:", error);
     return NextResponse.json(
       { error: "Search failed" },
       { status: 500 }

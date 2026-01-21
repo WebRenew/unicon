@@ -8,6 +8,21 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 
 const EMBEDDING_DIMENSIONS = 1536;
 
+// In-memory caches to reduce API calls
+const queryExpansionCache = new Map<string, string>();
+const embeddingCache = new Map<string, number[]>();
+const MAX_CACHE_SIZE = 1000;
+
+// Simple cache cleanup
+function pruneCache<T>(cache: Map<string, T>) {
+  if (cache.size > MAX_CACHE_SIZE) {
+    // Remove oldest 20% of entries
+    const toRemove = Math.floor(MAX_CACHE_SIZE * 0.2);
+    const keys = Array.from(cache.keys()).slice(0, toRemove);
+    keys.forEach(key => cache.delete(key));
+  }
+}
+
 function getEmbeddingModel() {
   const apiKey = process.env.AI_GATEWAY_API_KEY;
   if (!apiKey) {
@@ -31,10 +46,18 @@ function getChatModel() {
 /**
  * Use Claude to expand a user query into relevant icon search terms.
  * This helps find icons that match user intent even if they don't use exact names.
+ * Results are cached to reduce API calls.
  */
 export async function expandQueryWithAI(userQuery: string): Promise<string> {
+  // Check cache first
+  const cacheKey = userQuery.toLowerCase().trim();
+  const cached = queryExpansionCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const model = getChatModel();
-  
+
   const { text } = await generateText({
     model,
     system: `You are an icon search assistant. Given a user's query about icons they need, expand it into a comprehensive list of relevant icon names and concepts.
@@ -53,18 +76,37 @@ Output: business briefcase chart graph money dollar finance office building pres
     prompt: userQuery,
   });
 
-  return text.trim();
+  const result = text.trim();
+
+  // Cache the result
+  queryExpansionCache.set(cacheKey, result);
+  pruneCache(queryExpansionCache);
+
+  return result;
 }
 
 /**
  * Get embedding for a single text query.
+ * Results are cached to reduce API calls.
  */
 export async function getEmbedding(text: string): Promise<number[]> {
+  // Check cache first
+  const cacheKey = text.toLowerCase().trim();
+  const cached = embeddingCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const model = getEmbeddingModel();
   const { embedding } = await embed({
     model,
     value: text,
   });
+
+  // Cache the result
+  embeddingCache.set(cacheKey, embedding);
+  pruneCache(embeddingCache);
+
   return embedding;
 }
 

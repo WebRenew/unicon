@@ -13,12 +13,14 @@
 import {
   searchIcons,
   getIconById,
+  getIconsByNames,
   getSources,
   getCategories,
   getTotalIconCount,
 } from "@/lib/queries";
 import { convertIconToFormat } from "@/lib/icon-converters";
 import { STARTER_PACKS } from "@/lib/starter-packs";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/mcp - Server info and capabilities
@@ -385,53 +387,54 @@ export async function POST(request: Request) {
               error?: string;
             }> = [];
 
-            // Search for each icon in the pack
-            for (const iconName of pack.iconNames) {
-              try {
-                const searchResults = await searchIcons({
-                  query: iconName,
-                  limit: 1,
-                });
+            // Batch fetch all icons in the pack (eliminates N+1 waterfall)
+            const fetchedIcons = await getIconsByNames(pack.iconNames);
+            const iconsByName = new Map(
+              fetchedIcons.map(icon => [icon.normalizedName.toLowerCase(), icon])
+            );
 
-                const icon = searchResults.find(
-                  (i) => i.normalizedName === iconName || i.name === iconName
-                );
+            // Process each icon in parallel
+            const convertProps: {
+              size?: number;
+              strokeWidth?: number;
+            } = {};
 
-                if (!icon) {
+            if (args.size !== undefined) {
+              convertProps.size = args.size;
+            }
+            if (args.strokeWidth !== undefined) {
+              convertProps.strokeWidth = args.strokeWidth;
+            }
+
+            await Promise.all(
+              pack.iconNames.map(async (iconName) => {
+                try {
+                  const icon = iconsByName.get(iconName.toLowerCase());
+
+                  if (!icon) {
+                    results.push({
+                      name: iconName,
+                      code: "",
+                      error: "Icon not found",
+                    });
+                    return;
+                  }
+
+                  const code = await convertIconToFormat(icon, format, convertProps);
+
+                  results.push({
+                    name: icon.normalizedName,
+                    code,
+                  });
+                } catch (error) {
                   results.push({
                     name: iconName,
                     code: "",
-                    error: "Icon not found",
+                    error: error instanceof Error ? error.message : "Unknown error",
                   });
-                  continue;
                 }
-
-                const convertProps: {
-                  size?: number;
-                  strokeWidth?: number;
-                } = {};
-
-                if (args.size !== undefined) {
-                  convertProps.size = args.size;
-                }
-                if (args.strokeWidth !== undefined) {
-                  convertProps.strokeWidth = args.strokeWidth;
-                }
-
-                const code = await convertIconToFormat(icon, format, convertProps);
-
-                results.push({
-                  name: icon.normalizedName,
-                  code,
-                });
-              } catch (error) {
-                results.push({
-                  name: iconName,
-                  code: "",
-                  error: error instanceof Error ? error.message : "Unknown error",
-                });
-              }
-            }
+              })
+            );
 
             return Response.json({
               result: {
@@ -455,7 +458,7 @@ export async function POST(request: Request) {
         throw new Error(`Unknown action: ${action}`);
     }
   } catch (error) {
-    console.error("MCP API Error:", error);
+    logger.error("MCP API Error:", error);
     return Response.json(
       {
         error: {
