@@ -355,7 +355,7 @@ export function MetallicIconBrowser({
       <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
 
       {/* Hero */}
-      <h1 className="font-mono font-thin text-3xl md:text-4xl lg:text-5xl text-black dark:text-white mb-4 text-balance tracking-tighter leading-tight">
+      <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl text-black dark:text-white mb-4 text-balance tracking-tighter leading-tight">
         Just the icons you need. Zero bloat.
       </h1>
       <p className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4">
