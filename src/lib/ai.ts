@@ -6,7 +6,7 @@ import { embed, embedMany, generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 
-const EMBEDDING_DIMENSIONS = 1536;
+const EMBEDDING_DIMENSIONS = 3072; // text-embedding-3-large
 
 // In-memory caches to reduce API calls
 const queryExpansionCache = new Map<string, string>();
@@ -61,7 +61,11 @@ function getEmbeddingModel() {
     : { apiKey };
 
   const openai = createOpenAI(config);
-  return openai.embedding("text-embedding-3-small");
+  // Use gateway model identifier when using Vercel AI Gateway
+  const modelId = gatewayKey && !openaiKey
+    ? "openai/text-embedding-3-large"
+    : "text-embedding-3-large";
+  return openai.embedding(modelId);
 }
 
 function getChatModel() {

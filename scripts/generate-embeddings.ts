@@ -35,7 +35,11 @@ function getEmbeddingModel() {
     : { apiKey };
 
   const openai = createOpenAI(config);
-  return openai.embedding("text-embedding-3-small");
+  // Use gateway model identifier when using Vercel AI Gateway
+  const modelId = gatewayKey && !openaiKey
+    ? "openai/text-embedding-3-large"
+    : "text-embedding-3-large";
+  return openai.embedding(modelId);
 }
 
 interface IconRow {
