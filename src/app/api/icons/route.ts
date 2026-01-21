@@ -142,9 +142,6 @@ async function aiSemanticSearch(
     originalEmbeddingPromise,
   ]);
 
-  // Determine which query to use for semantic search
-  const searchQuery = expandedQuery ?? query;
-  
   // Get embedding for the final search query
   // If AI expansion succeeded, we need a new embedding; otherwise use the original
   let queryEmbedding: number[];

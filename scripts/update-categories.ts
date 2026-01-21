@@ -129,7 +129,7 @@ async function main() {
   console.log();
 
   // Update all matching icons
-  const result = await db
+  await db
     .update(icons)
     .set({ category: "Dashboards" })
     .where(or(...conditions));
