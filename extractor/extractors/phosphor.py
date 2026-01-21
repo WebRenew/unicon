@@ -94,8 +94,8 @@ class PhosphorExtractor(BaseExtractor):
         normalized_name = raw_name
         pascal_name = self.to_pascal(normalized_name)
 
-        # Phosphor uses different rendering styles per weight
-        is_fill_style = weight in ("fill", "duotone")
+        # All Phosphor icons are fill-based (use filled paths, not strokes)
+        # This includes all weights: regular, bold, light, thin, fill, duotone
 
         return ExtractedIcon(
             source="phosphor",
@@ -104,9 +104,9 @@ class PhosphorExtractor(BaseExtractor):
             view_box=svg.get("viewBox", "0 0 256 256"),
             content=self.inner_content(svg),
             path_data=self.extract_paths(svg),
-            default_stroke=not is_fill_style,
-            default_fill=is_fill_style,
-            stroke_width=None,  # Phosphor doesn't use stroke-width the same way
+            default_stroke=False,
+            default_fill=True,
+            stroke_width=None,  # Phosphor doesn't use stroke-width
             category=weight if weight != "regular" else self._guess_category(normalized_name),
             tags=self._generate_tags(normalized_name),
             variant=weight if weight != self.PRIMARY_WEIGHT else None,
