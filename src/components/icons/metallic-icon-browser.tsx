@@ -361,9 +361,42 @@ export function MetallicIconBrowser({
 
   return (
     <div className="min-h-screen bg-white dark:bg-[hsl(0,0%,3%)] lg:pt-14 transition-colors">
+      <style jsx global>{`
+        ::selection {
+          background-color: var(--accent-aqua);
+          color: black;
+        }
+
+        @property --gradient-stop {
+          syntax: '<percentage>';
+          initial-value: 8%;
+          inherits: false;
+        }
+
+        @property --gradient-opacity {
+          syntax: '<number>';
+          initial-value: 1;
+          inherits: false;
+        }
+
+        .search-gradient-border {
+          --gradient-stop: 8%;
+          --gradient-opacity: 1;
+          background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(0,0,0,0.1) var(--gradient-stop), rgba(0,0,0,0.1) 100%);
+          transition: --gradient-stop 0.5s cubic-bezier(0.4, 0, 0.2, 1), --gradient-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dark .search-gradient-border {
+          background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(255,255,255,0.1) var(--gradient-stop), rgba(255,255,255,0.1) 100%);
+        }
+        .search-gradient-border:focus-within {
+          --gradient-stop: 100%;
+          --gradient-opacity: 0.4;
+          transform: scale(1.01);
+        }
+      `}</style>
       <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
 
-        <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl text-black dark:text-white mb-4 text-balance tracking-tighter leading-tight">
+        <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight bg-[linear-gradient(to_right,var(--accent-lavender)_0%,var(--accent-lavender)_40%,var(--accent-aqua)_70%,var(--accent-mint)_100%)] bg-clip-text text-transparent">
           Just the icons you need. Zero bloat.
         </h1>
         <p className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4">
@@ -425,34 +458,6 @@ export function MetallicIconBrowser({
           <label htmlFor="icon-search-main" className="sr-only">Search icons</label>
 
           {/* Gradient border wrapper - gradient grows on focus */}
-          <style jsx>{`
-            @property --gradient-stop {
-              syntax: '<percentage>';
-              initial-value: 8%;
-              inherits: false;
-            }
-
-            @property --gradient-opacity {
-              syntax: '<number>';
-              initial-value: 1;
-              inherits: false;
-            }
-
-            .search-gradient-border {
-              --gradient-stop: 8%;
-              --gradient-opacity: 1;
-              background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(0,0,0,0.1) var(--gradient-stop), rgba(0,0,0,0.1) 100%);
-              transition: --gradient-stop 0.5s cubic-bezier(0.4, 0, 0.2, 1), --gradient-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            :global(.dark) .search-gradient-border {
-              background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(255,255,255,0.1) var(--gradient-stop), rgba(255,255,255,0.1) 100%);
-            }
-            .search-gradient-border:focus-within {
-              --gradient-stop: 100%;
-              --gradient-opacity: 0.4;
-              transform: scale(1.01);
-            }
-          `}</style>
           <div className="search-gradient-border rounded-lg p-[1px]">
             <input
               id="icon-search-main"

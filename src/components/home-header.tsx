@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { GithubIcon } from "@/components/icons/ui/github";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
@@ -50,11 +51,14 @@ export function HomeHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-background/95 dark:backdrop-blur dark:supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 lg:px-20 xl:px-40">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-xl" aria-hidden="true">🦄</span>
-            <span className="font-mono text-muted-foreground text-xs tracking-widest uppercase">
-              UNICON
-            </span>
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Image
+              src="/unicon-brandmark.svg"
+              alt="Unicon"
+              width={102}
+              height={20}
+              className="h-5 w-auto"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
