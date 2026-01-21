@@ -16,6 +16,7 @@ interface VectorSearchRow {
   tags: string | string[] | null;
   viewBox: string;
   content: string;
+  pathData: string | null;
   defaultStroke: number | boolean | null;
   defaultFill: number | boolean | null;
   strokeWidth: string | null;
@@ -174,46 +175,50 @@ async function aiSemanticSearch(
   // Convert embedding to Turso vector format
   const vectorString = embeddingToVectorString(queryEmbedding);
 
-  // Fetch more than needed to allow for proper pagination
-  // We need to fetch enough results to properly handle offset + limit
-  const fetchLimit = Math.min((offset + limit) * 2, 1000);
-
   // Use Turso's native vector_distance_cos for database-level similarity search
-  // Fetch extra results to ensure we have enough after applying offset
+  // Apply LIMIT and OFFSET at the database level for efficient pagination
   const semanticResults = (sourceId
     ? await db.all(sql`
         SELECT
           id, name, normalized_name as normalizedName, source_id as sourceId,
-          category, tags, view_box as viewBox, content,
+          category, tags, view_box as viewBox, content, path_data as pathData,
           default_stroke as defaultStroke, default_fill as defaultFill,
           stroke_width as strokeWidth, brand_color as brandColor,
           vector_distance_cos(embedding, vector32(${vectorString})) as distance
         FROM icons
         WHERE embedding IS NOT NULL AND source_id = ${sourceId}
         ORDER BY distance ASC
-        LIMIT ${fetchLimit}
+        LIMIT ${limit} OFFSET ${offset}
       `)
     : await db.all(sql`
         SELECT
           id, name, normalized_name as normalizedName, source_id as sourceId,
-          category, tags, view_box as viewBox, content,
+          category, tags, view_box as viewBox, content, path_data as pathData,
           default_stroke as defaultStroke, default_fill as defaultFill,
           stroke_width as strokeWidth, brand_color as brandColor,
           vector_distance_cos(embedding, vector32(${vectorString})) as distance
         FROM icons
         WHERE embedding IS NOT NULL
         ORDER BY distance ASC
-        LIMIT ${fetchLimit}
+        LIMIT ${limit} OFFSET ${offset}
       `)) as VectorSearchRow[];
 
-  // Convert to IconData and apply offset/limit in memory
-  const allIcons: IconData[] = semanticResults.map((row) => {
+  // Convert to IconData
+  const icons: IconData[] = semanticResults.map((row) => {
     let tags: string[];
     try {
       tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
     } catch {
       logger.error(`Failed to parse tags for icon ${row.id}`);
       tags = [];
+    }
+
+    let pathData;
+    try {
+      pathData = typeof row.pathData === "string" ? JSON.parse(row.pathData) : (row.pathData ?? null);
+    } catch {
+      logger.error(`Failed to parse pathData for icon ${row.id}`);
+      pathData = null;
     }
 
     return {
@@ -225,16 +230,13 @@ async function aiSemanticSearch(
       tags: tags as string[],
       viewBox: row.viewBox as string,
       content: row.content as string,
-      pathData: null,
+      pathData,
       defaultStroke: Boolean(row.defaultStroke),
       defaultFill: Boolean(row.defaultFill),
       strokeWidth: row.strokeWidth as string | null,
       brandColor: row.brandColor as string | null,
     };
   });
-
-  // Apply offset and limit in memory after fetching
-  const icons = allIcons.slice(offset, offset + limit);
 
   const result: { icons: IconData[]; searchType: string; expandedQuery?: string } = {
     icons,

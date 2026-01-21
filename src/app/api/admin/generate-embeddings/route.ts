@@ -179,7 +179,7 @@ async function getRemainingCount(sourceId: string | null): Promise<number> {
 function buildSearchText(icon: {
   normalizedName: string;
   category: string | null;
-  tags: string[] | null;
+  tags: string[] | string | null;
 }): string {
   const parts: string[] = [];
 
@@ -192,9 +192,16 @@ function buildSearchText(icon: {
     parts.push(icon.category);
   }
 
-  // Add tags
+  // Add tags (parse if JSON string from database)
   if (icon.tags) {
-    parts.push(...icon.tags);
+    try {
+      const tagsArray = typeof icon.tags === "string" ? JSON.parse(icon.tags) : icon.tags;
+      if (Array.isArray(tagsArray)) {
+        parts.push(...tagsArray);
+      }
+    } catch (error) {
+      logger.error(`Failed to parse tags for icon ${icon.normalizedName}:`, error);
+    }
   }
 
   // Deduplicate and join
