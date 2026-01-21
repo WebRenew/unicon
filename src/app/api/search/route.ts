@@ -296,11 +296,24 @@ async function hybridSearch(
   for (const row of semanticResults) {
     // Convert distance back to similarity (1 - distance)
     const semanticScore = 1 - (row.distance as number);
-    
-    // Parse tags from JSON string if needed
-    const tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
-    const pathData = typeof row.pathData === "string" ? JSON.parse(row.pathData) : (row.pathData ?? null);
-    
+
+    // Parse tags from JSON string if needed, with error handling
+    let tags: string[] | null;
+    try {
+      tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
+    } catch {
+      logger.error(`Failed to parse tags for icon ${row.id}`);
+      tags = [];
+    }
+
+    let pathData: IconData["pathData"];
+    try {
+      pathData = typeof row.pathData === "string" ? JSON.parse(row.pathData) : (row.pathData ?? null);
+    } catch {
+      logger.error(`Failed to parse pathData for icon ${row.id}`);
+      pathData = null;
+    }
+
     // Calculate exact match boost
     const exactMatchBoost = calculateExactMatchBoost(
       {
@@ -312,7 +325,7 @@ async function hybridSearch(
       queryLower,
       queryTokens
     );
-    
+
     // Combine scores with weights
     const hybridScore = (semanticScore * WEIGHTS.semantic) + (exactMatchBoost * WEIGHTS.exactMatch);
 

@@ -136,7 +136,7 @@ export function generateRawSvg(
 }
 
 /**
- * Generate a complete SVG string for rendering in React (dangerouslySetInnerHTML).
+ * Generate a complete SVG string for rendering in React.
  */
 export function generateRenderableSvg(
   icon: Pick<IconData, "viewBox" | "content" | "defaultStroke" | "defaultFill" | "strokeWidth">,
@@ -144,8 +144,10 @@ export function generateRenderableSvg(
 ): string {
   const { size = 24, strokeWidth, color } = options;
   const mode = getIconRenderMode(icon);
-  const effectiveStrokeWidth = strokeWidth ?? (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
-  
+  const effectiveStrokeWidth = strokeWidth !== undefined
+    ? strokeWidth
+    : (parseFloat(icon.strokeWidth || "2") || DEFAULT_STROKE.strokeWidth);
+
   let styleAttrs: string;
   if (mode === "fill") {
     styleAttrs = `fill="${color || "currentColor"}"`;
@@ -158,7 +160,7 @@ export function generateRenderableSvg(
       `stroke-linejoin="${DEFAULT_STROKE.strokeLinejoin}"`,
     ].join(" ");
   }
-  
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${styleAttrs} aria-hidden="true" focusable="false">${icon.content}</svg>`;
 }
 

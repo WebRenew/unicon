@@ -116,6 +116,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 /**
  * AI-powered semantic search using Claude for query expansion and Turso's native vector search.
  * Uses parallel execution for AI expansion and embedding to minimize latency.
+ * Fetches more results than needed to allow for proper pagination after database returns.
  */
 async function aiSemanticSearch(
   query: string,
@@ -160,10 +161,10 @@ async function aiSemanticSearch(
     }
   } catch {
     // Fall back to text search if embedding fails
-    const searchParams: { query: string; sourceId?: string; limit: number; offset: number } = { 
-      query, 
-      limit, 
-      offset 
+    const searchParams: { query: string; sourceId?: string; limit: number; offset: number } = {
+      query,
+      limit,
+      offset
     };
     if (sourceId) searchParams.sourceId = sourceId;
     const textResults = await searchIcons(searchParams);
@@ -173,8 +174,12 @@ async function aiSemanticSearch(
   // Convert embedding to Turso vector format
   const vectorString = embeddingToVectorString(queryEmbedding);
 
+  // Fetch more than needed to allow for proper pagination
+  // We need to fetch enough results to properly handle offset + limit
+  const fetchLimit = Math.min((offset + limit) * 2, 1000);
+
   // Use Turso's native vector_distance_cos for database-level similarity search
-  // Use SQL LIMIT and OFFSET for efficient pagination
+  // Fetch extra results to ensure we have enough after applying offset
   const semanticResults = (sourceId
     ? await db.all(sql`
         SELECT
@@ -186,7 +191,7 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL AND source_id = ${sourceId}
         ORDER BY distance ASC
-        LIMIT ${limit} OFFSET ${offset}
+        LIMIT ${fetchLimit}
       `)
     : await db.all(sql`
         SELECT
@@ -198,12 +203,19 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL
         ORDER BY distance ASC
-        LIMIT ${limit} OFFSET ${offset}
+        LIMIT ${fetchLimit}
       `)) as VectorSearchRow[];
 
-  // Convert to IconData (no need to slice since database handles offset)
-  const icons: IconData[] = semanticResults.map((row) => {
-    const tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
+  // Convert to IconData and apply offset/limit in memory
+  const allIcons: IconData[] = semanticResults.map((row) => {
+    let tags: string[];
+    try {
+      tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
+    } catch {
+      logger.error(`Failed to parse tags for icon ${row.id}`);
+      tags = [];
+    }
+
     return {
       id: row.id as string,
       name: row.name as string,
@@ -221,11 +233,14 @@ async function aiSemanticSearch(
     };
   });
 
+  // Apply offset and limit in memory after fetching
+  const icons = allIcons.slice(offset, offset + limit);
+
   const result: { icons: IconData[]; searchType: string; expandedQuery?: string } = {
     icons,
     searchType: "semantic",
   };
-  
+
   if (expandedQuery) {
     result.expandedQuery = expandedQuery;
   }
