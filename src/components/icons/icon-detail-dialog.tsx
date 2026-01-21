@@ -12,12 +12,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Copy, Check, ExternalLink, Download } from "lucide-react";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { CheckIcon } from "@/components/icons/ui/check";
+import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
+import { DownloadIcon } from "@/components/icons/ui/download";
 import { IconRenderer } from "./icon-renderer";
 import type { IconData } from "@/types/icon";
 import { cn } from "@/lib/utils";
-import { 
-  getBrandIconColor, 
+import {
+  getBrandIconColor,
   toPascalCase,
   getSvgAttributesJsx,
   generateRawSvg,
@@ -211,9 +214,9 @@ defineProps<{
                   onClick={() => handleCopy(icon.id, "id")}
                 >
                   {copied === "id" ? (
-                    <Check className="h-3 w-3" />
+                    <CheckIcon className="h-3 w-3" />
                   ) : (
-                    <Copy className="h-3 w-3" />
+                    <CopyIcon className="h-3 w-3" />
                   )}
                 </Button>
               </div>
@@ -229,7 +232,7 @@ defineProps<{
                   className={cn("flex items-center gap-1 hover:underline", library?.color)}
                 >
                   {library?.name}
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </div>
             </div>
@@ -261,9 +264,9 @@ defineProps<{
                     onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}
                   >
                     {copied === "color" ? (
-                      <Check className="h-3 w-3" />
+                      <CheckIcon className="h-3 w-3" />
                     ) : (
-                      <Copy className="h-3 w-3" />
+                      <CopyIcon className="h-3 w-3" />
                     )}
                   </Button>
                 </div>
@@ -290,7 +293,7 @@ defineProps<{
           {/* Copy Actions */}
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Copy Code</h4>
-            
+
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
@@ -298,9 +301,9 @@ defineProps<{
                 onClick={() => handleCopy(generateRawSvg(icon, { strokeWidth }), "svg")}
               >
                 {copied === "svg" ? (
-                  <Check className="mr-2 h-4 w-4" />
+                  <CheckIcon className="mr-2 h-4 w-4" />
                 ) : (
-                  <Copy className="mr-2 h-4 w-4" />
+                  <CopyIcon className="mr-2 h-4 w-4" />
                 )}
                 SVG
               </Button>
@@ -311,9 +314,9 @@ defineProps<{
                 onClick={() => handleCopy(getReactComponent(), "react")}
               >
                 {copied === "react" ? (
-                  <Check className="mr-2 h-4 w-4" />
+                  <CheckIcon className="mr-2 h-4 w-4" />
                 ) : (
-                  <Copy className="mr-2 h-4 w-4" />
+                  <CopyIcon className="mr-2 h-4 w-4" />
                 )}
                 React
               </Button>
@@ -324,9 +327,9 @@ defineProps<{
                 onClick={() => handleCopy(getVueComponent(), "vue")}
               >
                 {copied === "vue" ? (
-                  <Check className="mr-2 h-4 w-4" />
+                  <CheckIcon className="mr-2 h-4 w-4" />
                 ) : (
-                  <Copy className="mr-2 h-4 w-4" />
+                  <CopyIcon className="mr-2 h-4 w-4" />
                 )}
                 Vue
               </Button>
@@ -337,9 +340,9 @@ defineProps<{
                 onClick={() => handleCopy(getSvelteComponent(), "svelte")}
               >
                 {copied === "svelte" ? (
-                  <Check className="mr-2 h-4 w-4" />
+                  <CheckIcon className="mr-2 h-4 w-4" />
                 ) : (
-                  <Copy className="mr-2 h-4 w-4" />
+                  <CopyIcon className="mr-2 h-4 w-4" />
                 )}
                 Svelte
               </Button>
@@ -351,9 +354,9 @@ defineProps<{
               onClick={() => handleCopy(generateUsageExample(icon.normalizedName), "usage")}
             >
               {copied === "usage" ? (
-                <Check className="mr-2 h-4 w-4" />
+                <CheckIcon className="mr-2 h-4 w-4" />
               ) : (
-                <Copy className="mr-2 h-4 w-4" />
+                <CopyIcon className="mr-2 h-4 w-4" />
               )}
               Usage Example
             </Button>
@@ -364,7 +367,7 @@ defineProps<{
           {/* Actions */}
           <div className="flex gap-2">
             <Button variant="default" className="flex-1" onClick={downloadSvg}>
-              <Download className="mr-2 h-4 w-4" />
+              <DownloadIcon className="mr-2 h-4 w-4" />
               Download SVG
             </Button>
             <Button
@@ -377,7 +380,7 @@ defineProps<{
                 window.open(`https://v0.dev/?q=${prompt}`, "_blank");
               }}
             >
-              <ExternalLink className="mr-2 h-4 w-4" />
+              <ExternalLinkIcon className="mr-2 h-4 w-4" />
               Open in v0
             </Button>
           </div>

@@ -1,8 +1,6 @@
 import { Metadata } from "next";
-import {
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { CheckCircleIcon } from "@/components/icons/ui/check-circle";
+import { AlertCircleIcon } from "@/components/icons/ui/alert-circle";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
@@ -120,7 +118,7 @@ export default function MCPDocsPage() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            The local bridge provides the MCP protocol interface while the hosted API ensures you always have 
+            The local bridge provides the MCP protocol interface while the hosted API ensures you always have
             access to the latest icon library — no database setup required.
           </p>
         </section>
@@ -128,7 +126,7 @@ export default function MCPDocsPage() {
         {/* Quick Start - Claude Desktop */}
         <section id="claude-desktop">
           <h2 className="text-2xl font-bold mb-6">Quick Start: Claude Desktop</h2>
-          
+
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
@@ -140,7 +138,7 @@ export default function MCPDocsPage() {
                   <strong className="text-foreground">macOS:</strong>
                 </div>
                 <CodeBlock>~/Library/Application Support/Claude/claude_desktop_config.json</CodeBlock>
-                
+
                 <div className="text-sm text-muted-foreground mt-4">
                   <strong className="text-foreground">Windows:</strong>
                 </div>
@@ -170,11 +168,11 @@ export default function MCPDocsPage() {
               </h3>
               <div className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5">
                 <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-[var(--accent-lavender)] shrink-0 mt-0.5" />
+                  <AlertCircleIcon className="w-5 h-5 text-[var(--accent-lavender)] shrink-0 mt-0.5" />
                   <div className="text-sm">
                     <p className="text-[var(--accent-lavender)] font-semibold mb-1">Important</p>
                     <p className="text-muted-foreground">
-                      You must completely quit and restart Claude (not just close the window). 
+                      You must completely quit and restart Claude (not just close the window).
                       On macOS, use Cmd+Q. On Windows, right-click the system tray icon and select &quot;Quit&quot;.
                     </p>
                   </div>
@@ -189,10 +187,10 @@ export default function MCPDocsPage() {
               </h3>
               <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
                 <div className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+                  <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
                   <div className="text-sm">
                     <p className="text-muted-foreground">
-                      Look for the 🔌 icon in the bottom right corner of Claude Desktop. 
+                      Look for the 🔌 icon in the bottom right corner of Claude Desktop.
                       Click it and you should see &quot;unicon&quot; in the list of MCP servers.
                     </p>
                   </div>
@@ -205,7 +203,7 @@ export default function MCPDocsPage() {
         {/* Quick Start - Cursor */}
         <section id="cursor">
           <h2 className="text-2xl font-bold mb-6">Quick Start: Cursor IDE</h2>
-          
+
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
@@ -247,7 +245,7 @@ export default function MCPDocsPage() {
         {/* Usage Examples */}
         <section id="usage-examples">
           <h2 className="text-2xl font-bold mb-6">Usage Examples</h2>
-          
+
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3">🔍 Search for Icons</h3>
@@ -316,7 +314,7 @@ export default function MCPDocsPage() {
         {/* Available Tools */}
         <section>
           <h2 className="text-2xl font-bold mb-6">Available Tools</h2>
-          
+
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">search_icons</h3>
@@ -371,7 +369,7 @@ export default function MCPDocsPage() {
         {/* Available Resources */}
         <section>
           <h2 className="text-2xl font-bold mb-6">Available Resources</h2>
-          
+
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono text-[var(--accent-lavender)] font-semibold mb-2">unicon://sources</h3>
@@ -399,7 +397,7 @@ export default function MCPDocsPage() {
         {/* Troubleshooting */}
         <section id="troubleshooting">
           <h2 className="text-2xl font-bold mb-6">Troubleshooting</h2>
-          
+
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="font-semibold mb-2">Server not appearing in Claude/Cursor</h3>
@@ -438,7 +436,7 @@ export default function MCPDocsPage() {
         {/* Advanced Configuration */}
         <section>
           <h2 className="text-2xl font-bold mb-6">Advanced Configuration</h2>
-          
+
           <div>
             <h3 className="text-lg font-semibold mb-3">Local Development</h3>
             <p className="text-sm text-muted-foreground mb-4">
@@ -461,10 +459,10 @@ export default function MCPDocsPage() {
         {/* Best Practices */}
         <section>
           <h2 className="text-2xl font-bold mb-6">Best Practices</h2>
-          
+
           <div className="space-y-3">
             <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
-              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+              <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Search before getting:</strong>
                 <span className="text-muted-foreground"> Always search first to find the right icon ID</span>
@@ -472,7 +470,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
-              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+              <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Specify library:</strong>
                 <span className="text-muted-foreground"> Be specific about which library to use for focused results</span>
@@ -480,7 +478,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
-              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+              <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Batch multiple icons:</strong>
                 <span className="text-muted-foreground"> Use get_multiple_icons for multiple icons in one request</span>
@@ -488,7 +486,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="flex gap-3 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
-              <CheckCircle className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+              <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground">Use semantic search:</strong>
                 <span className="text-muted-foreground"> Take advantage of AI search with descriptive queries</span>

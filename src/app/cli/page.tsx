@@ -1,18 +1,16 @@
 import { Metadata } from "next";
-import {
-  Package,
-  Terminal,
-  FileCode,
-  FolderSync,
-  Plus,
-  Search,
-  List,
-  Info,
-  Download,
-  Eye,
-  Database,
-  Layers,
-} from "lucide-react";
+import { PackageIcon } from "@/components/icons/ui/package";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { FileCodeIcon } from "@/components/icons/ui/file-code";
+import { FolderSyncIcon } from "@/components/icons/ui/folder-sync";
+import { PlusIcon } from "@/components/icons/ui/plus";
+import { SearchIcon } from "@/components/icons/ui/search";
+import { ListIcon } from "@/components/icons/ui/list";
+import { InfoIcon } from "@/components/icons/ui/info";
+import { DownloadIcon } from "@/components/icons/ui/download";
+import { EyeIcon } from "@/components/icons/ui/eye";
+import { DatabaseIcon } from "@/components/icons/ui/database";
+import { LayersIcon } from "@/components/icons/ui/layers";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
@@ -103,7 +101,7 @@ export default function CLIPage() {
       <div className="mb-12">
         <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
           <div className="p-2 md:p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
-            <Terminal className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
+            <TerminalIcon className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
           </div>
           <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-muted text-muted-foreground">
             @webrenew/unicon
@@ -111,7 +109,7 @@ export default function CLIPage() {
         </div>
         <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
         <p className="text-base md:text-xl text-muted-foreground max-w-2xl">
-          Search and bundle icons from 8 libraries via command line. Define your icon sets once, 
+          Search and bundle icons from 8 libraries via command line. Define your icon sets once,
           regenerate anytime with a single command.
         </p>
       </div>
@@ -132,7 +130,7 @@ export default function CLIPage() {
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Commands</h2>
           <div className="grid gap-4">
             <CommandCard
-              icon={Search}
+              icon={SearchIcon}
               command="unicon search <query>"
               description="Search for icons by name, keyword, or concept. Uses AI-powered semantic search for better results."
               example={`unicon search "settings gear"
@@ -141,7 +139,7 @@ unicon search "arrow" --source lucide --limit 10`}
             />
 
             <CommandCard
-              icon={Download}
+              icon={DownloadIcon}
               command="unicon get <name>"
               description="Get a single icon and output to stdout. Perfect for piping to clipboard or a file."
               example={`unicon get home
@@ -150,7 +148,7 @@ unicon get settings --format svelte -o ./settings.svelte`}
             />
 
             <CommandCard
-              icon={Info}
+              icon={InfoIcon}
               command="unicon info <name>"
               description="Show detailed information about an icon including source, category, tags, and viewBox."
               example={`unicon info home
@@ -158,7 +156,7 @@ unicon info arrow-right --source phosphor`}
             />
 
             <CommandCard
-              icon={Package}
+              icon={PackageIcon}
               command="unicon bundle"
               description="Bundle icons into tree-shakeable components. Creates one file per icon by default for optimal bundling."
               example={`unicon bundle --category Dashboards -o ./icons
@@ -167,7 +165,7 @@ unicon bundle --format svg --single-file -o ./all.svg`}
             />
 
             <CommandCard
-              icon={FileCode}
+              icon={FileCodeIcon}
               command="unicon init"
               description="Initialize a .uniconrc.json config file in your project with example bundle configurations."
               example={`unicon init
@@ -175,7 +173,7 @@ unicon init --force  # Overwrite existing`}
             />
 
             <CommandCard
-              icon={FolderSync}
+              icon={FolderSyncIcon}
               command="unicon sync"
               description="Generate all bundles defined in your .uniconrc.json config file."
               example={`unicon sync
@@ -184,7 +182,7 @@ unicon sync --dry-run         # Preview changes`}
             />
 
             <CommandCard
-              icon={Plus}
+              icon={PlusIcon}
               command="unicon add <name>"
               description="Add a new bundle configuration to your .uniconrc.json file."
               example={`unicon add social --category Social
@@ -193,7 +191,7 @@ unicon add files --source lucide --format vue`}
             />
 
             <CommandCard
-              icon={List}
+              icon={ListIcon}
               command="unicon categories"
               description="List all available icon categories."
               example={`unicon categories
@@ -201,7 +199,7 @@ unicon categories --json`}
             />
 
             <CommandCard
-              icon={Eye}
+              icon={EyeIcon}
               command="unicon preview <name>"
               description="Show ASCII art preview of an icon directly in the terminal."
               example={`unicon preview home
@@ -210,7 +208,7 @@ unicon preview arrow --source phosphor`}
             />
 
             <CommandCard
-              icon={Layers}
+              icon={LayersIcon}
               command="unicon sources"
               description="List all 8 available icon libraries with version info and icon counts."
               example={`unicon sources
@@ -218,7 +216,7 @@ unicon sources --json`}
             />
 
             <CommandCard
-              icon={Database}
+              icon={DatabaseIcon}
               command="unicon cache"
               description="Manage local cache for offline use. Icons are cached for 24 hours."
               example={`unicon cache --stats  # Show cache info
@@ -273,7 +271,7 @@ unicon cache --clear  # Clear all cached data`}
         <section id="config-file">
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Config File</h2>
           <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
-            Define your icon bundles in <code className="text-cyan-400 text-xs md:text-sm">.uniconrc.json</code> and 
+            Define your icon bundles in <code className="text-cyan-400 text-xs md:text-sm">.uniconrc.json</code> and
             regenerate them anytime with <code className="text-cyan-400 text-xs md:text-sm">unicon sync</code>.
           </p>
           <CodeBlock title=".uniconrc.json">{`{
@@ -391,7 +389,7 @@ unicon cache --clear  # Clear all cached data`}
               <div>
                 <h3 className="text-lg font-semibold mb-2">Use Unicon with Claude & Cursor</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Connect Unicon to AI assistants via Model Context Protocol (MCP). 
+                  Connect Unicon to AI assistants via Model Context Protocol (MCP).
                   Search and generate icon components using natural language.
                 </p>
               </div>
@@ -434,16 +432,16 @@ unicon cache --clear  # Clear all cached data`}
               </div>
 
               <div className="pt-2 border-t border-border flex gap-3 text-xs">
-                <a 
-                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md" 
+                <a
+                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-quickstart.md"
                   className="text-[var(--accent-lavender)] hover:text-[var(--accent-lavender)]/80 hover:underline inline-flex items-center gap-1"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Quick Start Guide →
                 </a>
-                <a 
-                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-integration.md" 
+                <a
+                  href="https://github.com/WebRenew/unicon/blob/main/docs/mcp-integration.md"
                   className="text-[var(--accent-lavender)] hover:text-[var(--accent-lavender)]/80 hover:underline inline-flex items-center gap-1"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -485,7 +483,7 @@ unicon cache --clear  # Clear all cached data`}
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Offline Support</h2>
           <div className="p-4 md:p-5 rounded-xl border border-border bg-card">
             <p className="text-muted-foreground text-sm mb-4">
-              The CLI automatically caches icon data locally at <code className="text-[var(--accent-aqua)]">~/.unicon/cache</code> for 
+              The CLI automatically caches icon data locally at <code className="text-[var(--accent-aqua)]">~/.unicon/cache</code> for
               24 hours. This enables faster subsequent searches and partial offline usage.
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-mono">

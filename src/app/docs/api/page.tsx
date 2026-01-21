@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Code } from "lucide-react";
+import { CodeIcon } from "@/components/icons/ui/code";
 import { CopyButton } from "@/components/ui/copy-button";
 
 export const metadata: Metadata = {
@@ -98,12 +98,12 @@ export default function APIDocsPage() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
-            <Code className="w-6 h-6 text-[var(--accent-aqua)]" />
+            <CodeIcon className="w-6 h-6 text-[var(--accent-aqua)]" />
           </div>
         </div>
         <h1 className="text-4xl font-bold mb-4">API Reference</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
-          REST API for programmatic access to Unicon&apos;s icon library. Search, filter, and retrieve icon data 
+          REST API for programmatic access to Unicon&apos;s icon library. Search, filter, and retrieve icon data
           in JSON format.
         </p>
       </div>
@@ -330,7 +330,7 @@ export default function APIDocsPage() {
             <h2 className="text-2xl font-bold">/api/mcp</h2>
           </div>
           <p className="text-muted-foreground mb-6">
-            Execute MCP actions. Used internally by the MCP server package. For direct use, prefer the CLI or 
+            Execute MCP actions. Used internally by the MCP server package. For direct use, prefer the CLI or
             standard API endpoints.
           </p>
 
@@ -478,7 +478,7 @@ curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" \\
         <section>
           <h2 className="text-2xl font-bold mb-4">CORS</h2>
           <p className="text-muted-foreground mb-4">
-            All API endpoints support CORS and can be called from any origin. This enables browser-based 
+            All API endpoints support CORS and can be called from any origin. This enables browser-based
             applications to use the API directly.
           </p>
           <div className="p-5 rounded-xl border border-border bg-card">

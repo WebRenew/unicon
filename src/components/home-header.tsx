@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Github, Terminal, FileText, Package } from "lucide-react";
+import { GithubIcon } from "@/components/icons/ui/github";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { FileTextIcon } from "@/components/icons/ui/file-text";
+import { PackageIcon } from "@/components/icons/ui/package";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { useState, useEffect } from "react";
@@ -27,11 +30,11 @@ export function HomeHeader() {
     };
 
     updateCartCount();
-    
+
     // Listen for storage events and custom cart updates
     window.addEventListener("storage", updateCartCount);
     window.addEventListener("cartUpdate", updateCartCount);
-    
+
     return () => {
       window.removeEventListener("storage", updateCartCount);
       window.removeEventListener("cartUpdate", updateCartCount);
@@ -53,20 +56,20 @@ export function HomeHeader() {
               UNICON
             </span>
           </Link>
-          
+
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
               href="/docs"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileTextIcon className="w-3.5 h-3.5" />
               Docs
             </Link>
             <Link
               href="/cli"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
             >
-              <Terminal className="w-3.5 h-3.5" />
+              <TerminalIcon className="w-3.5 h-3.5" />
               CLI
             </Link>
             <Link
@@ -84,7 +87,7 @@ export function HomeHeader() {
             onClick={handleBundleClick}
             className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/10 border border-[var(--accent-mint)]/20 text-foreground hover:bg-[var(--accent-mint)]/20 transition-colors text-sm font-medium"
           >
-            <Package className="w-4 h-4" />
+            <PackageIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Bundle</span>
             {cartCount > 0 && (
               <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-[var(--accent-mint)] text-black text-xs rounded-full font-semibold">
@@ -100,7 +103,7 @@ export function HomeHeader() {
             aria-label="View source on GitHub"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Github className="w-5 h-5" />
+            <GithubIcon className="w-5 h-5" />
           </a>
         </div>
       </div>

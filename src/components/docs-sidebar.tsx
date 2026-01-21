@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Terminal,
-  Code,
-  BookOpen,
-} from "lucide-react";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { CodeIcon } from "@/components/icons/ui/code";
+import { BookOpenIcon } from "@/components/icons/ui/book-open";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
 interface NavItem {
@@ -21,7 +19,7 @@ const navigation: NavItem[] = [
   {
     title: "Getting Started",
     href: "/docs",
-    icon: BookOpen,
+    icon: BookOpenIcon,
     items: [
       { title: "Introduction", href: "/docs" },
       { title: "Quick Start", href: "/docs#getting-started" },
@@ -31,7 +29,7 @@ const navigation: NavItem[] = [
   {
     title: "CLI Tool",
     href: "/cli",
-    icon: Terminal,
+    icon: TerminalIcon,
     items: [
       { title: "Overview", href: "/cli" },
       { title: "Installation", href: "/cli#installation" },
@@ -55,7 +53,7 @@ const navigation: NavItem[] = [
   {
     title: "API Reference",
     href: "/docs/api",
-    icon: Code,
+    icon: CodeIcon,
     items: [
       { title: "Overview", href: "/docs/api" },
       { title: "GET /api/icons", href: "/docs/api#get-icons" },

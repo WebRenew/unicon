@@ -2,14 +2,17 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { SunIcon } from "@/components/icons/ui/sun";
+import { MoonIcon } from "@/components/icons/ui/moon";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // Detect client-side mount to prevent hydration mismatch with theme
+  // This is the recommended Next.js pattern for client-only components
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR/CSR hydration sync
     setMounted(true);
   }, []);
 
@@ -34,9 +37,9 @@ export function ThemeToggle() {
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
       {isDark ? (
-        <Sun className="w-4 h-4 text-white/70" />
+        <SunIcon className="w-4 h-4 text-white/70" />
       ) : (
-        <Moon className="w-4 h-4 text-black/70" />
+        <MoonIcon className="w-4 h-4 text-black/70" />
       )}
     </button>
   );

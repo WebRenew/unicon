@@ -10,7 +10,12 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { CopyIcon, CheckIcon, ExternalLinkIcon, PlusIcon, MinusIcon, Maximize2Icon } from "@/components/icons/ui";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { CheckIcon } from "@/components/icons/ui/check";
+import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
+import { PlusIcon } from "@/components/icons/ui/plus";
+import { MinusIcon } from "@/components/icons/ui/minus";
+import { Maximize2Icon } from "@/components/icons/ui/maximize-2";
 import {
   toPascalCase,
   getSvgAttributesJsx,

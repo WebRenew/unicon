@@ -1,18 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import {
-  Package,
-  Terminal,
-  FileCode,
-  Search,
-  Zap,
-  Download,
-  Palette,
-  Code,
-  Globe,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
+import { PackageIcon } from "@/components/icons/ui/package";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { FileCodeIcon } from "@/components/icons/ui/file-code";
+import { SearchIcon } from "@/components/icons/ui/search";
+import { ZapIcon } from "@/components/icons/ui/zap";
+import { DownloadIcon } from "@/components/icons/ui/download";
+import { PaletteIcon } from "@/components/icons/ui/palette";
+import { CodeIcon } from "@/components/icons/ui/code";
+import { GlobeIcon } from "@/components/icons/ui/globe";
+import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
+import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
 export const metadata: Metadata = {
@@ -65,8 +63,8 @@ function FeatureCard({ icon: Icon, title, description, href, external = false }:
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-lg font-semibold">{title}</h3>
-            {external && <ExternalLink className="w-4 h-4 text-muted-foreground" />}
-            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] group-hover:translate-x-1 transition-all ml-auto" />
+            {external && <ExternalLinkIcon className="w-4 h-4 text-muted-foreground" />}
+            <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] group-hover:translate-x-1 transition-all ml-auto" />
           </div>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
@@ -82,12 +80,12 @@ export default function DocsPage() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
-            <FileCode className="w-6 h-6 text-[var(--accent-lavender)]" />
+            <FileCodeIcon className="w-6 h-6 text-[var(--accent-lavender)]" />
           </div>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Documentation</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
-          Everything you need to know about using Unicon — from browsing icons in the web interface to 
+          Everything you need to know about using Unicon — from browsing icons in the web interface to
           integrating with your development workflow.
         </p>
       </div>
@@ -99,12 +97,12 @@ export default function DocsPage() {
           <div className="prose prose-invert max-w-none">
             <p className="text-muted-foreground leading-relaxed mb-4">
               Unicon is a comprehensive icon management tool that gives you access to{" "}
-              <strong className="text-foreground">14,700+ icons</strong> from 8 popular icon libraries — 
-              all in one place. Unlike traditional icon packages that bloat your bundle with thousands of 
+              <strong className="text-foreground">14,700+ icons</strong> from 8 popular icon libraries —
+              all in one place. Unlike traditional icon packages that bloat your bundle with thousands of
               unused icons, Unicon lets you generate only the icons you need.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Whether you prefer browsing icons visually, using a command-line interface, or letting AI 
+              Whether you prefer browsing icons visually, using a command-line interface, or letting AI
               assistants find icons for you, Unicon has you covered.
             </p>
           </div>
@@ -154,13 +152,13 @@ export default function DocsPage() {
           <h2 className="text-2xl font-bold mb-6">Getting Started</h2>
           <div className="grid gap-4">
             <FeatureCard
-              icon={Globe}
+              icon={GlobeIcon}
               title="Web Interface"
               description="Browse and search icons visually. Copy React, Vue, Svelte components or raw SVG with one click."
               href="/"
             />
             <FeatureCard
-              icon={Terminal}
+              icon={TerminalIcon}
               title="CLI Tool"
               description="Command-line interface for searching, bundling, and generating icon components. Perfect for CI/CD."
               href="/cli"
@@ -180,18 +178,18 @@ export default function DocsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Search className="w-5 h-5 text-[var(--accent-lavender)]" />
+                <SearchIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">AI-Powered Search</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                Semantic search understands intent. Search for &quot;celebration&quot; and find party, confetti, 
+                Semantic search understands intent. Search for &quot;celebration&quot; and find party, confetti,
                 and cake icons.
               </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Zap className="w-5 h-5 text-[var(--accent-aqua)]" />
+                <ZapIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
                 <h3 className="font-semibold">Tree-Shakeable</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -201,7 +199,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Code className="w-5 h-5 text-[var(--accent-lavender)]" />
+                <CodeIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">Multi-Framework</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -211,7 +209,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Download className="w-5 h-5 text-[var(--accent-mint)]" />
+                <DownloadIcon className="w-5 h-5 text-[var(--accent-mint)]" />
                 <h3 className="font-semibold">Zero Dependencies</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -221,7 +219,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Package className="w-5 h-5 text-[var(--accent-aqua)]" />
+                <PackageIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
                 <h3 className="font-semibold">Bundle Builder</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -231,7 +229,7 @@ export default function DocsPage() {
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <div className="flex items-center gap-3 mb-3">
-                <Palette className="w-5 h-5 text-[var(--accent-lavender)]" />
+                <PaletteIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
                 <h3 className="font-semibold">Customizable</h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -246,7 +244,7 @@ export default function DocsPage() {
           <h2 className="text-2xl font-bold mb-6">Quick Links</h2>
           <div className="grid gap-3">
             <FeatureCard
-              icon={Terminal}
+              icon={TerminalIcon}
               title="CLI Documentation"
               description="Complete guide to the command-line interface including all commands and options."
               href="/cli"
@@ -258,13 +256,13 @@ export default function DocsPage() {
               href="/docs/mcp"
             />
             <FeatureCard
-              icon={FileCode}
+              icon={FileCodeIcon}
               title="API Reference"
               description="REST API documentation for programmatic access to icons."
               href="/docs/api"
             />
             <FeatureCard
-              icon={Code}
+              icon={CodeIcon}
               title="GitHub Repository"
               description="View source code, report issues, or contribute to the project."
               href="https://github.com/WebRenew/unicon"

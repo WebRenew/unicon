@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Search, Terminal, ArrowLeft } from "lucide-react";
+import { HomeIcon } from "@/components/icons/ui/home";
+import { SearchIcon } from "@/components/icons/ui/search";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { ArrowLeftIcon } from "@/components/icons/ui/arrow-left";
 import { Tiny5 } from "next/font/google";
 
 const tiny5 = Tiny5({
@@ -15,7 +18,7 @@ export default function NotFound() {
       <div className="max-w-2xl w-full text-center">
         {/* Pixelated 404 */}
         <div className={`${tiny5.className} mb-8`}>
-          <h1 
+          <h1
             className="text-[120px] md:text-[180px] leading-none tracking-wider"
             style={{
               background: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%)",
@@ -35,7 +38,7 @@ export default function NotFound() {
             PAGE NOT FOUND
           </h2>
           <p className="text-white/60 text-sm md:text-base max-w-md mx-auto">
-            Looks like this icon wandered off the grid. 
+            Looks like this icon wandered off the grid.
             <br className="hidden md:block" />
             Let&apos;s get you back on track.
           </p>
@@ -56,7 +59,7 @@ export default function NotFound() {
           >
             <div className="flex items-center gap-3 text-left">
               <div className="p-2 rounded-lg bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors">
-                <Home className="w-5 h-5 text-cyan-400" />
+                <HomeIcon className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
                 <div className={`${tiny5.className} text-white text-sm mb-0.5`}>
@@ -73,7 +76,7 @@ export default function NotFound() {
           >
             <div className="flex items-center gap-3 text-left">
               <div className="p-2 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
-                <Search className="w-5 h-5 text-purple-400" />
+                <SearchIcon className="w-5 h-5 text-purple-400" />
               </div>
               <div>
                 <div className={`${tiny5.className} text-white text-sm mb-0.5`}>
@@ -90,7 +93,7 @@ export default function NotFound() {
           >
             <div className="flex items-center gap-3 text-left">
               <div className="p-2 rounded-lg bg-pink-500/10 group-hover:bg-pink-500/20 transition-colors">
-                <Terminal className="w-5 h-5 text-pink-400" />
+                <TerminalIcon className="w-5 h-5 text-pink-400" />
               </div>
               <div>
                 <div className={`${tiny5.className} text-white text-sm mb-0.5`}>
@@ -107,7 +110,7 @@ export default function NotFound() {
           >
             <div className="flex items-center gap-3 text-left">
               <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
-                <ArrowLeft className="w-5 h-5 text-white/60" />
+                <ArrowLeftIcon className="w-5 h-5 text-white/60" />
               </div>
               <div>
                 <div className={`${tiny5.className} text-white text-sm mb-0.5`}>

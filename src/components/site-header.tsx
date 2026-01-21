@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Github, Terminal, FileText } from "lucide-react";
+import { GithubIcon } from "@/components/icons/ui/github";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
@@ -14,20 +16,20 @@ export function SiteHeader() {
               UNICON
             </span>
           </Link>
-          
+
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
               href="/docs"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileTextIcon className="w-3.5 h-3.5" />
               Docs
             </Link>
             <Link
               href="/cli"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
             >
-              <Terminal className="w-3.5 h-3.5" />
+              <TerminalIcon className="w-3.5 h-3.5" />
               CLI
             </Link>
             <Link
@@ -49,7 +51,7 @@ export function SiteHeader() {
             aria-label="View source on GitHub"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Github className="w-5 h-5" />
+            <GithubIcon className="w-5 h-5" />
           </a>
         </div>
       </div>

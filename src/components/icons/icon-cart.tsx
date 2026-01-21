@@ -1,30 +1,28 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  X,
-  Download,
-  Copy,
-  Check,
-  Trash2,
-  FileCode,
-  FileJson,
-  Package,
-  ExternalLink,
-  AlertTriangle,
-  ArrowRight,
-  Terminal,
-} from "lucide-react";
+import { XIcon } from "@/components/icons/ui/x";
+import { DownloadIcon } from "@/components/icons/ui/download";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { CheckIcon } from "@/components/icons/ui/check";
+import { Trash2Icon } from "@/components/icons/ui/trash-2";
+import { FileCodeIcon } from "@/components/icons/ui/file-code";
+import { FileJsonIcon } from "@/components/icons/ui/file-json";
+import { PackageIcon } from "@/components/icons/ui/package";
+import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
+import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
+import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M12 3C9.05058 3 6.59627 5.11144 6.07743 7.8996C5.9907 8.36569 5.94733 8.59873 6.1089 8.90532C6.27048 9.2119 6.49914 9.31381 6.95646 9.51763C8.33509 10.1321 10.0897 10.5 12 10.5C13.9103 10.5 15.6649 10.1321 17.0435 9.51763C17.5009 9.31381 17.7295 9.2119 17.8911 8.90532C18.0527 8.59873 18.0093 8.36569 17.9226 7.8996C17.4037 5.11144 14.9494 3 12 3Z" stroke="currentColor"/>
-      <path d="M17 5.5C19.989 6.28752 22 7.75946 22 9.44533C22 11.9608 17.5228 14 12 14C6.47715 14 2 11.9608 2 9.44533C2 7.75946 4.01099 6.28752 7 5.5" stroke="currentColor"/>
-      <path d="M12 18V21" stroke="currentColor"/>
-      <path d="M17 17L18 21" stroke="currentColor"/>
-      <path d="M7 17L6 21" stroke="currentColor"/>
+      <path d="M12 3C9.05058 3 6.59627 5.11144 6.07743 7.8996C5.9907 8.36569 5.94733 8.59873 6.1089 8.90532C6.27048 9.2119 6.49914 9.31381 6.95646 9.51763C8.33509 10.1321 10.0897 10.5 12 10.5C13.9103 10.5 15.6649 10.1321 17.0435 9.51763C17.5009 9.31381 17.7295 9.2119 17.8911 8.90532C18.0527 8.59873 18.0093 8.36569 17.9226 7.8996C17.4037 5.11144 14.9494 3 12 3Z" stroke="currentColor" />
+      <path d="M17 5.5C19.989 6.28752 22 7.75946 22 9.44533C22 11.9608 17.5228 14 12 14C6.47715 14 2 11.9608 2 9.44533C2 7.75946 4.01099 6.28752 7 5.5" stroke="currentColor" />
+      <path d="M12 18V21" stroke="currentColor" />
+      <path d="M17 17L18 21" stroke="currentColor" />
+      <path d="M7 17L6 21" stroke="currentColor" />
     </svg>
   );
 }
@@ -108,7 +106,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     const svgBundle = items
       .map((icon) => generateRenderableSvg(icon))
       .join("\n");
-    
+
     const prompt = encodeURIComponent(
       `Create a beautiful icon showcase component using these ${items.length} icons (${iconNames}):\n\n${svgBundle}\n\nMake it interactive with hover states and a clean grid layout.`
     );
@@ -138,7 +136,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
         <div className="flex items-center gap-3">
-          <Package className="w-5 h-5 text-black/60 dark:text-white/60" />
+          <PackageIcon className="w-5 h-5 text-black/60 dark:text-white/60" />
           <h2 className="font-mono text-black dark:text-white text-sm tracking-wide">
             BUNDLE
           </h2>
@@ -150,7 +148,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               className="p-2 text-black/40 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"
               aria-label="Clear all icons from bundle"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2Icon className="w-4 h-4" />
             </button>
           )}
           <button
@@ -158,7 +156,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             className="p-2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
             aria-label="Close bundle drawer"
           >
-            <X className="w-5 h-5" />
+            <XIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -167,14 +165,13 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       <div className="flex border-b border-black/10 dark:border-white/10">
         <button
           onClick={() => setActiveTab("bundle")}
-          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${
-            activeTab === "bundle"
-              ? "text-black dark:text-white"
-              : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
-          }`}
+          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${activeTab === "bundle"
+            ? "text-black dark:text-white"
+            : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
+            }`}
         >
           <span className="flex items-center justify-center gap-2">
-            <Package className="w-3.5 h-3.5" />
+            <PackageIcon className="w-3.5 h-3.5" />
             Bundle
             {items.length > 0 && (
               <span className="px-1.5 py-0.5 rounded-full bg-black/10 dark:bg-white/10 text-[10px]">
@@ -188,11 +185,10 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         </button>
         <button
           onClick={() => setActiveTab("packs")}
-          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${
-            activeTab === "packs"
-              ? "text-black dark:text-white"
-              : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
-          }`}
+          className={`flex-1 px-4 py-3 text-xs font-mono transition-colors relative ${activeTab === "packs"
+            ? "text-black dark:text-white"
+            : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
+            }`}
         >
           <span className="flex items-center justify-center gap-2">
             <SpaceshipIcon className="w-3.5 h-3.5" />
@@ -208,7 +204,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       {items.length > 100 && activeTab === "bundle" && (
         <div className="mx-4 mt-4 p-3 rounded-lg bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/10 dark:border-amber-500/20">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <AlertTriangleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-xs font-mono text-amber-700 dark:text-amber-400 font-medium">Large bundle</p>
               <p className="text-[10px] text-amber-600/70 dark:text-amber-400/70 mt-0.5">
@@ -226,7 +222,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           items.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-12">
               <div className="w-12 h-12 mb-3 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-                <Package className="w-6 h-6 text-black/30 dark:text-white/30" />
+                <PackageIcon className="w-6 h-6 text-black/30 dark:text-white/30" />
               </div>
               <p className="text-black/50 dark:text-white/40 text-sm">Your bundle is empty</p>
               <p className="text-black/40 dark:text-white/30 text-xs mt-1">
@@ -238,7 +234,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               >
                 <SpaceshipIcon className="w-3.5 h-3.5" />
                 Browse starter packs
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRightIcon className="w-3 h-3" />
               </button>
             </div>
           ) : (
@@ -259,7 +255,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                     className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label={`Remove ${icon.normalizedName} from bundle`}
                   >
-                    <X className="w-3 h-3 text-white" />
+                    <XIcon className="w-3 h-3 text-white" />
                   </button>
                 </div>
               ))}
@@ -290,7 +286,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                         <span className="text-sm font-medium text-black dark:text-white">
                           {pack.name}
                         </span>
-                        <ArrowRight className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+                        <ArrowRightIcon className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
                       </div>
                       <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-2">
                         {pack.description}
@@ -308,9 +304,9 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                         title="Copy CLI command"
                       >
                         {copiedPackId === pack.id ? (
-                          <Check className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
+                          <CheckIcon className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
                         ) : (
-                          <Terminal className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
+                          <TerminalIcon className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
                         )}
                         <span className="text-[9px] font-mono text-black/50 dark:text-white/50 truncate">
                           {command}
@@ -332,35 +328,32 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           <div className="flex gap-2">
             <button
               onClick={() => setExportFormat("react")}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${
-                exportFormat === "react"
-                  ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
-                  : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${exportFormat === "react"
+                ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
+                : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
+                }`}
             >
-              <FileCode className="w-4 h-4" />
+              <FileCodeIcon className="w-4 h-4" />
               React
             </button>
             <button
               onClick={() => setExportFormat("svg")}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${
-                exportFormat === "svg"
-                  ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
-                  : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${exportFormat === "svg"
+                ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
+                : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
+                }`}
             >
-              <FileCode className="w-4 h-4" />
+              <FileCodeIcon className="w-4 h-4" />
               SVG
             </button>
             <button
               onClick={() => setExportFormat("json")}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${
-                exportFormat === "json"
-                  ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
-                  : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono transition-all ${exportFormat === "json"
+                ? "bg-black dark:bg-white text-white dark:text-black border border-black/20 dark:border-white/20"
+                : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
+                }`}
             >
-              <FileJson className="w-4 h-4" />
+              <FileJsonIcon className="w-4 h-4" />
               JSON
             </button>
           </div>
@@ -386,14 +379,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               onClick={handleCopy}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 text-black dark:text-white rounded-lg text-sm font-mono transition-colors"
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
               {copied ? "Copied!" : "Copy"}
             </button>
             <button
               onClick={handleDownload}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 text-black dark:text-white rounded-lg text-sm font-mono transition-colors"
             >
-              <Download className="w-4 h-4" />
+              <DownloadIcon className="w-4 h-4" />
               Download
             </button>
           </div>
@@ -401,7 +394,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             onClick={handleOpenInV0}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLinkIcon className="w-4 h-4" />
             Open in v0
           </button>
         </div>
