@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { IconLibrary } from "@/types/icon";
@@ -13,7 +14,8 @@ interface SearchFiltersProps {
   filteredCount: number;
 }
 
-const sources: { id: IconLibrary | "all"; name: string; color: string }[] = [
+// Move constant data outside component to prevent recreation on every render
+const SOURCES: { id: IconLibrary | "all"; name: string; color: string }[] = [
   { id: "all", name: "All", color: "bg-foreground/10 text-foreground hover:bg-foreground/20" },
   { id: "lucide", name: "Lucide", color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20" },
   { id: "phosphor", name: "Phosphor", color: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20" },
@@ -33,6 +35,13 @@ export function SearchFilters({
   totalCount,
   filteredCount,
 }: SearchFiltersProps) {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value);
+  }, [onSearchChange]);
+
+  const handleSourceClick = useCallback((sourceId: IconLibrary | "all") => {
+    onSourceChange(sourceId);
+  }, [onSourceChange]);
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -46,7 +55,7 @@ export function SearchFilters({
           type="search"
           placeholder="Search icons…"
           value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={handleSearchChange}
           className="pl-10 h-12 text-base"
           autoComplete="off"
         />
@@ -54,10 +63,10 @@ export function SearchFilters({
 
       {/* Source Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        {sources.map((src) => (
+        {SOURCES.map((src) => (
           <button
             key={src.id}
-            onClick={() => onSourceChange(src.id)}
+            onClick={() => handleSourceClick(src.id)}
             className={cn(
               "px-3 py-1.5 text-sm font-medium rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               selectedSource === src.id

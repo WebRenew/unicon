@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useMemo, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -13,7 +13,7 @@ import { getBrandIconColor } from "@/lib/icon-utils";
 interface IconCardProps {
   icon: IconData;
   isSelected?: boolean;
-  onClick?: () => void;
+  onClick?: (icon: IconData) => void;
 }
 
 const libraryColors: Record<string, string> = {
@@ -31,19 +31,41 @@ const tooltipLibraryColors: Record<string, string> = {
   hugeicons: "text-violet-400 dark:text-violet-600",
 };
 
-export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
+export const IconCard = memo(function IconCard({ icon, isSelected, onClick }: IconCardProps) {
   const [showDialog, setShowDialog] = useState(false);
   const { resolvedTheme } = useTheme();
   const strokeWidth = icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2;
-  
+
   // Get appropriate brand color for current theme (inverts dark colors in dark mode)
   const isDarkMode = resolvedTheme === "dark";
   const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     setShowDialog(true);
-    onClick?.();
-  };
+    onClick?.(icon);
+  }, [icon, onClick]);
+
+  // Memoize brandColor prop object to prevent unnecessary re-renders
+  const iconRendererProps = useMemo(() => {
+    const props: {
+      svgContent: string;
+      viewBox: string;
+      size: number;
+      strokeWidth: number;
+      renderMode: "fill" | "stroke";
+      color?: string;
+    } = {
+      svgContent: icon.content,
+      viewBox: icon.viewBox,
+      size: 32,
+      strokeWidth,
+      renderMode: icon.defaultFill ? "fill" : "stroke",
+    };
+    if (brandColor) {
+      props.color = brandColor;
+    }
+    return props;
+  }, [icon.content, icon.viewBox, icon.defaultFill, strokeWidth, brandColor]);
 
   const cardContent = (
     <button
@@ -61,14 +83,7 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
     >
       {/* Icon */}
       <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center">
-        <IconRenderer 
-          svgContent={icon.content} 
-          viewBox={icon.viewBox} 
-          size={32} 
-          strokeWidth={strokeWidth}
-          renderMode={icon.defaultFill ? "fill" : "stroke"}
-          {...(brandColor ? { color: brandColor } : {})}
-        />
+        <IconRenderer {...iconRendererProps} />
       </div>
 
       {/* Mobile: Always show name and badge */}
@@ -114,4 +129,4 @@ export function IconCard({ icon, isSelected, onClick }: IconCardProps) {
       />
     </>
   );
-}
+});

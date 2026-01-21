@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useMemo, useCallback } from "react";
 import { useTheme } from "next-themes";
 import {
   ContextMenu,
@@ -103,7 +103,7 @@ interface StyledIconProps {
   containerSize?: number;
 }
 
-export function StyledIcon({
+export const StyledIcon = memo(function StyledIcon({
   icon,
   style,
   onSelect,
@@ -127,23 +127,23 @@ export function StyledIcon({
   // Get appropriate brand color for current theme (inverts dark colors in dark mode)
   const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (onToggleCart) {
       onToggleCart(icon);
     }
     onSelect?.();
-  };
+  }, [icon, onToggleCart, onSelect]);
 
   const componentName = toPascalCase(icon.normalizedName);
 
-  const handleCopy = async (text: string, type: string) => {
+  const handleCopy = useCallback(async (text: string, type: string) => {
     await navigator.clipboard.writeText(text);
     setCopied(type);
     setTimeout(() => setCopied(null), 1500);
-  };
+  }, []);
 
-  // Generate React component code with accessibility attributes
-  const getReactComponent = () => {
+  // Generate React component code with accessibility attributes - memoized to prevent re-renders
+  const getReactComponent = useCallback(() => {
     const attrs = getSvgAttributesJsx(icon, effectiveStrokeWidth);
     return `export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
@@ -160,18 +160,34 @@ export function StyledIcon({
     </svg>
   );
 }`;
-  };
+  }, [icon, effectiveStrokeWidth, componentName]);
 
-  const handleCopySvg = () => handleCopy(generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth }), "svg");
-  const handleCopyComponent = () => handleCopy(getReactComponent(), "component");
-  const handleCopyUsage = () => handleCopy(generateUsageExample(icon.normalizedName), "usage");
+  const handleCopySvg = useCallback(() => handleCopy(generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth }), "svg"), [icon, effectiveStrokeWidth, handleCopy]);
+  const handleCopyComponent = useCallback(() => handleCopy(getReactComponent(), "component"), [getReactComponent, handleCopy]);
+  const handleCopyUsage = useCallback(() => handleCopy(generateUsageExample(icon.normalizedName), "usage"), [icon.normalizedName, handleCopy]);
 
-  const handleOpenInV0 = () => {
+  const handleOpenInV0 = useCallback(() => {
     const prompt = encodeURIComponent(
       `Create a beautiful component using this icon:\n\n${generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth })}\n\nMake it interactive with hover states.`
     );
     window.open(`https://v0.dev/?q=${prompt}`, "_blank");
-  };
+  }, [icon, effectiveStrokeWidth]);
+
+  // Memoize inline style objects to prevent re-renders
+  const containerStyle = useMemo(() => ({ width: containerSize, height: containerSize }), [containerSize]);
+  const iconStyle = useMemo(() => ({ width: iconSize, height: iconSize }), [iconSize]);
+
+  // Memoize SVG generation options
+  const svgOptions = useMemo(() => {
+    const opts: { size: number; strokeWidth: number; color?: string } = {
+      size: iconSize,
+      strokeWidth: effectiveStrokeWidth,
+    };
+    if (brandColor) {
+      opts.color = brandColor;
+    }
+    return opts;
+  }, [iconSize, effectiveStrokeWidth, brandColor]);
 
   return (
     <>
@@ -179,20 +195,16 @@ export function StyledIcon({
         <ContextMenuTrigger asChild>
           <button
             onClick={handleClick}
-            style={{ width: containerSize, height: containerSize }}
+            style={containerStyle}
             className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
               }`}
           >
             <div
-              style={{ width: iconSize, height: iconSize }}
+              style={iconStyle}
               className={brandColor ? undefined : styles.icon}
               suppressHydrationWarning
               dangerouslySetInnerHTML={{
-                __html: generateRenderableSvg(icon, {
-                  size: iconSize,
-                  strokeWidth: effectiveStrokeWidth,
-                  ...(brandColor ? { color: brandColor } : {}),
-                }),
+                __html: generateRenderableSvg(icon, svgOptions),
               }}
             />
             {isSelected && (
@@ -282,4 +294,4 @@ export function StyledIcon({
       />
     </>
   );
-}
+});

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { logger } from "@/lib/logger";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
@@ -175,7 +176,7 @@ export function MetallicIconBrowser({
         setSizePreset(savedSize as SizePreset);
       }
     } catch (error) {
-      console.error("Failed to load settings from localStorage:", error);
+      logger.error("Failed to load settings from localStorage:", error);
     }
   }, []);
 
@@ -190,7 +191,7 @@ export function MetallicIconBrowser({
       // Notify header of cart changes
       window.dispatchEvent(new Event("cartUpdate"));
     } catch (error) {
-      console.error("Failed to save bundle to localStorage:", error);
+      logger.error("Failed to save bundle to localStorage:", error);
     }
   }, [cartItems]);
 
@@ -199,7 +200,7 @@ export function MetallicIconBrowser({
     try {
       localStorage.setItem("unicon-stroke-preset", strokePreset);
     } catch (error) {
-      console.error("Failed to save stroke preset to localStorage:", error);
+      logger.error("Failed to save stroke preset to localStorage:", error);
     }
   }, [strokePreset]);
 
@@ -207,11 +208,17 @@ export function MetallicIconBrowser({
     try {
       localStorage.setItem("unicon-size-preset", sizePreset);
     } catch (error) {
-      console.error("Failed to save size preset to localStorage:", error);
+      logger.error("Failed to save size preset to localStorage:", error);
     }
   }, [sizePreset]);
 
   const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
+
+  // Memoize grid style object to prevent re-renders
+  const gridStyle = useMemo(() => ({
+    gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
+    justifyContent: 'start' as const,
+  }), [containerSize]);
 
   const toggleCartItem = useCallback((icon: IconData) => {
     setCartItems((prev) => {
@@ -294,7 +301,7 @@ export function MetallicIconBrowser({
         toast.error("No icons found for this pack");
       }
     } catch (error) {
-      console.error("Failed to add starter pack:", error);
+      logger.error("Failed to add starter pack:", error);
       toast.error("Failed to add starter pack");
     }
   }, [performAddToBundle]);
@@ -331,7 +338,7 @@ export function MetallicIconBrowser({
           setTotalResults(pageNum * ICONS_PER_PAGE + data.icons.length);
         }
       } catch (error) {
-        console.error("Failed to fetch icons:", error);
+        logger.error("Failed to fetch icons:", error);
       } finally {
         setIsLoading(false);
       }
@@ -757,10 +764,7 @@ export function MetallicIconBrowser({
           <>
             <div
               className="grid gap-3"
-              style={{
-                gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
-                justifyContent: 'start',
-              }}
+              style={gridStyle}
             >
               {iconsToShow.map((icon) => (
                 <StyledIcon

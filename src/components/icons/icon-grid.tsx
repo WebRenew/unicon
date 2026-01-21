@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { IconCard } from "./icon-card";
 import type { IconData } from "@/types/icon";
 
@@ -9,7 +10,11 @@ interface IconGridProps {
   onSelectIcon: (icon: IconData) => void;
 }
 
-export function IconGrid({ icons, selectedIcon, onSelectIcon }: IconGridProps) {
+export const IconGrid = memo(function IconGrid({ icons, selectedIcon, onSelectIcon }: IconGridProps) {
+  const handleIconClick = useCallback((icon: IconData) => {
+    onSelectIcon(icon);
+  }, [onSelectIcon]);
+
   if (icons.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -29,9 +34,9 @@ export function IconGrid({ icons, selectedIcon, onSelectIcon }: IconGridProps) {
           key={icon.id}
           icon={icon}
           isSelected={selectedIcon?.id === icon.id}
-          onClick={() => onSelectIcon(icon)}
+          onClick={handleIconClick}
         />
       ))}
     </div>
   );
-}
+});
