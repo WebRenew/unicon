@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SearchFilters } from "./search-filters";
 import { IconGrid } from "./icon-grid";
 import { IconPreview } from "./icon-preview";
@@ -28,11 +28,19 @@ export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
     loadMore,
   } = useIconSearch({ initialIcons });
 
-  // Trigger search when query or source changes
-  useEffect(() => {
+  // Handle search changes - debouncing is handled inside the hook
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
     const sourceId = selectedSource === "all" ? undefined : selectedSource;
+    performSearch(newSearch, sourceId);
+  };
+
+  // Handle source filter changes
+  const handleSourceChange = (newSource: IconLibrary | "all") => {
+    setSelectedSource(newSource);
+    const sourceId = newSource === "all" ? undefined : newSource;
     performSearch(search, sourceId);
-  }, [search, selectedSource, performSearch]);
+  };
 
   return (
     <div className="flex h-[calc(100vh-12rem)] gap-6">
@@ -41,9 +49,9 @@ export function IconBrowser({ icons: initialIcons }: IconBrowserProps) {
         <div className="pt-6 space-y-2">
           <SearchFilters
             search={search}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             selectedSource={selectedSource}
-            onSourceChange={setSelectedSource}
+            onSourceChange={handleSourceChange}
             totalCount={initialIcons.length}
             filteredCount={icons.length}
           />
