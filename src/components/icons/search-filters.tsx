@@ -80,8 +80,8 @@ export function SearchFilters({
 
         <span className="sm:ml-auto text-sm text-muted-foreground w-full sm:w-auto text-left sm:text-right">
           {filteredCount === totalCount
-            ? `${totalCount.toLocaleString()} icons`
-            : `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()}`}
+            ? `${totalCount.toLocaleString("en-US")} icons`
+            : `${filteredCount.toLocaleString("en-US")} of ${totalCount.toLocaleString("en-US")}`}
         </span>
       </div>
     </div>

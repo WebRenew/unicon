@@ -9,7 +9,7 @@ export function Footer() {
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
-            © {currentYear} <Link href="https://webrenew.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">WebRenew</Link>
+            © <span suppressHydrationWarning>{currentYear}</span> <Link href="https://webrenew.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">WebRenew</Link>
           </div>
 
           {/* Navigation Links */}

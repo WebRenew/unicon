@@ -435,7 +435,7 @@ export function MetallicIconBrowser({
       `}</style>
       <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
 
-        <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight bg-[linear-gradient(to_right,var(--accent-lavender)_0%,var(--accent-lavender)_40%,var(--accent-aqua)_70%,var(--accent-mint)_100%)] bg-clip-text text-transparent">
+        <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white">
           Just the icons you need. Zero bloat.
         </h1>
         <p className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4">
@@ -456,7 +456,7 @@ export function MetallicIconBrowser({
             }`}
           >
             <span className="font-medium">All Libraries</span>
-            <span className="opacity-70">• {totalCount.toLocaleString()}</span>
+            <span className="opacity-70">• {totalCount.toLocaleString("en-US")}</span>
           </button>
           {Object.entries(countBySource).map(([source, count]) => (
             <button
@@ -472,7 +472,7 @@ export function MetallicIconBrowser({
             >
               <span className={`w-2 h-2 rounded-full ${selectedSource === source ? 'bg-white' : SOURCE_COLORS[source]}`} />
               <span className="capitalize font-medium">{source}</span>
-              <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>{count?.toLocaleString()}</span>
+              <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>{count?.toLocaleString("en-US")}</span>
             </button>
           ))}
 
@@ -782,7 +782,7 @@ export function MetallicIconBrowser({
         {/* Results count */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-black/40 dark:text-white/40 text-xs">
-            Page {page + 1} of {totalPages} • {totalResults.toLocaleString()} icons
+            Page {page + 1} of {totalPages} • {totalResults.toLocaleString("en-US")} icons
             {isLoading && <Loader2Icon className="inline ml-2 w-3 h-3 animate-spin" />}
           </p>
         </div>
