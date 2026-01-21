@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchIcons, getIconsByNames } from "@/lib/queries";
 import { db } from "@/lib/db";
-import { getEmbedding, embeddingToVectorString, expandQueryWithAI } from "@/lib/ai";
+import { getEmbedding, embeddingToVectorString, expandQueryWithAI, generateSearchCacheKey, getCachedSearchResults, setCachedSearchResults } from "@/lib/ai";
 import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
@@ -117,7 +117,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 /**
  * AI-powered semantic search using Claude for query expansion and Turso's native vector search.
  * Uses parallel execution for AI expansion and embedding to minimize latency.
- * Fetches more results than needed to allow for proper pagination after database returns.
+ * Results are cached for 60 seconds to reduce API costs and improve performance.
  */
 async function aiSemanticSearch(
   query: string,
@@ -125,6 +125,18 @@ async function aiSemanticSearch(
   limit: number,
   offset: number
 ): Promise<{ icons: IconData[]; searchType: string; expandedQuery?: string }> {
+  // Check cache first
+  const cacheKey = generateSearchCacheKey({
+    query,
+    ...(sourceId ? { sourceId } : {}),
+    limit,
+    offset,
+  });
+  const cached = getCachedSearchResults<{ icons: IconData[]; searchType: string; expandedQuery?: string }>(cacheKey);
+  if (cached) {
+    logger.log(`Cache hit for search: "${query}"`);
+    return cached;
+  }
   // Start AI expansion and original embedding in parallel for faster response
   const aiExpansionPromise = process.env.ANTHROPIC_API_KEY
     ? withTimeout(
@@ -246,6 +258,9 @@ async function aiSemanticSearch(
   if (expandedQuery) {
     result.expandedQuery = expandedQuery;
   }
+
+  // Cache the result
+  setCachedSearchResults(cacheKey, result);
 
   return result;
 }

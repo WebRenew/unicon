@@ -13,6 +13,16 @@ const queryExpansionCache = new Map<string, string>();
 const embeddingCache = new Map<string, number[]>();
 const MAX_CACHE_SIZE = 1000;
 
+// Search results cache with TTL
+interface CachedSearchResult<T> {
+  data: T;
+  timestamp: number;
+}
+
+const searchResultsCache = new Map<string, CachedSearchResult<unknown>>();
+const SEARCH_CACHE_TTL = 60 * 1000; // 60 seconds
+const MAX_SEARCH_CACHE_SIZE = 500;
+
 // Simple cache cleanup
 function pruneCache<T>(cache: Map<string, T>) {
   if (cache.size > MAX_CACHE_SIZE) {
@@ -20,6 +30,16 @@ function pruneCache<T>(cache: Map<string, T>) {
     const toRemove = Math.floor(MAX_CACHE_SIZE * 0.2);
     const keys = Array.from(cache.keys()).slice(0, toRemove);
     keys.forEach(key => cache.delete(key));
+  }
+}
+
+// Cache cleanup with TTL support
+function pruneSearchCache() {
+  if (searchResultsCache.size > MAX_SEARCH_CACHE_SIZE) {
+    // Remove oldest 20% of entries
+    const toRemove = Math.floor(MAX_SEARCH_CACHE_SIZE * 0.2);
+    const keys = Array.from(searchResultsCache.keys()).slice(0, toRemove);
+    keys.forEach(key => searchResultsCache.delete(key));
   }
 }
 
@@ -140,6 +160,55 @@ export function embeddingToBlob(embedding: number[]): Buffer {
  */
 export function embeddingToVectorString(embedding: number[]): string {
   return `[${embedding.join(",")}]`;
+}
+
+/**
+ * Generate a cache key for search results based on query parameters.
+ */
+export function generateSearchCacheKey(params: {
+  query: string;
+  sourceId?: string;
+  limit: number;
+  offset: number;
+}): string {
+  return `search:${params.query.toLowerCase().trim()}:${params.sourceId || "all"}:${params.limit}:${params.offset}`;
+}
+
+/**
+ * Get cached search results if available and not expired.
+ */
+export function getCachedSearchResults<T>(cacheKey: string): T | null {
+  const cached = searchResultsCache.get(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  // Check if expired
+  const age = Date.now() - cached.timestamp;
+  if (age > SEARCH_CACHE_TTL) {
+    searchResultsCache.delete(cacheKey);
+    return null;
+  }
+
+  return cached.data as T;
+}
+
+/**
+ * Cache search results with current timestamp.
+ */
+export function setCachedSearchResults<T>(cacheKey: string, data: T): void {
+  searchResultsCache.set(cacheKey, {
+    data,
+    timestamp: Date.now(),
+  });
+  pruneSearchCache();
+}
+
+/**
+ * Clear all search result caches (useful after data updates).
+ */
+export function clearSearchCache(): void {
+  searchResultsCache.clear();
 }
 
 export { EMBEDDING_DIMENSIONS };
