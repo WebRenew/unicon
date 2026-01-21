@@ -10,7 +10,7 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { Copy, Check, ExternalLink, Plus, Minus, Maximize2 } from "lucide-react";
+import { CopyIcon, CheckIcon, ExternalLinkIcon, PlusIcon, MinusIcon, Maximize2Icon } from "@/components/icons/ui";
 import {
   toPascalCase,
   getSvgAttributesJsx,
@@ -98,12 +98,12 @@ interface StyledIconProps {
   containerSize?: number;
 }
 
-export function StyledIcon({ 
-  icon, 
-  style, 
-  onSelect, 
-  isSelected, 
-  onToggleCart, 
+export function StyledIcon({
+  icon,
+  style,
+  onSelect,
+  isSelected,
+  onToggleCart,
   strokeWeight,
   iconSize = 24,
   containerSize = 56,
@@ -118,7 +118,7 @@ export function StyledIcon({
 
   // Use provided strokeWeight, or fall back to icon's default
   const effectiveStrokeWidth = strokeWeight ?? (icon.strokeWidth ? parseFloat(icon.strokeWidth) : DEFAULT_STROKE.strokeWidth);
-  
+
   // Get appropriate brand color for current theme (inverts dark colors in dark mode)
   const brandColor = getBrandIconColor(icon.brandColor, isDarkMode);
 
@@ -175,16 +175,16 @@ export function StyledIcon({
           <button
             onClick={handleClick}
             style={{ width: containerSize, height: containerSize }}
-            className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${
-              isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
-            }`}
+            className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
+              }`}
           >
             <div
               style={{ width: iconSize, height: iconSize }}
               className={brandColor ? undefined : styles.icon}
+              suppressHydrationWarning
               dangerouslySetInnerHTML={{
-                __html: generateRenderableSvg(icon, { 
-                  size: iconSize, 
+                __html: generateRenderableSvg(icon, {
+                  size: iconSize,
                   strokeWidth: effectiveStrokeWidth,
                   ...(brandColor ? { color: brandColor } : {}),
                 }),
@@ -192,7 +192,7 @@ export function StyledIcon({
             />
             {isSelected && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-                <Check className="w-2.5 h-2.5 text-white" />
+                <CheckIcon className="w-2.5 h-2.5 text-white" />
               </div>
             )}
           </button>
@@ -203,7 +203,7 @@ export function StyledIcon({
           </ContextMenuLabel>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => setShowDetailDialog(true)}>
-            <Maximize2 className="mr-2 h-4 w-4" />
+            <Maximize2Icon className="mr-2 h-4 w-4" />
             View details
           </ContextMenuItem>
           {onToggleCart && (
@@ -212,12 +212,12 @@ export function StyledIcon({
               <ContextMenuItem onClick={() => onToggleCart(icon)}>
                 {isSelected ? (
                   <>
-                    <Minus className="mr-2 h-4 w-4" />
+                    <MinusIcon className="mr-2 h-4 w-4" />
                     Remove from bundle
                   </>
                 ) : (
                   <>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <PlusIcon className="mr-2 h-4 w-4" />
                     Add to bundle
                   </>
                 )}
@@ -227,34 +227,34 @@ export function StyledIcon({
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleCopySvg}>
             {copied === "svg" ? (
-              <Check className="mr-2 h-4 w-4" />
+              <CheckIcon className="mr-2 h-4 w-4" />
             ) : (
-              <Copy className="mr-2 h-4 w-4" />
+              <CopyIcon className="mr-2 h-4 w-4" />
             )}
             Copy SVG
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyComponent}>
             {copied === "component" ? (
-              <Check className="mr-2 h-4 w-4" />
+              <CheckIcon className="mr-2 h-4 w-4" />
             ) : (
-              <Copy className="mr-2 h-4 w-4" />
+              <CopyIcon className="mr-2 h-4 w-4" />
             )}
             Copy React component
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyUsage}>
             {copied === "usage" ? (
-              <Check className="mr-2 h-4 w-4" />
+              <CheckIcon className="mr-2 h-4 w-4" />
             ) : (
-              <Copy className="mr-2 h-4 w-4" />
+              <CopyIcon className="mr-2 h-4 w-4" />
             )}
             Copy usage example
           </ContextMenuItem>
           {icon.brandColor && (
             <ContextMenuItem onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}>
               {copied === "color" ? (
-                <Check className="mr-2 h-4 w-4" />
+                <CheckIcon className="mr-2 h-4 w-4" />
               ) : (
-                <div 
+                <div
                   className="mr-2 h-4 w-4 rounded-full border border-border"
                   style={{ backgroundColor: icon.brandColor }}
                 />
@@ -264,12 +264,12 @@ export function StyledIcon({
           )}
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleOpenInV0}>
-            <ExternalLink className="mr-2 h-4 w-4" />
+            <ExternalLinkIcon className="mr-2 h-4 w-4" />
             Open in v0
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      
+
       <IconDetailDialog
         icon={icon}
         open={showDetailDialog}
