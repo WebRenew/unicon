@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Footer } from "@/components/footer";
+import { ConditionalFooter } from "@/components/conditional-footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -186,7 +186,7 @@ export default function RootLayout({
           <div className="flex-1">
             {children}
           </div>
-          <Footer />
+          <ConditionalFooter />
           <Toaster />
         </ThemeProvider>
         <Analytics />

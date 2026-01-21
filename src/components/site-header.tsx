@@ -4,11 +4,19 @@ import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { cn } from "@/lib/utils";
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  variant?: "default" | "docs";
+}
+
+export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center justify-between px-4 lg:px-20 xl:px-40">
+      <div className={cn(
+        "flex h-14 items-center justify-between",
+        variant === "docs" ? "px-4" : "px-4 lg:px-20 xl:px-40"
+      )}>
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <span className="text-xl" aria-hidden="true">🦄</span>
