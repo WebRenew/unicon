@@ -44,9 +44,15 @@ function pruneSearchCache() {
 }
 
 function getEmbeddingModel() {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
+  // Support both Vercel AI Gateway (vck_*) and regular OpenAI keys (sk-*)
+  // Vercel gateway keys only work when deployed on Vercel
+  // For local development, set OPENAI_API_KEY in .env.local
+  const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+
+  const apiKey = openaiKey || gatewayKey;
   if (!apiKey) {
-    throw new Error("AI_GATEWAY_API_KEY is not configured");
+    throw new Error("Either OPENAI_API_KEY or AI_GATEWAY_API_KEY must be configured");
   }
 
   const openai = createOpenAI({ apiKey });
