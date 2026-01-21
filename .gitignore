@@ -54,7 +54,10 @@ env/
 
 # AI assistant directories
 .agent/
-.claude/
+.claude/*
+!.claude/docs/
+!.claude/skills/
+!.claude/sprites/
 .codex/
 .gemini/
 .opencode/
