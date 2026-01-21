@@ -47,7 +47,7 @@ export function HomeHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-background/95 dark:backdrop-blur dark:supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 lg:px-20 xl:px-40">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -85,7 +85,7 @@ export function HomeHeader() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleBundleClick}
-            className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/10 border border-[var(--accent-mint)]/20 text-foreground hover:bg-[var(--accent-mint)]/20 transition-colors text-sm font-medium"
+            className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all text-sm font-medium"
           >
             <PackageIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Bundle</span>

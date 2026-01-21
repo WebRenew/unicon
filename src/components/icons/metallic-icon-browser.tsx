@@ -58,6 +58,17 @@ const SOURCE_COLORS: Record<string, string> = {
   "simple-icons": "bg-gray-500",
 };
 
+const SOURCE_COLORS_SELECTED: Record<string, string> = {
+  lucide: "bg-orange-500/69",
+  phosphor: "bg-emerald-500/69",
+  hugeicons: "bg-violet-500/69",
+  heroicons: "bg-blue-500/69",
+  tabler: "bg-cyan-500/69",
+  feather: "bg-pink-500/69",
+  remix: "bg-red-500/69",
+  "simple-icons": "bg-gray-500/69",
+};
+
 // Icons per page - sized for large screens (4K: ~50 columns × 8 rows = 400)
 const ICONS_PER_PAGE = 320;
 
@@ -360,33 +371,101 @@ export function MetallicIconBrowser({
           icons.
         </p>
 
-        {/* Stats */}
-        <div className="hidden md:flex gap-4 text-xs mb-8">
+        {/* Stats - Interactive Library Filters */}
+        <div className="hidden md:flex flex-wrap items-center gap-2 text-xs mb-8">
+          <button
+            onClick={() => setSelectedSource("all")}
+            aria-label="Show all libraries"
+            aria-pressed={selectedSource === "all"}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+              selectedSource === "all"
+                ? "bg-black/90 dark:bg-white/90 text-white dark:text-black border-2 border-black dark:border-white"
+                : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
+            }`}
+          >
+            <span className="font-medium">All Libraries</span>
+            <span className="opacity-70">• {totalCount.toLocaleString()}</span>
+          </button>
           {Object.entries(countBySource).map(([source, count]) => (
-            <div key={source} className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${SOURCE_COLORS[source]}`} />
-              <span className="text-black/40 dark:text-white/40 capitalize">
-                {source}: {count?.toLocaleString()}
-              </span>
-            </div>
+            <button
+              key={source}
+              onClick={() => setSelectedSource(source as IconLibrary)}
+              aria-label={`Filter by ${source} library`}
+              aria-pressed={selectedSource === source}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+                selectedSource === source
+                  ? `${SOURCE_COLORS_SELECTED[source]} text-white border-2 border-current shadow-sm`
+                  : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${selectedSource === source ? 'bg-white' : SOURCE_COLORS[source]}`} />
+              <span className="capitalize font-medium">{source}</span>
+              <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>{count?.toLocaleString()}</span>
+            </button>
           ))}
-          <span className="text-black/60 dark:text-white/60">• {totalCount.toLocaleString()} total</span>
+
+          {/* Bundle All Button - shown when a library filter is active */}
+          {canBundleAll && selectedSource !== "all" && (
+            <button
+              onClick={() => {
+                addAllToBundle(icons);
+                setIsCartOpen(true);
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all ml-auto"
+            >
+              <PackagePlusIcon className="w-3.5 h-3.5" />
+              Bundle All on Page ({iconsNotInBundle.length})
+            </button>
+          )}
         </div>
 
         {/* Search */}
-        <div className="relative mb-4">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40" />
+        <div className="relative mb-4 w-full max-w-md">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
           <label htmlFor="icon-search-main" className="sr-only">Search icons</label>
-          <input
-            id="icon-search-main"
-            type="text"
-            placeholder="Try 'business icons' or 'celebration'…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 text-sm focus:outline-none focus:border-black/20 dark:focus:border-white/20 focus:bg-black/[0.07] dark:focus:bg-white/[0.07] transition-colors"
-            autoComplete="off"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+
+          {/* Gradient border wrapper - gradient grows on focus */}
+          <style jsx>{`
+            @property --gradient-stop {
+              syntax: '<percentage>';
+              initial-value: 8%;
+              inherits: false;
+            }
+
+            @property --gradient-opacity {
+              syntax: '<number>';
+              initial-value: 1;
+              inherits: false;
+            }
+
+            .search-gradient-border {
+              --gradient-stop: 8%;
+              --gradient-opacity: 1;
+              background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(0,0,0,0.1) var(--gradient-stop), rgba(0,0,0,0.1) 100%);
+              transition: --gradient-stop 0.5s cubic-bezier(0.4, 0, 0.2, 1), --gradient-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            :global(.dark) .search-gradient-border {
+              background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(255,255,255,0.1) var(--gradient-stop), rgba(255,255,255,0.1) 100%);
+            }
+            .search-gradient-border:focus-within {
+              --gradient-stop: 100%;
+              --gradient-opacity: 0.4;
+              transform: scale(1.01);
+            }
+          `}</style>
+          <div className="search-gradient-border rounded-lg p-[1px]">
+            <input
+              id="icon-search-main"
+              type="text"
+              placeholder="Try 'business icons' or 'celebration'…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
             {isLoading && search && (
               <Loader2Icon className="w-4 h-4 text-black/40 dark:text-white/40 animate-spin" />
             )}
@@ -529,8 +608,8 @@ export function MetallicIconBrowser({
                     </Popover>
                   </div>
 
-                  {/* Bundle All Button - visible when filters active */}
-                  {canBundleAll && (
+                  {/* Bundle All Button - visible when filters active (but not library filter, since that's in stats row) */}
+                  {canBundleAll && selectedSource === "all" && (
                     <>
                       <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
                       <button
@@ -538,10 +617,10 @@ export function MetallicIconBrowser({
                           addAllToBundle(icons);
                           setIsCartOpen(true);
                         }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
                       >
                         <PackagePlusIcon className="w-3.5 h-3.5" />
-                        Bundle All ({iconsNotInBundle.length})
+                        Bundle All on Page ({iconsNotInBundle.length})
                       </button>
                     </>
                   )}
@@ -564,20 +643,20 @@ export function MetallicIconBrowser({
           {/* Actions when panel collapsed */}
           {!filtersExpanded && (canBundleAll || cartItems.length > 0) && (
             <div className="flex items-center justify-between gap-3 -mt-2 mb-2">
-              {/* Bundle All action - visible when filters active */}
-              {canBundleAll && (
+              {/* Bundle All action - visible when filters active (but not library filter, since that's in stats row) */}
+              {canBundleAll && selectedSource === "all" && (
                 <button
                   onClick={() => {
                     addAllToBundle(icons);
                     setIsCartOpen(true);
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/10 dark:bg-[var(--accent-mint)]/20 text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/20 dark:hover:bg-[var(--accent-mint)]/30 border border-[var(--accent-mint)]/20 dark:border-[var(--accent-mint)]/30 transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
                 >
                   <PackagePlusIcon className="w-3.5 h-3.5" />
-                  Bundle All {icons.length} Filtered Icons
+                  Bundle All on Page ({icons.length})
                   {iconsNotInBundle.length < icons.length && (
-                    <span className="text-[var(--accent-mint)]/70">
-                      (+{iconsNotInBundle.length} new)
+                    <span className="text-black/60 dark:text-[var(--accent-mint)]/70">
+                      • {iconsNotInBundle.length} new
                     </span>
                   )}
                 </button>
