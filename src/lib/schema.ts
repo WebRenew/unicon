@@ -86,14 +86,3 @@ export interface PathElement {
   attrs: Record<string, string>;
 }
 
-export type Source = typeof sources.$inferSelect;
-export type NewSource = typeof sources.$inferInsert;
-
-export type Icon = typeof icons.$inferSelect;
-export type NewIcon = typeof icons.$inferInsert;
-
-export type Variant = typeof variants.$inferSelect;
-export type NewVariant = typeof variants.$inferInsert;
-
-export type Mapping = typeof mappings.$inferSelect;
-export type NewMapping = typeof mappings.$inferInsert;

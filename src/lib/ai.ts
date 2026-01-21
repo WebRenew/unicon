@@ -133,42 +133,6 @@ export function embeddingToBlob(embedding: number[]): Buffer {
   return buffer;
 }
 
-/**
- * Convert binary blob to embedding array.
- */
-export function blobToEmbedding(blob: Buffer): number[] {
-  const embedding: number[] = [];
-  for (let i = 0; i < blob.length; i += 4) {
-    embedding.push(blob.readFloatLE(i));
-  }
-  return embedding;
-}
-
-/**
- * Calculate cosine similarity between two embeddings.
- */
-export function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) {
-    throw new Error("Embeddings must have the same length");
-  }
-
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    const aVal = a[i] ?? 0;
-    const bVal = b[i] ?? 0;
-    dotProduct += aVal * bVal;
-    normA += aVal * aVal;
-    normB += bVal * bVal;
-  }
-
-  const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
-  if (magnitude === 0) return 0;
-
-  return dotProduct / magnitude;
-}
 
 /**
  * Convert embedding array to Turso vector format string.

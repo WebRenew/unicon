@@ -44,12 +44,3 @@ export interface IconPreviewSettings {
   color: string;
 }
 
-export interface MappingData {
-  id: number;
-  canonicalName: string;
-  lucideId: string | null;
-  phosphorId: string | null;
-  hugeiconsId: string | null;
-  confidence: number | null;
-  needsReview: boolean;
-}

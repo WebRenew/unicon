@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { icons, sources, variants, mappings } from "./schema";
+import { icons, sources } from "./schema";
 import { eq, like, or, sql, asc } from "drizzle-orm";
 import type { IconData, SourceData } from "@/types/icon";
 
@@ -152,12 +152,6 @@ export async function getIconsByNames(names: string[]): Promise<IconData[]> {
   }));
 }
 
-/**
- * Get all variants for an icon.
- */
-export async function getIconVariants(iconId: string) {
-  return db.select().from(variants).where(eq(variants.iconId, iconId));
-}
 
 /**
  * Get icon count by source.
@@ -195,40 +189,6 @@ export async function getCategories(): Promise<string[]> {
   return results.map((r) => r.category).filter((c): c is string => c !== null);
 }
 
-/**
- * Get equivalent icons across libraries.
- */
-export async function getEquivalentIcons(canonicalName: string) {
-  const results = await db
-    .select()
-    .from(mappings)
-    .where(eq(mappings.canonicalName, canonicalName))
-    .limit(1);
-
-  const mapping = results[0];
-  if (!mapping) {
-    return null;
-  }
-
-  const equivalents: IconData[] = [];
-
-  if (mapping.lucideId) {
-    const icon = await getIconById(mapping.lucideId);
-    if (icon) equivalents.push(icon);
-  }
-
-  if (mapping.phosphorId) {
-    const icon = await getIconById(mapping.phosphorId);
-    if (icon) equivalents.push(icon);
-  }
-
-  if (mapping.hugeiconsId) {
-    const icon = await getIconById(mapping.hugeiconsId);
-    if (icon) equivalents.push(icon);
-  }
-
-  return equivalents;
-}
 
 // Helper to map database row to IconData type
 function mapIconRow(row: typeof icons.$inferSelect): IconData {

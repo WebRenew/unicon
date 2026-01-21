@@ -591,19 +591,3 @@ export function hasSynonyms(query: string): boolean {
   return tokens.some((token) => synonymMap.has(token));
 }
 
-/**
- * Get the synonym map for debugging/inspection.
- */
-export function getSynonymMap(): ReadonlyMap<string, ReadonlySet<string>> {
-  return synonymMap;
-}
-
-/**
- * Get statistics about the synonym database.
- */
-export function getSynonymStats(): { totalTerms: number; totalGroups: number } {
-  return {
-    totalTerms: synonymMap.size,
-    totalGroups: SYNONYM_GROUPS.length,
-  };
-}
