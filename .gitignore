@@ -63,3 +63,13 @@ env/
 .opencode/
 .windsurf/
 .cursor/
+
+# Database files (Turso/SQLite local replicas)
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.db-info
+
+# Extractor temporary files
+extractor/tmp_extract/

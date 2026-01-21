@@ -211,4 +211,24 @@ export function clearSearchCache(): void {
   searchResultsCache.clear();
 }
 
+/**
+ * Get cache statistics for monitoring.
+ */
+export function getCacheStats() {
+  return {
+    searchResults: {
+      size: searchResultsCache.size,
+      maxSize: MAX_SEARCH_CACHE_SIZE,
+    },
+    embeddings: {
+      size: embeddingCache.size,
+      maxSize: MAX_CACHE_SIZE,
+    },
+    queryExpansions: {
+      size: queryExpansionCache.size,
+      maxSize: MAX_CACHE_SIZE,
+    },
+  };
+}
+
 export { EMBEDDING_DIMENSIONS };
