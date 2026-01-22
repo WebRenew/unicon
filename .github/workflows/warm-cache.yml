@@ -1,0 +1,42 @@
+name: Warm Production Cache
+
+# Run after successful Vercel deployment
+# This workflow only uses trusted inputs (no user-generated content)
+on:
+  deployment_status:
+
+jobs:
+  warm-cache:
+    name: Warm Cache
+    runs-on: ubuntu-latest
+    # Only run on successful production deployments
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Warm production cache
+        run: pnpm cache:warm:prod
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Cache warming completed successfully"
+          else
+            echo "❌ Cache warming failed"
+          fi

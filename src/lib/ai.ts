@@ -8,7 +8,23 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 
 const EMBEDDING_DIMENSIONS = 3072; // text-embedding-3-large
 
-// In-memory caches to reduce API calls
+/**
+ * In-memory caches to reduce API calls within a single serverless instance.
+ *
+ * IMPORTANT: On Vercel serverless, these caches are instance-local and do NOT
+ * persist across requests hitting different instances or after cold starts.
+ *
+ * Cache Strategy (Hybrid):
+ * 1. In-memory cache: Fast lookups when function stays warm (same instance)
+ * 2. HTTP Cache-Control: Edge caching for repeated requests (cross-instance)
+ * 3. Warm instance optimization: Keep popular queries in memory during bursts
+ *
+ * Expected behavior:
+ * - First request: ~1000ms (cold start + DB query)
+ * - Same instance: ~10ms (in-memory hit)
+ * - Different instance: ~50ms (edge cache hit)
+ * - After cache expiry: ~1000ms (revalidate)
+ */
 const queryExpansionCache = new Map<string, string>();
 const embeddingCache = new Map<string, number[]>();
 const MAX_CACHE_SIZE = 1000;
@@ -20,7 +36,7 @@ interface CachedSearchResult<T> {
 }
 
 const searchResultsCache = new Map<string, CachedSearchResult<unknown>>();
-const SEARCH_CACHE_TTL = 60 * 1000; // 60 seconds
+const SEARCH_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (matches HTTP cache)
 const MAX_SEARCH_CACHE_SIZE = 500;
 
 // Simple cache cleanup

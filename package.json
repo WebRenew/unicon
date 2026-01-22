@@ -14,6 +14,8 @@
     "db:studio": "drizzle-kit studio",
     "embeddings": "tsx scripts/generate-embeddings.ts",
     "embeddings:stats": "tsx scripts/generate-embeddings.ts --stats",
+    "cache:warm": "tsx scripts/warm-cache.ts",
+    "cache:warm:prod": "tsx scripts/warm-cache.ts --url=https://unicon.webrenew.com",
     "prepare": "husky"
   },
   "dependencies": {
