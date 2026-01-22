@@ -44,27 +44,38 @@ function pruneSearchCache() {
 }
 
 function getEmbeddingModel() {
-  // Support both Vercel AI Gateway (vck_*) and regular OpenAI keys (sk-*)
-  // Vercel gateway keys only work when deployed on Vercel
-  // For local development, set OPENAI_API_KEY in .env.local
+  // Support multiple providers:
+  // - Vercel AI Gateway (vck_*) - only works on Vercel
+  // - OpenAI (sk-*) - for local development
+  // - OpenRouter (sk-or-*) - alternative provider
   const gatewayKey = process.env.AI_GATEWAY_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
+  const openrouterBaseUrl = process.env.OPENROUTER_BASE_URL;
 
   const apiKey = openaiKey || gatewayKey;
   if (!apiKey) {
     throw new Error("Either OPENAI_API_KEY or AI_GATEWAY_API_KEY must be configured");
   }
 
-  // Use Vercel AI Gateway baseURL if using gateway key
-  const config = gatewayKey && !openaiKey
-    ? { apiKey, baseURL: "https://ai-gateway.vercel.sh/v3/ai" }
-    : { apiKey };
+  // Determine baseURL and model based on provider
+  let config: { apiKey: string; baseURL?: string };
+  let modelId: string;
+
+  if (gatewayKey && !openaiKey) {
+    // Vercel AI Gateway
+    config = { apiKey, baseURL: "https://ai-gateway.vercel.sh/v3/ai" };
+    modelId = "openai/text-embedding-3-large";
+  } else if (openrouterBaseUrl && openaiKey?.startsWith("sk-or-")) {
+    // OpenRouter
+    config = { apiKey, baseURL: openrouterBaseUrl };
+    modelId = "text-embedding-3-large";
+  } else {
+    // Regular OpenAI
+    config = { apiKey };
+    modelId = "text-embedding-3-large";
+  }
 
   const openai = createOpenAI(config);
-  // Use gateway model identifier when using Vercel AI Gateway
-  const modelId = gatewayKey && !openaiKey
-    ? "openai/text-embedding-3-large"
-    : "text-embedding-3-large";
   return openai.embedding(modelId);
 }
 
