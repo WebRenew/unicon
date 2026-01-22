@@ -3,6 +3,7 @@ import { CheckCircleIcon } from "@/components/icons/ui/check-circle";
 import { AlertCircleIcon } from "@/components/icons/ui/alert-circle";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { MCPInstallButtons } from "@/components/mcp-install-buttons";
 
 export const metadata: Metadata = {
   title: "MCP Integration | Unicon",
@@ -70,6 +71,11 @@ export default function MCPDocsPage() {
       </div>
 
       <div className="space-y-16">
+        {/* Quick Install */}
+        <section>
+          <MCPInstallButtons />
+        </section>
+
         {/* What is MCP */}
         <section>
           <h2 className="text-2xl font-bold mb-4">What is MCP?</h2>
@@ -200,12 +206,61 @@ export default function MCPDocsPage() {
           </div>
         </section>
 
+        {/* Quick Start - Claude Code */}
+        <section id="claude-code">
+          <h2 className="text-2xl font-bold mb-6">Quick Start: Claude Code (CLI)</h2>
+
+          <div className="space-y-6">
+            <div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add the Unicon MCP server with a single command:
+              </p>
+              <CodeBlock title="Terminal">{`npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server`}</CodeBlock>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Or if you have Claude Code installed globally:
+              </p>
+              <CodeBlock>{`claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-sm">✓</span>
+                Verify installation
+              </h3>
+              <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+                <div className="flex gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-[var(--accent-mint)] shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-muted-foreground">
+                      Run <code className="text-[var(--accent-aqua)]">claude mcp list</code> to verify &quot;unicon&quot; appears in your configured servers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Quick Start - Cursor */}
         <section id="cursor">
           <h2 className="text-2xl font-bold mb-6">Quick Start: Cursor IDE</h2>
 
           <div className="space-y-6">
             <div>
+              <div className="p-4 rounded-lg border border-[var(--accent-aqua)]/20 bg-[var(--accent-aqua)]/5 mb-6">
+                <div className="flex gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-[var(--accent-aqua)] shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-muted-foreground">
+                      <strong className="text-foreground">Easiest:</strong> Use the one-click install button at the top of this page to add Unicon to Cursor instantly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-aqua)]/20 text-[var(--accent-aqua)] text-sm">1</span>
                 Open MCP settings

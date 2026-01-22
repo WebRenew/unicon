@@ -43,6 +43,28 @@ The Unicon MCP Server allows AI assistants like Claude Desktop and Cursor to:
 
 ## Installation
 
+### Claude Code (CLI)
+
+Add the Unicon MCP server with a single command:
+
+```bash
+npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server
+```
+
+Or if you have Claude Code installed globally:
+
+```bash
+claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server
+```
+
+**Verify installation:**
+
+```bash
+claude mcp list
+```
+
+You should see `unicon` in the list of configured servers.
+
 ### Claude Desktop
 
 1. **Locate your config file:**

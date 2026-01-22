@@ -4,6 +4,22 @@ Get started with Unicon's AI-powered icon library in 5 minutes.
 
 ## Installation
 
+### Claude Code (CLI)
+
+Add the Unicon MCP server with a single command:
+
+```bash
+npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server
+```
+
+Or if you have Claude Code installed globally:
+
+```bash
+claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server
+```
+
+That's it! The server is now available in your Claude Code sessions.
+
 ### Claude Desktop
 
 1. Open your Claude Desktop config:

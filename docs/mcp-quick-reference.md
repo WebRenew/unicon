@@ -4,7 +4,15 @@ Quick command reference for using Unicon with Claude/Cursor.
 
 ## Installation
 
-**Claude Desktop config location:**
+### Claude Code (CLI) - One Command
+
+```bash
+npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server
+```
+
+### Claude Desktop - Manual Config
+
+**Config location:**
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 

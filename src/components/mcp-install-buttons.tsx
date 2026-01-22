@@ -1,0 +1,205 @@
+"use client";
+
+import { useState } from "react";
+import { CopyButton } from "@/components/ui/copy-button";
+
+const MCP_CONFIG = {
+  command: "npx",
+  args: ["-y", "@webrenew/unicon-mcp-server"],
+};
+
+const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${encodeURIComponent(JSON.stringify(MCP_CONFIG))}`;
+
+const CLAUDE_CODE_COMMAND =
+  "npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server";
+
+function CursorIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 2L2 7L12 12L22 7L12 2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 17L12 22L22 17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 12L12 17L22 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ClaudeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M8 12C8 9.79086 9.79086 8 12 8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TerminalIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M4 17L10 11L4 5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 19H20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function MCPInstallButtons() {
+  const [showClaudeCodeCommand, setShowClaudeCodeCommand] = useState(false);
+
+  return (
+    <div className="space-y-6">
+      {/* Quick Install Section */}
+      <div className="p-6 rounded-xl border border-[var(--accent-lavender)]/30 bg-gradient-to-br from-[var(--accent-lavender)]/5 to-transparent">
+        <h3 className="text-lg font-semibold mb-2">Quick Install</h3>
+        <p className="text-sm text-muted-foreground mb-6">
+          Add Unicon to your AI assistant with one click or command.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Cursor Button */}
+          <a
+            href={CURSOR_INSTALL_URL}
+            className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-aqua)]/50 transition-all group"
+          >
+            <div className="p-2 rounded-lg bg-[var(--accent-aqua)]/10 group-hover:bg-[var(--accent-aqua)]/20 transition-colors">
+              <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm">Add to Cursor</div>
+              <div className="text-xs text-muted-foreground">One-click install</div>
+            </div>
+            <svg
+              className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] transition-colors"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M7 17L17 7" />
+              <path d="M7 7h10v10" />
+            </svg>
+          </a>
+
+          {/* Claude Code Button */}
+          <button
+            onClick={() => setShowClaudeCodeCommand(!showClaudeCodeCommand)}
+            className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-lavender)]/50 transition-all group text-left"
+          >
+            <div className="p-2 rounded-lg bg-[var(--accent-lavender)]/10 group-hover:bg-[var(--accent-lavender)]/20 transition-colors">
+              <TerminalIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm">Add to Claude Code</div>
+              <div className="text-xs text-muted-foreground">
+                {showClaudeCodeCommand ? "Hide command" : "Show command"}
+              </div>
+            </div>
+            <svg
+              className={`w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-lavender)] transition-all ${
+                showClaudeCodeCommand ? "rotate-180" : ""
+              }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Claude Code Command (Expandable) */}
+        {showClaudeCodeCommand && (
+          <div className="mt-4 p-4 rounded-lg border border-border bg-muted/40">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-mono text-muted-foreground">
+                Run in terminal:
+              </span>
+              <CopyButton value={CLAUDE_CODE_COMMAND} />
+            </div>
+            <pre className="text-sm font-mono text-foreground/80 overflow-x-auto whitespace-pre-wrap break-all">
+              {CLAUDE_CODE_COMMAND}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {/* Manual Setup Links */}
+      <div className="flex flex-wrap gap-4 text-sm">
+        <a
+          href="#claude-desktop"
+          className="text-muted-foreground hover:text-[var(--accent-lavender)] transition-colors flex items-center gap-1.5"
+        >
+          <ClaudeIcon className="w-4 h-4" />
+          Claude Desktop setup
+        </a>
+        <a
+          href="#cursor"
+          className="text-muted-foreground hover:text-[var(--accent-aqua)] transition-colors flex items-center gap-1.5"
+        >
+          <CursorIcon className="w-4 h-4" />
+          Manual Cursor setup
+        </a>
+      </div>
+    </div>
+  );
+}
