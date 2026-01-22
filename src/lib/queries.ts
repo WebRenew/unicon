@@ -19,18 +19,14 @@ export async function getSources(): Promise<SourceData[]> {
 }
 
 /**
- * Search icons with optional filters.
- * Uses a lightweight select to avoid fetching embeddings and pathData.
+ * Build search conditions for reuse between searchIcons and getSearchCount.
  */
-export async function searchIcons(params: {
+function buildSearchConditions(params: {
   query?: string;
   sourceId?: string;
   category?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<IconData[]> {
-  const { query, sourceId, category, limit = 100, offset = 0 } = params;
-
+}) {
+  const { query, sourceId, category } = params;
   const conditions = [];
 
   if (sourceId) {
@@ -51,6 +47,23 @@ export async function searchIcons(params: {
       )
     );
   }
+
+  return conditions;
+}
+
+/**
+ * Search icons with optional filters.
+ * Uses a lightweight select to avoid fetching embeddings and pathData.
+ */
+export async function searchIcons(params: {
+  query?: string;
+  sourceId?: string;
+  category?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<IconData[]> {
+  const { limit = 100, offset = 0 } = params;
+  const conditions = buildSearchConditions(params);
 
   // Select only the fields needed for display (skip embedding, pathData)
   const results = await db
@@ -89,6 +102,25 @@ export async function searchIcons(params: {
     strokeWidth: row.strokeWidth,
     brandColor: row.brandColor ?? null,
   }));
+}
+
+/**
+ * Get total count of icons matching search criteria.
+ * Used for accurate pagination metadata.
+ */
+export async function getSearchCount(params: {
+  query?: string;
+  sourceId?: string;
+  category?: string;
+}): Promise<number> {
+  const conditions = buildSearchConditions(params);
+
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(icons)
+    .where(conditions.length > 0 ? sql`${sql.join(conditions, sql` AND `)}` : undefined);
+
+  return result[0]?.count ?? 0;
 }
 
 /**
@@ -134,6 +166,49 @@ export async function getIconsByNames(names: string[]): Promise<IconData[]> {
     .from(icons)
     .where(sql`lower(${icons.normalizedName}) IN ${normalizedNames}`)
     .orderBy(asc(icons.normalizedName));
+
+  return results.map((row) => ({
+    id: row.id,
+    name: row.name,
+    normalizedName: row.normalizedName,
+    sourceId: row.sourceId,
+    category: row.category,
+    tags: (row.tags as string[]) ?? [],
+    viewBox: row.viewBox,
+    content: row.content,
+    pathData: null,
+    defaultStroke: row.defaultStroke ?? false,
+    defaultFill: row.defaultFill ?? false,
+    strokeWidth: row.strokeWidth,
+    brandColor: row.brandColor ?? null,
+  }));
+}
+
+/**
+ * Get icons by their IDs (batch query for MCP get_multiple_icons).
+ * Returns icons matching any of the provided IDs in format 'source:name'.
+ */
+export async function getIconsByIds(ids: string[]): Promise<IconData[]> {
+  if (ids.length === 0) return [];
+
+  // Use SQL IN clause for exact ID matching
+  const results = await db
+    .select({
+      id: icons.id,
+      name: icons.name,
+      normalizedName: icons.normalizedName,
+      sourceId: icons.sourceId,
+      category: icons.category,
+      tags: icons.tags,
+      viewBox: icons.viewBox,
+      content: icons.content,
+      defaultStroke: icons.defaultStroke,
+      defaultFill: icons.defaultFill,
+      strokeWidth: icons.strokeWidth,
+      brandColor: icons.brandColor,
+    })
+    .from(icons)
+    .where(sql`${icons.id} IN ${ids}`);
 
   return results.map((row) => ({
     id: row.id,

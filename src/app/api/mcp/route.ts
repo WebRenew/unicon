@@ -14,7 +14,9 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { z } from "zod";
 import {
   searchIcons,
+  getSearchCount,
   getIconById,
+  getIconsByIds,
   getIconsByNames,
   getSources,
   getCategories,
@@ -222,39 +224,42 @@ Examples:
       const limit = params.limit ?? 20;
       const offset = params.offset ?? 0;
 
-      // Pass offset and limit+1 to database query (extra one for has_more check)
-      const searchParams: {
+      // Build search params with proper typing for exactOptionalPropertyTypes
+      const filterParams: {
         query: string;
         sourceId?: string;
         category?: string;
-        limit: number;
-        offset: number;
       } = {
         query: params.query,
-        limit: limit + 1, // Fetch one extra to determine has_more
-        offset,
       };
 
-      if (params.source) {
-        searchParams.sourceId = params.source;
+      if (params.source !== undefined) {
+        filterParams.sourceId = params.source;
       }
-      if (params.category) {
-        searchParams.category = params.category;
+      if (params.category !== undefined) {
+        filterParams.category = params.category;
       }
 
-      const dbResults = await searchIcons(searchParams);
+      // Run results query and count query in parallel for accurate pagination
+      const [dbResults, totalCount] = await Promise.all([
+        searchIcons({
+          ...filterParams,
+          limit,
+          offset,
+        }),
+        getSearchCount(filterParams),
+      ]);
 
-      // Check if there are more results beyond current page
-      const hasMore = dbResults.length > limit;
-      const results = hasMore ? dbResults.slice(0, limit) : dbResults;
+      // Calculate has_more from accurate total
+      const hasMore = offset + dbResults.length < totalCount;
 
       const output = {
         query: params.query,
-        total: results.length + (hasMore ? 1 : 0), // Approximate - exact total would require separate count query
+        total: totalCount,
         offset,
         limit,
         has_more: hasMore,
-        results: results.map((icon) => ({
+        results: dbResults.map((icon) => ({
           id: icon.id,
           name: icon.name,
           normalizedName: icon.normalizedName,
@@ -403,11 +408,15 @@ Returns:
     async (params) => {
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
 
-      // Fetch all icons in parallel
+      // Batch fetch all icons in a single query (eliminates N+1)
+      const fetchedIcons = await getIconsByIds(params.iconIds);
+      const iconsById = new Map(fetchedIcons.map((icon) => [icon.id, icon]));
+
+      // Process all icons and convert to requested format
       const results = await Promise.all(
         params.iconIds.map(async (iconId) => {
           try {
-            const icon = await getIconById(iconId);
+            const icon = iconsById.get(iconId);
             if (!icon) {
               return {
                 id: iconId,
@@ -700,14 +709,12 @@ function createTransport() {
 
 // Shared handler for MCP requests (used by both POST and GET)
 async function handleMcpRequest(request: Request, method: string): Promise<Response> {
+  const server = createMcpServer();
+  const transport = createTransport();
+
   try {
-    const server = createMcpServer();
-    const transport = createTransport();
-
     await server.connect(transport);
-
     const response = await transport.handleRequest(request);
-
     return withCors(response);
   } catch (error) {
     logger.error(`MCP ${method} Error:`, error);
@@ -727,6 +734,13 @@ async function handleMcpRequest(request: Request, method: string): Promise<Respo
         }
       )
     );
+  } finally {
+    // Ensure server resources are cleaned up to prevent memory leaks
+    try {
+      await server.close();
+    } catch (closeError) {
+      logger.error(`MCP ${method} Close Error:`, closeError);
+    }
   }
 }
 
