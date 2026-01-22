@@ -219,15 +219,20 @@ Examples:
       },
     },
     async (params) => {
+      const limit = params.limit ?? 20;
+      const offset = params.offset ?? 0;
+
+      // Pass offset and limit+1 to database query (extra one for has_more check)
       const searchParams: {
         query: string;
         sourceId?: string;
         category?: string;
         limit: number;
+        offset: number;
       } = {
         query: params.query,
-        // Fetch one extra to determine has_more
-        limit: Math.min((params.limit ?? 20) + 1, 101),
+        limit: limit + 1, // Fetch one extra to determine has_more
+        offset,
       };
 
       if (params.source) {
@@ -237,18 +242,15 @@ Examples:
         searchParams.category = params.category;
       }
 
-      const allResults = await searchIcons(searchParams);
-      const offset = params.offset ?? 0;
-      const limit = params.limit ?? 20;
+      const dbResults = await searchIcons(searchParams);
 
-      // Apply offset and limit
-      const paginatedResults = allResults.slice(offset, offset + limit + 1);
-      const hasMore = paginatedResults.length > limit;
-      const results = paginatedResults.slice(0, limit);
+      // Check if there are more results beyond current page
+      const hasMore = dbResults.length > limit;
+      const results = hasMore ? dbResults.slice(0, limit) : dbResults;
 
       const output = {
         query: params.query,
-        total: allResults.length,
+        total: results.length + (hasMore ? 1 : 0), // Approximate - exact total would require separate count query
         offset,
         limit,
         has_more: hasMore,
@@ -321,7 +323,7 @@ Examples:
           content: [
             {
               type: "text",
-              text: `Error: Icon not found: ${params.iconId}. Use unicon_search_icons to find valid icon IDs, or browse https://unicon.webrenew.com`,
+              text: `Error: Icon not found: "${params.iconId}". Use unicon_search_icons to find valid icon IDs, or browse https://unicon.webrenew.com`,
             },
           ],
           isError: true,
@@ -696,10 +698,8 @@ function createTransport() {
   });
 }
 
-/**
- * POST /api/mcp - Handle MCP requests
- */
-export async function POST(request: Request) {
+// Shared handler for MCP requests (used by both POST and GET)
+async function handleMcpRequest(request: Request, method: string): Promise<Response> {
   try {
     const server = createMcpServer();
     const transport = createTransport();
@@ -710,7 +710,7 @@ export async function POST(request: Request) {
 
     return withCors(response);
   } catch (error) {
-    logger.error("MCP Error:", error);
+    logger.error(`MCP ${method} Error:`, error);
     return withCors(
       new Response(
         JSON.stringify({
@@ -731,37 +731,17 @@ export async function POST(request: Request) {
 }
 
 /**
+ * POST /api/mcp - Handle MCP requests
+ */
+export async function POST(request: Request) {
+  return handleMcpRequest(request, "POST");
+}
+
+/**
  * GET /api/mcp - SSE stream for server-initiated messages
  */
 export async function GET(request: Request) {
-  try {
-    const server = createMcpServer();
-    const transport = createTransport();
-
-    await server.connect(transport);
-
-    const response = await transport.handleRequest(request);
-
-    return withCors(response);
-  } catch (error) {
-    logger.error("MCP GET Error:", error);
-    return withCors(
-      new Response(
-        JSON.stringify({
-          jsonrpc: "2.0",
-          error: {
-            code: -32603,
-            message: error instanceof Error ? error.message : "Internal server error",
-          },
-          id: null,
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      )
-    );
-  }
+  return handleMcpRequest(request, "GET");
 }
 
 /**

@@ -24,7 +24,22 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 const API_BASE_URL = process.env.UNICON_API_URL || "https://unicon.webrenew.com/api/mcp";
+const MCP_PROTOCOL_VERSION = "2024-11-05";
 let requestId = 0;
+let isInitialized = false;
+/**
+ * Initialize connection to the API (called once before first request)
+ */
+async function ensureInitialized() {
+    if (isInitialized)
+        return;
+    await mcpRequest("initialize", {
+        protocolVersion: MCP_PROTOCOL_VERSION,
+        capabilities: {},
+        clientInfo: { name: "unicon-bridge", version: "1.1.0" },
+    });
+    isInitialized = true;
+}
 /**
  * Send MCP JSON-RPC request to the API
  */
@@ -45,11 +60,19 @@ async function mcpRequest(method, params = {}) {
     });
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`API request failed: ${response.status} ${text}`);
+        throw new Error(`API request failed (${response.status}): ${text.slice(0, 200)}`);
     }
-    const data = (await response.json());
+    // Parse JSON with proper error handling
+    let data;
+    try {
+        data = (await response.json());
+    }
+    catch {
+        const text = await response.text().catch(() => "[Could not read response]");
+        throw new Error(`Invalid JSON response from API: ${text.slice(0, 200)}`);
+    }
     if (data.error) {
-        throw new Error(data.error.message || "API error");
+        throw new Error(data.error.message || `API error (code: ${data.error.code})`);
     }
     return data.result;
 }
@@ -58,7 +81,7 @@ async function mcpRequest(method, params = {}) {
  */
 const server = new Server({
     name: "unicon",
-    version: "1.0.0",
+    version: "1.1.0",
 }, {
     capabilities: {
         resources: {},
@@ -69,12 +92,7 @@ const server = new Server({
  * List available tools
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    // First initialize the connection
-    await mcpRequest("initialize", {
-        protocolVersion: "2024-11-05",
-        capabilities: {},
-        clientInfo: { name: "unicon-bridge", version: "1.0.0" },
-    });
+    await ensureInitialized();
     const result = await mcpRequest("tools/list", {});
     return { tools: result?.tools || [] };
 });
@@ -82,6 +100,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * List available resources
  */
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    await ensureInitialized();
     const result = await mcpRequest("resources/list", {});
     return { resources: result?.resources || [] };
 });
@@ -89,6 +108,7 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
  * Read a resource
  */
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    await ensureInitialized();
     const result = await mcpRequest("resources/read", {
         uri: request.params.uri,
     });
@@ -101,6 +121,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
+        await ensureInitialized();
         const result = await mcpRequest("tools/call", {
             name: request.params.name,
             arguments: request.params.arguments || {},
