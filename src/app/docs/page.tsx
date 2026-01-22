@@ -9,6 +9,7 @@ import { DownloadIcon } from "@/components/icons/ui/download";
 import { PaletteIcon } from "@/components/icons/ui/palette";
 import { CodeIcon } from "@/components/icons/ui/code";
 import { GlobeIcon } from "@/components/icons/ui/globe";
+import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { MCPIcon } from "@/components/icons/mcp-icon";
@@ -260,6 +261,12 @@ export default function DocsPage() {
               title="API Reference"
               description="REST API documentation for programmatic access to icons."
               href="/docs/api"
+            />
+            <FeatureCard
+              icon={SparklesIcon}
+              title="Skills Registry"
+              description="Download AI assistant skills to automate icon workflows."
+              href="/docs/skills"
             />
             <FeatureCard
               icon={CodeIcon}

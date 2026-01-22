@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { CodeIcon } from "@/components/icons/ui/code";
 import { BookOpenIcon } from "@/components/icons/ui/book-open";
+import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 
 interface NavItem {
@@ -48,6 +49,16 @@ const navigation: NavItem[] = [
       { title: "Cursor IDE", href: "/docs/mcp#cursor" },
       { title: "Usage Examples", href: "/docs/mcp#usage-examples" },
       { title: "Troubleshooting", href: "/docs/mcp#troubleshooting" },
+    ],
+  },
+  {
+    title: "Skills Registry",
+    href: "/docs/skills",
+    icon: SparklesIcon,
+    items: [
+      { title: "Overview", href: "/docs/skills" },
+      { title: "Install with CLI", href: "/docs/skills#install-with-the-cli" },
+      { title: "Direct Downloads", href: "/docs/skills#direct-downloads" },
     ],
   },
   {

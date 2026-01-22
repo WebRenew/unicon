@@ -2,6 +2,33 @@
 
 ## Agent Recommendations
 
+### 2026-01-22: MCP Skill Published
+
+**What was improved:**
+- Added the `unicon-mcp` skill file for public download
+- Registered the new skill in the public skills index and UI list
+
+**Future kaizen opportunities:**
+1. **Usage telemetry** - Track skill downloads for adoption insights
+2. **Expanded prompts** - Add more example prompts per assistant
+
+---
+
+### 2026-01-22: Public Skills Registry
+
+**What was improved:**
+- Added a public skills registry under `public/skills` with a JSON index
+- Exposed the Unicon skill markdown file for user downloads
+- Created `/docs/skills` with install guidance and download links
+- Linked the skills registry from docs navigation and quick links
+
+**Future kaizen opportunities:**
+1. **Automation** - Generate the registry JSON from source markdown files
+2. **Versioning** - Add explicit skill versions and changelogs
+3. **Validation** - Add a CI check to ensure registry entries resolve
+
+---
+
 ### 2026-01-22: Remove Unintended Skill Artifacts
 
 **What was improved:**
