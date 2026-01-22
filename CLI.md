@@ -22,6 +22,7 @@
   - [categories](#unicon-categories)
   - [sources](#unicon-sources)
   - [cache](#unicon-cache)
+  - [skill](#unicon-skill)
 - [Output Formats](#output-formats)
 - [Config File](#config-file)
 - [API Reference](#api-reference)
@@ -63,6 +64,10 @@ unicon bundle --category Dashboards -o ./icons
 unicon init
 unicon add nav --query "arrow menu chevron"
 unicon sync
+
+# Install AI assistant skill (Claude Code, Cursor, Windsurf, etc.)
+unicon skill --ide claude
+unicon skill --all
 ```
 
 ---
@@ -377,6 +382,68 @@ unicon cache --clear
 ```
 
 **Cache Location:** Icons are cached at `~/.unicon/cache` with a 24-hour TTL.
+
+---
+
+### unicon skill
+
+Install Unicon skill/rules for AI coding assistants (Claude Code, Cursor, Windsurf, etc.).
+
+```bash
+unicon skill [options]
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--ide <name>` | Target IDE (claude, cursor, windsurf, agent, antigravity, opencode, codex, aider) |
+| `--all` | Install for all supported IDEs |
+| `-l, --list` | List all supported IDEs |
+| `-f, --force` | Overwrite existing skill files |
+
+**Supported IDEs:**
+
+| IDE | Directory | File |
+|-----|-----------|------|
+| Claude Code | `.claude/skills/unicon/` | `SKILL.md` |
+| Cursor | `.cursor/rules/` | `unicon.mdc` |
+| Windsurf | `.windsurf/rules/` | `unicon.md` |
+| Agent | `.agent/rules/` | `unicon.md` |
+| Antigravity | `.antigravity/rules/` | `unicon.md` |
+| OpenCode | `.opencode/rules/` | `unicon.md` |
+| Codex | `.codex/` | `unicon.md` |
+| Aider | `.aider/rules/` | `unicon.md` |
+
+**Examples:**
+
+```bash
+# List supported IDEs
+unicon skill --list
+
+# Install for specific IDE
+unicon skill --ide claude
+unicon skill --ide cursor
+
+# Install for all IDEs
+unicon skill --all
+
+# Force overwrite existing files
+unicon skill --ide cursor --force
+
+# Auto-detect (installs for detected IDE directories)
+unicon skill
+```
+
+**What it does:**
+
+The skill command installs documentation files that teach AI coding assistants how to use Unicon. Once installed, you can ask your AI assistant:
+
+- "Add a home icon to my project"
+- "Search for dashboard icons"
+- "Bundle navigation icons for my React app"
+
+The AI will know to use `npx @webrenew/unicon` commands to help you.
 
 ---
 
@@ -873,4 +940,4 @@ Features:
 
 ---
 
-**Last Updated**: 2026-01-20
+**Last Updated**: 2026-01-22

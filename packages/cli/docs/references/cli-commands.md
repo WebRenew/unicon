@@ -330,6 +330,66 @@ Icons are cached at `~/.unicon/cache` with a 24-hour TTL.
 
 ---
 
+## unicon skill
+
+Install Unicon skill/rules for AI coding assistants.
+
+```bash
+unicon skill [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--ide <name>` | Target IDE (claude, cursor, windsurf, agent, antigravity, opencode, codex, aider) |
+| `--all` | Install for all supported IDEs |
+| `-l, --list` | List all supported IDEs |
+| `-f, --force` | Overwrite existing skill files |
+
+### Supported IDEs
+
+| IDE | Directory | File |
+|-----|-----------|------|
+| Claude Code | `.claude/skills/unicon/` | `SKILL.md` |
+| Cursor | `.cursor/rules/` | `unicon.mdc` |
+| Windsurf | `.windsurf/rules/` | `unicon.md` |
+| Agent | `.agent/rules/` | `unicon.md` |
+| Antigravity | `.antigravity/rules/` | `unicon.md` |
+| OpenCode | `.opencode/rules/` | `unicon.md` |
+| Codex | `.codex/` | `unicon.md` |
+| Aider | `.aider/rules/` | `unicon.md` |
+
+### Examples
+
+```bash
+# List supported IDEs
+unicon skill --list
+
+# Install for specific IDE
+unicon skill --ide claude
+unicon skill --ide cursor
+
+# Install for all IDEs
+unicon skill --all
+
+# Force overwrite existing files
+unicon skill --ide cursor --force
+
+# Auto-detect (installs for detected IDE directories)
+unicon skill
+```
+
+### What it does
+
+Installs documentation files that teach AI coding assistants how to use Unicon. Once installed, you can ask your AI assistant things like:
+
+- "Add a home icon to my project"
+- "Search for dashboard icons"
+- "Bundle navigation icons for my React app"
+
+---
+
 ## Global Options
 
 These options work with all commands:

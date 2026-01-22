@@ -1,6 +1,6 @@
 {
   "name": "@webrenew/unicon",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI for searching and bundling icons from Unicon - the unified icon library",
   "type": "module",
   "bin": {

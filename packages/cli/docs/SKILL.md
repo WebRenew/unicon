@@ -26,6 +26,7 @@ npx @webrenew/unicon search "dashboard"
 | `unicon bundle` | Bundle multiple icons by category or query |
 | `unicon init` | Create .uniconrc.json config |
 | `unicon sync` | Regenerate all bundles from config |
+| `unicon skill` | Install AI assistant skills for Claude, Cursor, Windsurf, etc. |
 
 ## Output Formats
 
@@ -133,6 +134,38 @@ Browse and copy icons at: https://unicon.webrenew.com
 - **CLI Commands**: See `references/cli-commands.md` for all commands and options
 - **Config File**: See `references/config-file.md` for `.uniconrc.json` schema
 - **API**: See `references/api-reference.md` for REST endpoints
+
+## AI Assistant Integration
+
+Install Unicon skills for AI coding assistants:
+
+```bash
+# List supported assistants
+unicon skill --list
+
+# Install for specific assistant
+unicon skill --ide claude      # Claude Code
+unicon skill --ide cursor      # Cursor
+unicon skill --ide windsurf    # Windsurf
+
+# Install for all supported assistants
+unicon skill --all
+```
+
+### Supported AI Assistants
+
+| IDE | Directory |
+|-----|-----------|
+| Claude Code | `.claude/skills/unicon/SKILL.md` |
+| Cursor | `.cursor/rules/unicon.mdc` |
+| Windsurf | `.windsurf/rules/unicon.md` |
+| Agent | `.agent/rules/unicon.md` |
+| Antigravity | `.antigravity/rules/unicon.md` |
+| OpenCode | `.opencode/rules/unicon.md` |
+| Codex | `.codex/unicon.md` |
+| Aider | `.aider/rules/unicon.md` |
+
+Once installed, ask your AI assistant: "Add a home icon to my project"
 
 ## Cache
 
