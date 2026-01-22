@@ -5,6 +5,8 @@
  * Provides Model Context Protocol (MCP) interface for Unicon icon library.
  * Connects AI assistants (Claude, Cursor) to 14,700+ icons from 8 libraries.
  *
+ * This is a bridge that proxies MCP requests to the hosted Unicon API.
+ *
  * Usage:
  *   npx @webrenew/unicon-mcp-server
  *
@@ -22,30 +24,34 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 const API_BASE_URL = process.env.UNICON_API_URL || "https://unicon.webrenew.com/api/mcp";
+let requestId = 0;
 /**
- * Fetch wrapper with error handling
+ * Send MCP JSON-RPC request to the API
  */
-async function fetchAPI(action, params = {}) {
-    try {
-        const response = await fetch(API_BASE_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ action, params }),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || `API request failed: ${response.statusText}`);
-        }
-        return await response.json();
+async function mcpRequest(method, params = {}) {
+    requestId++;
+    const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: requestId,
+            method,
+            params,
+        }),
+    });
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`API request failed: ${response.status} ${text}`);
     }
-    catch (error) {
-        if (error instanceof Error) {
-            throw error;
-        }
-        throw new Error("Failed to communicate with Unicon API");
+    const data = (await response.json());
+    if (data.error) {
+        throw new Error(data.error.message || "API error");
     }
+    return data.result;
 }
 /**
  * Create and configure MCP server
@@ -63,29 +69,31 @@ const server = new Server({
  * List available tools
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const data = await fetchAPI("list_tools");
-    return { tools: (data.tools || []) };
+    // First initialize the connection
+    await mcpRequest("initialize", {
+        protocolVersion: "2024-11-05",
+        capabilities: {},
+        clientInfo: { name: "unicon-bridge", version: "1.0.0" },
+    });
+    const result = await mcpRequest("tools/list", {});
+    return { tools: result?.tools || [] };
 });
 /**
  * List available resources
  */
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    const data = await fetchAPI("list_resources");
-    return { resources: (data.resources || []) };
+    const result = await mcpRequest("resources/list", {});
+    return { resources: result?.resources || [] };
 });
 /**
  * Read a resource
  */
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-    const data = await fetchAPI("read_resource", { uri: request.params.uri });
+    const result = await mcpRequest("resources/read", {
+        uri: request.params.uri,
+    });
     return {
-        contents: [
-            {
-                uri: request.params.uri,
-                mimeType: "application/json",
-                text: JSON.stringify(data.contents, null, 2),
-            },
-        ],
+        contents: result?.contents || [],
     };
 });
 /**
@@ -93,21 +101,18 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
-        const data = await fetchAPI("call_tool", {
+        const result = await mcpRequest("tools/call", {
             name: request.params.name,
             arguments: request.params.arguments || {},
         });
-        const result = data.result;
-        const resultText = typeof result === "string"
-            ? result
-            : JSON.stringify(result, null, 2);
+        // Return the content directly from the API response
+        // The API already formats batch outputs with identifying comments
         return {
-            content: [
-                {
-                    type: "text",
-                    text: resultText,
-                },
+            content: result?.content || [
+                { type: "text", text: JSON.stringify(result, null, 2) },
             ],
+            structuredContent: result?.structuredContent,
+            isError: result?.isError,
         };
     }
     catch (error) {
@@ -115,9 +120,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             content: [
                 {
                     type: "text",
-                    text: JSON.stringify({
-                        error: error instanceof Error ? error.message : "Unknown error occurred",
-                    }, null, 2),
+                    text: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}. Check your connection to ${API_BASE_URL}`,
                 },
             ],
             isError: true,
