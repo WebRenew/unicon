@@ -2,6 +2,18 @@
 
 ## Agent Recommendations
 
+### 2026-01-22: Remove Unintended Skill Artifacts
+
+**What was improved:**
+- Removed accidentally tracked `.agents/skills/mcp-builder` files and `.claude/skills/mcp-builder` symlink
+- Kept the repo focused on project code and docs only
+
+**Future kaizen opportunities:**
+1. **Repo hygiene check** - Add a pre-commit guard for accidental skill artifacts
+2. **Docs clarity** - Document which local tooling paths should stay untracked
+
+---
+
 ### 2026-01-22: Shared Event Listener Hook
 
 **What was improved:**
