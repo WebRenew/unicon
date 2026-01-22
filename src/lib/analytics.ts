@@ -1,5 +1,4 @@
 import { db } from "./db";
-import { searchAnalytics } from "./schema";
 import { sql } from "drizzle-orm";
 
 interface LogSearchParams {
