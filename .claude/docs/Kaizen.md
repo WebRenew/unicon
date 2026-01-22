@@ -2,6 +2,21 @@
 
 ## Agent Recommendations
 
+### 2026-01-22: Shared Event Listener Hook
+
+**What was improved:**
+- Added `useEventListener` hook for stable event subscriptions with latest handlers
+- Refactored header and icon browser listeners to use the shared hook
+- Logged localStorage read failures in `home-header` to avoid silent errors
+- Split `metallic-icon-browser` into focused subcomponents to keep files under 500 lines
+
+**Future kaizen opportunities:**
+1. **Element ref support** - Accept `RefObject` targets for DOM element listeners
+2. **EffectEvent adoption** - Prefer `useEffectEvent` once stabilized in React
+3. **Usage docs** - Document the hook in component guidelines and examples
+
+---
+
 ### 2026-01-20: Auto-invert Dark Brand Icons in Dark Mode
 
 **What was improved:**

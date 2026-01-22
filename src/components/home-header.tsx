@@ -8,40 +8,52 @@ import { PackageIcon } from "@/components/icons/ui/package";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { IconData } from "@/types/icon";
+import { logger } from "@/lib/logger";
+
+function getStoredCartCount(): number {
+  if (typeof window === "undefined") return 0;
+
+  try {
+    const savedCart = localStorage.getItem("unicon-bundle");
+    if (!savedCart) return 0;
+
+    const parsed = JSON.parse(savedCart) as IconData[];
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch (error) {
+    logger.error("Failed to read bundle from localStorage:", error);
+    return 0;
+  }
+}
+
+function getServerCartCount(): number {
+  return 0;
+}
+
+function subscribeToCartUpdates(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+
+  function handleUpdate() {
+    onStoreChange();
+  }
+
+  window.addEventListener("storage", handleUpdate);
+  window.addEventListener("cartUpdate", handleUpdate);
+
+  return () => {
+    window.removeEventListener("storage", handleUpdate);
+    window.removeEventListener("cartUpdate", handleUpdate);
+  };
+}
 
 export function HomeHeader() {
-  const [cartCount, setCartCount] = useState(0);
+  const cartCount = useSyncExternalStore(
+    subscribeToCartUpdates,
+    getStoredCartCount,
+    getServerCartCount
+  );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    // Update cart count from localStorage
-    const updateCartCount = () => {
-      try {
-        const savedCart = localStorage.getItem("unicon-bundle");
-        if (savedCart) {
-          const parsed = JSON.parse(savedCart) as IconData[];
-          setCartCount(parsed.length);
-        } else {
-          setCartCount(0);
-        }
-      } catch {
-        setCartCount(0);
-      }
-    };
-
-    updateCartCount();
-
-    // Listen for storage events and custom cart updates
-    window.addEventListener("storage", updateCartCount);
-    window.addEventListener("cartUpdate", updateCartCount);
-
-    return () => {
-      window.removeEventListener("storage", updateCartCount);
-      window.removeEventListener("cartUpdate", updateCartCount);
-    };
-  }, []);
 
   const handleBundleClick = () => {
     // Dispatch event to open cart in MetallicIconBrowser

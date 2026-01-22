@@ -1,46 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { logger } from "@/lib/logger";
 import { iconSearchCache } from "@/lib/search-cache";
-import { SearchIcon } from "@/components/icons/ui/search";
-import { Loader2Icon } from "@/components/icons/ui/loader-2";
-import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
-import { ChevronRightIcon } from "@/components/icons/ui/chevron-right";
-import { SparklesIcon } from "@/components/icons/ui/sparkles";
-import { SlidersHorizontalIcon } from "@/components/icons/ui/sliders-horizontal";
-import { FilterIcon } from "@/components/icons/ui/filter";
-import { CheckIcon } from "@/components/icons/ui/check";
-import { ChevronsUpDownIcon } from "@/components/icons/ui/chevrons-up-down";
-import { PackagePlusIcon } from "@/components/icons/ui/package-plus";
-import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
-import { Trash2Icon } from "@/components/icons/ui/trash-2";
+import { useEventListener } from "@/lib/use-event-listener";
 import { toast } from "sonner";
-import { StyledIcon, STROKE_PRESETS, SIZE_PRESETS, type StrokePreset, type SizePreset } from "./styled-icon";
-import { IconCart } from "./icon-cart";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "./styled-icon";
+import { MetallicIconBrowserHeader } from "./metallic-icon-browser-header";
+import { MetallicIconBrowserResults } from "./metallic-icon-browser-results";
+import { MetallicIconBrowserCartLayer } from "./metallic-icon-browser-cart-layer";
 import type { IconData, IconLibrary } from "@/types/icon";
-
-/** Convert string to Title Case */
-function toTitleCase(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
 
 interface MetallicIconBrowserProps {
   initialIcons: IconData[];
@@ -49,27 +18,6 @@ interface MetallicIconBrowserProps {
   categories: string[];
 }
 
-const SOURCE_COLORS: Record<string, string> = {
-  lucide: "bg-orange-500",
-  phosphor: "bg-emerald-500",
-  hugeicons: "bg-violet-500",
-  heroicons: "bg-blue-500",
-  tabler: "bg-cyan-500",
-  feather: "bg-pink-500",
-  remix: "bg-red-500",
-  "simple-icons": "bg-gray-500",
-};
-
-const SOURCE_COLORS_SELECTED: Record<string, string> = {
-  lucide: "bg-orange-500/69",
-  phosphor: "bg-emerald-500/69",
-  hugeicons: "bg-violet-500/69",
-  heroicons: "bg-blue-500/69",
-  tabler: "bg-cyan-500/69",
-  feather: "bg-pink-500/69",
-  remix: "bg-red-500/69",
-  "simple-icons": "bg-gray-500/69",
-};
 
 // Icons per page - sized for large screens (4K: ~50 columns × 8 rows = 400)
 const ICONS_PER_PAGE = 320;
@@ -103,22 +51,6 @@ export function MetallicIconBrowser({
   // Estimate columns based on viewport width
   // Use null initially to show all icons during SSR, then calculate on client
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
-
-  useEffect(() => {
-    // Set initial width on mount
-    setViewportWidth(window.innerWidth);
-
-    const handleResize = () => setViewportWidth(window.innerWidth);
-    const handleOpenCart = () => setIsCartOpen(true);
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('openCart', handleOpenCart);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('openCart', handleOpenCart);
-    };
-  }, []);
 
   // Calculate columns based on viewport and known page padding
   const estimatedColumns = (() => {
@@ -154,6 +86,21 @@ export function MetallicIconBrowser({
   const [cartItems, setCartItems] = useState<IconData[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemIds = new Set(cartItems.map((item) => item.id));
+
+  const handleResize = useCallback(() => {
+    setViewportWidth(window.innerWidth);
+  }, []);
+
+  const handleOpenCart = useCallback(() => {
+    setIsCartOpen(true);
+  }, []);
+
+  useEffect(() => {
+    setViewportWidth(window.innerWidth);
+  }, []);
+
+  useEventListener("resize", handleResize);
+  useEventListener("openCart", handleOpenCart);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -267,12 +214,25 @@ export function MetallicIconBrowser({
     }
   }, [cartItems, performAddToBundle]);
 
+  const handleBundleAll = useCallback(() => {
+    addAllToBundle(icons);
+    setIsCartOpen(true);
+  }, [addAllToBundle, icons]);
+
+  const handleConfirmBundleAdd = useCallback(() => {
+    performAddToBundle(pendingBundleIcons);
+    setConfirmBundleOpen(false);
+    setPendingBundleIcons([]);
+    setIsCartOpen(true);
+  }, [pendingBundleIcons, performAddToBundle]);
+
   // Check if any filters are active
   const hasActiveFilters = selectedSource !== "all" || selectedCategory !== "all" || debouncedSearch.length > 0;
+  const hasDebouncedSearch = debouncedSearch.length > 0;
 
   // Count icons not yet in bundle from current view
-  const iconsNotInBundle = icons.filter((icon) => !cartItemIds.has(icon.id));
-  const canBundleAll = hasActiveFilters && iconsNotInBundle.length > 0;
+  const iconsNotInBundleCount = icons.filter((icon) => !cartItemIds.has(icon.id)).length;
+  const canBundleAll = hasActiveFilters && iconsNotInBundleCount > 0;
 
   const removeCartItem = useCallback((id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
@@ -434,499 +394,65 @@ export function MetallicIconBrowser({
         }
       `}</style>
       <div className="p-4 lg:px-20 xl:px-40 lg:pt-6 lg:pb-40">
+        <MetallicIconBrowserHeader
+          totalCount={totalCount}
+          countBySource={countBySource}
+          search={search}
+          hasDebouncedSearch={hasDebouncedSearch}
+          onSearchChange={setSearch}
+          isLoading={isLoading}
+          searchType={searchType}
+          expandedQuery={expandedQuery}
+          selectedSource={selectedSource}
+          onSelectSource={setSelectedSource}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          categories={categories}
+          categoryOpen={categoryOpen}
+          onCategoryOpenChange={setCategoryOpen}
+          filtersExpanded={filtersExpanded}
+          onFiltersExpandedChange={setFiltersExpanded}
+          controlsExpanded={controlsExpanded}
+          onControlsExpandedChange={setControlsExpanded}
+          sizePreset={sizePreset}
+          onSizePresetChange={setSizePreset}
+          strokePreset={strokePreset}
+          onStrokePresetChange={setStrokePreset}
+          cartCount={cartItems.length}
+          onClearCart={clearCart}
+          canBundleAll={canBundleAll}
+          iconsNotInBundleCount={iconsNotInBundleCount}
+          onBundleAll={handleBundleAll}
+        />
 
-        <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white">
-          Just the icons you need. Zero bloat.
-        </h1>
-        <p className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4">
-          Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
-          icons.
-        </p>
+        <MetallicIconBrowserResults
+          isLoading={isLoading}
+          icons={icons}
+          iconsToShow={iconsToShow}
+          gridStyle={gridStyle}
+          cartItemIds={cartItemIds}
+          onToggleCart={toggleCartItem}
+          strokeWeight={strokeWeight}
+          iconSize={iconSize}
+          containerSize={containerSize}
+          page={page}
+          totalPages={totalPages}
+          totalResults={totalResults}
+          onPageChange={goToPage}
+        />
 
-        {/* Stats - Interactive Library Filters */}
-        <div className="hidden md:flex flex-wrap items-center gap-2 text-xs mb-8">
-          <button
-            onClick={() => setSelectedSource("all")}
-            aria-label="Show all libraries"
-            aria-pressed={selectedSource === "all"}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
-              selectedSource === "all"
-                ? "bg-black/90 dark:bg-white/90 text-white dark:text-black border-2 border-black dark:border-white"
-                : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
-            }`}
-          >
-            <span className="font-medium">All Libraries</span>
-            <span className="opacity-70">• {totalCount.toLocaleString("en-US")}</span>
-          </button>
-          {Object.entries(countBySource).map(([source, count]) => (
-            <button
-              key={source}
-              onClick={() => setSelectedSource(source as IconLibrary)}
-              aria-label={`Filter by ${source} library`}
-              aria-pressed={selectedSource === source}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
-                selectedSource === source
-                  ? `${SOURCE_COLORS_SELECTED[source]} text-white border-2 border-current shadow-sm`
-                  : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${selectedSource === source ? 'bg-white' : SOURCE_COLORS[source]}`} />
-              <span className="capitalize font-medium">{source}</span>
-              <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>{count?.toLocaleString("en-US")}</span>
-            </button>
-          ))}
-
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-4 w-full max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
-          <label htmlFor="icon-search-main" className="sr-only">Search icons</label>
-
-          {/* Gradient border wrapper - gradient grows on focus */}
-          <div className="search-gradient-border rounded-lg p-[1px]">
-            <input
-              id="icon-search-main"
-              type="text"
-              placeholder="Try 'business icons' or 'celebration'…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
-            {isLoading && search && (
-              <Loader2Icon className="w-4 h-4 text-black/40 dark:text-white/40 animate-spin" />
-            )}
-            {!isLoading && search && searchType === "semantic" && (
-              <span title="AI-powered search" aria-hidden="true">
-                <SparklesIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* AI Search Feedback */}
-        {expandedQuery && debouncedSearch && (
-          <div className="mb-6 flex items-start gap-2 text-xs text-black/40 dark:text-white/40">
-            <SparklesIcon className="w-3 h-3 text-purple-500 dark:text-purple-400 mt-0.5 shrink-0" aria-hidden="true" />
-            <span>
-              AI expanded to: <span className="text-black/60 dark:text-white/60">{expandedQuery}</span>
-            </span>
-          </div>
-        )}
-
-        {/* Filters & Controls */}
-        <div className="flex flex-col gap-3 mb-8">
-          {/* Row 1: Filters (collapsible) */}
-          <div className="flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Filters toggle button */}
-              <button
-                onClick={() => setFiltersExpanded(!filtersExpanded)}
-                className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
-              >
-                <FilterIcon className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-mono uppercase tracking-wider">
-                  Filters
-                </span>
-                <svg
-                  className={`w-3 h-3 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-                {/* Show active filter count */}
-                {(selectedSource !== "all" || selectedCategory !== "all") && (
-                  <span className="ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-black/10 dark:bg-white/10 rounded">
-                    {(selectedSource !== "all" ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0)}
-                  </span>
-                )}
-              </button>
-
-              {/* Filters content - visible when expanded */}
-              {filtersExpanded && (
-                <>
-                  {/* Library */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                      Library
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(["all", "lucide", "phosphor", "hugeicons", "heroicons", "tabler", "feather", "remix", "simple-icons"] as const).map((source) => (
-                        <button
-                          key={source}
-                          onClick={() => setSelectedSource(source)}
-                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${selectedSource === source
-                            ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
-                            : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
-                            }`}
-                        >
-                          {source === "all" ? "All" : source}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Separator */}
-                  <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-
-                  {/* Category Combobox */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                      Category
-                    </span>
-                    <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-                      <PopoverTrigger asChild>
-                        <button
-                          role="combobox"
-                          aria-expanded={categoryOpen}
-                          aria-controls="category-listbox"
-                          className="flex h-7 items-center justify-between gap-2 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 text-xs font-mono text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 transition-colors min-w-[140px]"
-                        >
-                          {selectedCategory === "all"
-                            ? "All Categories"
-                            : toTitleCase(selectedCategory)}
-                          <ChevronsUpDownIcon className="ml-1 h-3 w-3 shrink-0 opacity-50" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search categories..." className="text-xs" />
-                          <CommandList id="category-listbox">
-                            <CommandEmpty>No category found.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandItem
-                                value="all"
-                                onSelect={() => {
-                                  setSelectedCategory("all");
-                                  setCategoryOpen(false);
-                                }}
-                                className="text-xs font-mono"
-                              >
-                                <CheckIcon
-                                  className={`mr-2 h-3 w-3 ${selectedCategory === "all" ? "opacity-100" : "opacity-0"
-                                    }`}
-                                />
-                                All Categories
-                              </CommandItem>
-                              {categories.map((cat) => (
-                                <CommandItem
-                                  key={cat}
-                                  value={cat}
-                                  onSelect={() => {
-                                    setSelectedCategory(cat);
-                                    setCategoryOpen(false);
-                                  }}
-                                  className="text-xs font-mono"
-                                >
-                                  <CheckIcon
-                                    className={`mr-2 h-3 w-3 ${selectedCategory === cat ? "opacity-100" : "opacity-0"
-                                      }`}
-                                  />
-                                  {toTitleCase(cat)}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Clear Bundle Button - visible when bundle has items and filters expanded - positioned on the right */}
-            {filtersExpanded && cartItems.length > 0 && (
-              <button
-                onClick={clearCart}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all"
-              >
-                <Trash2Icon className="w-3.5 h-3.5" />
-                Clear Bundle ({cartItems.length})
-              </button>
-            )}
-          </div>
-
-          {/* Actions when panel collapsed */}
-          {!filtersExpanded && cartItems.length > 0 && (
-            <div className="flex items-center justify-between gap-3 -mt-2 mb-2">
-              {/* Clear Bundle action - positioned on the right */}
-              <button
-                onClick={clearCart}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all ml-auto"
-              >
-                <Trash2Icon className="w-3.5 h-3.5" />
-                Clear Bundle ({cartItems.length} icons)
-              </button>
-            </div>
-          )}
-
-          {/* Row 2: Display Controls (collapsible) */}
-          <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/5 dark:border-white/5">
-            {/* Controls toggle button */}
-            <button
-              onClick={() => setControlsExpanded(!controlsExpanded)}
-              className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
-            >
-              <SlidersHorizontalIcon className={`w-3.5 h-3.5 transition-transform ${controlsExpanded ? 'rotate-90' : ''}`} />
-              <span className="text-[10px] font-mono uppercase tracking-wider">
-                Controls
-              </span>
-              <svg
-                className={`w-3 h-3 transition-transform ${controlsExpanded ? 'rotate-180' : ''}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Controls content - visible when expanded */}
-            {controlsExpanded && (
-              <>
-                {/* Size Presets */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                    Size
-                  </span>
-                  <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-                    {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((preset) => (
-                      <button
-                        key={preset}
-                        onClick={() => setSizePreset(preset)}
-                        title={SIZE_PRESETS[preset].px}
-                        className={`relative px-2.5 py-1.5 text-xs font-mono transition-all ${sizePreset === preset
-                          ? "bg-black dark:bg-white text-white dark:text-black"
-                          : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-                          }`}
-                      >
-                        {SIZE_PRESETS[preset].label}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
-                    {SIZE_PRESETS[sizePreset].px}
-                  </span>
-                </div>
-
-                {/* Separator */}
-                <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-
-                {/* Stroke Weight Presets */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
-                    Weight
-                  </span>
-                  <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-                    {(Object.keys(STROKE_PRESETS) as StrokePreset[]).map((preset) => (
-                      <button
-                        key={preset}
-                        onClick={() => setStrokePreset(preset)}
-                        className={`relative px-3 py-1.5 text-xs font-mono transition-all ${strokePreset === preset
-                          ? "bg-black dark:bg-white text-white dark:text-black"
-                          : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-                          }`}
-                      >
-                        {/* Visual stroke indicator */}
-                        <span className="flex items-center gap-1.5">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={STROKE_PRESETS[preset].value * 1.2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="opacity-70 hidden sm:block"
-                          >
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                          </svg>
-                          {STROKE_PRESETS[preset].label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bundle All Button - shown when there are icons to bundle */}
-                {canBundleAll && (
-                  <>
-                    <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
-                    <button
-                      onClick={() => {
-                        addAllToBundle(icons);
-                        setIsCartOpen(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all"
-                    >
-                      <PackagePlusIcon className="w-3.5 h-3.5" />
-                      Bundle All on Page ({iconsNotInBundle.length})
-                    </button>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Results count */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-black/40 dark:text-white/40 text-xs">
-            Page {page + 1} of {totalPages} • {totalResults.toLocaleString("en-US")} icons
-            {isLoading && <Loader2Icon className="inline ml-2 w-3 h-3 animate-spin" />}
-          </p>
-        </div>
-
-        {/* Icon Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2Icon className="w-8 h-8 text-black/40 dark:text-white/40 animate-spin" />
-          </div>
-        ) : icons.length > 0 ? (
-          <>
-            <div
-              className="grid gap-3"
-              style={gridStyle}
-            >
-              {iconsToShow.map((icon) => (
-                <StyledIcon
-                  key={icon.id}
-                  icon={icon}
-                  style="metal"
-                  isSelected={cartItemIds.has(icon.id)}
-                  onToggleCart={toggleCartItem}
-                  strokeWeight={strokeWeight}
-                  iconSize={iconSize}
-                  containerSize={containerSize}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button
-                onClick={() => goToPage(page - 1)}
-                disabled={page === 0}
-                aria-label="Go to previous page"
-                className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeftIcon className="w-4 h-4" />
-                Prev
-              </button>
-
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) {
-                    pageNum = i;
-                  } else if (page < 3) {
-                    pageNum = i;
-                  } else if (page > totalPages - 4) {
-                    pageNum = totalPages - 5 + i;
-                  } else {
-                    pageNum = page - 2 + i;
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      aria-label={`Go to page ${pageNum + 1}`}
-                      aria-current={pageNum === page ? "page" : undefined}
-                      className={`w-9 h-9 text-sm font-mono rounded-lg transition-colors ${pageNum === page
-                        ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
-                        : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black/70 dark:hover:text-white/70"
-                        }`}
-                    >
-                      {pageNum + 1}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= totalPages - 1}
-                aria-label="Go to next page"
-                className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-6xl mb-4 opacity-50">🔍</div>
-            <h3 className="text-lg font-medium text-black/60 dark:text-white/60">No icons found</h3>
-            <p className="text-sm text-black/40 dark:text-white/40 mt-1">Try adjusting your search or filters</p>
-          </div>
-        )}
-
-        {/* Cart Drawer */}
-        <IconCart
+        <MetallicIconBrowserCartLayer
           items={cartItems}
           onRemove={removeCartItem}
           onClear={clearCart}
           onAddPack={addIconsByName}
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
+          isCartOpen={isCartOpen}
+          onCartClose={() => setIsCartOpen(false)}
+          confirmBundleOpen={confirmBundleOpen}
+          pendingBundleCount={pendingBundleIcons.length}
+          onConfirmBundleOpenChange={setConfirmBundleOpen}
+          onConfirmBundleAdd={handleConfirmBundleAdd}
         />
-
-        {/* Backdrop */}
-        {isCartOpen && (
-          <button
-            className="fixed inset-0 bg-black/60 z-40"
-            onClick={() => setIsCartOpen(false)}
-            aria-label="Close bundle drawer"
-          />
-        )}
-
-        {/* Confirmation Dialog for Large Bundles */}
-        <Dialog open={confirmBundleOpen} onOpenChange={setConfirmBundleOpen}>
-          <DialogContent className="bg-zinc-900 border-zinc-800">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-white">
-                <AlertTriangleIcon className="w-5 h-5 text-yellow-500" />
-                Add {pendingBundleIcons.length} Icons?
-              </DialogTitle>
-              <DialogDescription className="text-zinc-400">
-                You&apos;re about to add a large number of icons to your bundle.
-                This may increase your bundle size significantly.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-2">
-              <button
-                onClick={() => setConfirmBundleOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  performAddToBundle(pendingBundleIcons);
-                  setConfirmBundleOpen(false);
-                  setPendingBundleIcons([]);
-                  setIsCartOpen(true);
-                }}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--accent-mint)] text-black hover:bg-[var(--accent-mint)]/80 transition-colors"
-              >
-                Add All {pendingBundleIcons.length} Icons
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Footer with trademark disclaimer */}
       </div>
     </div>
   );
