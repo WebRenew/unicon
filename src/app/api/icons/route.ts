@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
         offset
       );
 
-      // Log analytics (fire and forget)
-      logSearch({
+      // Log analytics (await to ensure it completes before serverless function terminates)
+      await logSearch({
         query: queryParam.trim(),
         searchType: aiResults.searchType as "semantic" | "text",
         sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
@@ -104,9 +104,9 @@ export async function GET(request: NextRequest) {
 
     const icons = await searchIcons(params);
 
-    // Log analytics for text search (fire and forget)
+    // Log analytics for text search (await to ensure it completes)
     if (queryParam) {
-      logSearch({
+      await logSearch({
         query: queryParam,
         searchType: "text",
         sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
