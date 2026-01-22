@@ -103,6 +103,45 @@ function truncateIfNeeded(text: string, limit: number = CHARACTER_LIMIT): string
   );
 }
 
+// Helper to get comment syntax based on format
+function getCommentSyntax(format: string): { start: string; end: string } {
+  switch (format) {
+    case "svg":
+      return { start: "<!-- ", end: " -->" };
+    case "react":
+    case "json":
+      return { start: "// ", end: "" };
+    case "vue":
+      return { start: "<!-- ", end: " -->" };
+    case "svelte":
+      return { start: "<!-- ", end: " -->" };
+    default:
+      return { start: "// ", end: "" };
+  }
+}
+
+// Helper to format batch icons with identifying comments
+function formatBatchIconsText(
+  icons: Array<{ id?: string; name: string; code: string; error?: string }>,
+  format: string
+): string {
+  const { start, end } = getCommentSyntax(format);
+  const separator = "\n" + "=".repeat(60) + "\n";
+
+  return icons
+    .map((icon, index) => {
+      const iconId = icon.id || icon.name;
+      const header = `${start}[${index + 1}] ${iconId}${icon.error ? " (ERROR)" : ""}${end}`;
+
+      if (icon.error) {
+        return `${header}\n${start}Error: ${icon.error}${end}`;
+      }
+
+      return `${header}\n${icon.code}`;
+    })
+    .join(separator);
+}
+
 // Create MCP server with all tools and resources
 function createMcpServer() {
   const server = new McpServer({
@@ -400,7 +439,9 @@ Returns:
         icons: results,
       };
 
-      const text = truncateIfNeeded(JSON.stringify(output, null, 2));
+      // Format text with identifying comments for each icon
+      const formattedText = formatBatchIconsText(results, format);
+      const text = truncateIfNeeded(formattedText);
 
       return {
         content: [{ type: "text", text }],
@@ -525,7 +566,10 @@ Returns:
         icons: results,
       };
 
-      const text = truncateIfNeeded(JSON.stringify(output, null, 2));
+      // Format text with identifying comments for each icon
+      const header = `${getCommentSyntax(format).start}Starter Pack: ${pack.name} (${pack.id})${getCommentSyntax(format).end}\n${getCommentSyntax(format).start}${pack.description}${getCommentSyntax(format).end}\n\n`;
+      const formattedText = header + formatBatchIconsText(results, format);
+      const text = truncateIfNeeded(formattedText);
 
       return {
         content: [{ type: "text", text }],
