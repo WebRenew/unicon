@@ -4,6 +4,18 @@ Get started with Unicon's AI-powered icon library in 5 minutes.
 
 ## Installation
 
+### Cloud IDEs & Agent Editors (v0, Bolt, Lovable)
+
+For cloud-based environments, use the direct URL:
+
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+Just add this URL as an MCP server in your tool's settings. No installation needed!
+
+---
+
 ### Claude Code (CLI)
 
 Add the Unicon MCP server with a single command:

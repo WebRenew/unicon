@@ -12,10 +12,15 @@ The Unicon MCP Server allows AI assistants like Claude Desktop and Cursor to:
 
 ## Architecture
 
+Unicon supports two connection methods depending on your environment:
+
+### Option 1: Local Bridge (Desktop Apps)
+
+For **Claude Desktop**, **Cursor**, and other desktop applications that use stdio transport:
+
 ```
 ┌─────────────────────────────┐
-│   AI Assistant (Claude)     │
-│         or Cursor            │
+│   Claude Desktop / Cursor    │
 └──────────┬──────────────────┘
            │ MCP Protocol (stdio)
            │
@@ -27,18 +32,33 @@ The Unicon MCP Server allows AI assistants like Claude Desktop and Cursor to:
            │
 ┌──────────▼──────────────────┐
 │ unicon.webrenew.com/api/mcp │  (hosted API)
-└──────────┬──────────────────┘
-           │
-┌──────────▼──────────────────┐
-│   Unicon Database (SQLite)  │
-│     14,700+ icons            │
 └─────────────────────────────┘
 ```
 
-**Why this architecture?**
-- **Local bridge** provides MCP stdio transport that AI assistants expect
-- **Hosted API** ensures always up-to-date icon library
-- **No local database** - simpler setup for users
+### Option 2: Direct URL (Cloud IDEs & Agents)
+
+For **v0**, **Bolt**, **Lovable**, **cloud IDEs**, and other URL-based MCP clients:
+
+```
+┌─────────────────────────────┐
+│   v0 / Cloud IDE / Agent    │
+└──────────┬──────────────────┘
+           │ MCP Protocol (Streamable HTTP)
+           │
+┌──────────▼──────────────────┐
+│ unicon.webrenew.com/api/mcp │  (direct connection)
+└─────────────────────────────┘
+```
+
+**MCP Endpoint URL:**
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+**Why two options?**
+- **Local bridge** - Required for desktop apps that only support stdio transport
+- **Direct URL** - Simpler for cloud environments that support HTTP transport
+- **Same API** - Both methods provide identical functionality
 - **Fast** - API responses are cached at the edge
 
 ## Installation
@@ -111,9 +131,9 @@ You should see `unicon` in the list of configured servers.
 
 3. **Restart Cursor**
 
-### Other MCP Clients
+### Other MCP Clients (Desktop)
 
-Any MCP-compatible client can use Unicon:
+Any MCP-compatible desktop client can use Unicon with stdio transport:
 
 ```json
 {
@@ -126,6 +146,101 @@ Any MCP-compatible client can use Unicon:
 }
 ```
 
+---
+
+## Cloud IDEs & Agent Code Editors
+
+For cloud-based environments that can't run local processes, use the **Streamable HTTP endpoint** directly.
+
+### v0 (Vercel)
+
+Add Unicon as an MCP server in v0:
+
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+### Bolt, Lovable, and Similar Tools
+
+Configure the MCP endpoint URL:
+
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+### Generic HTTP MCP Client
+
+For any MCP client that supports Streamable HTTP transport:
+
+**Endpoint:** `https://unicon.webrenew.com/api/mcp`
+
+**Supported Methods:**
+- `POST` - Send MCP requests (initialize, tools/call, etc.)
+- `GET` - SSE stream for server-initiated messages
+- `DELETE` - Close session
+
+**Required Headers:**
+```
+Content-Type: application/json
+Accept: application/json, text/event-stream
+```
+
+**Example - Initialize:**
+```bash
+curl -X POST https://unicon.webrenew.com/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {},
+      "clientInfo": { "name": "my-client", "version": "1.0.0" }
+    }
+  }'
+```
+
+**Example - List Tools:**
+```bash
+curl -X POST https://unicon.webrenew.com/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}'
+```
+
+**Example - Call Tool:**
+```bash
+curl -X POST https://unicon.webrenew.com/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "unicon_search_icons",
+      "arguments": { "query": "arrow", "limit": 5 }
+    }
+  }'
+```
+
+### When to Use Which Method
+
+| Environment | Method | Why |
+|-------------|--------|-----|
+| Claude Desktop | Local Bridge (npx) | Desktop apps require stdio transport |
+| Cursor IDE | Local Bridge (npx) | Desktop apps require stdio transport |
+| Claude Code CLI | Local Bridge (npx) | CLI tools use stdio transport |
+| v0 (Vercel) | Direct URL | Cloud-based, supports HTTP transport |
+| Bolt | Direct URL | Cloud-based, supports HTTP transport |
+| Lovable | Direct URL | Cloud-based, supports HTTP transport |
+| GitHub Codespaces | Direct URL | Cloud IDE, no local processes |
+| Gitpod | Direct URL | Cloud IDE, no local processes |
+| Custom Agents | Direct URL | HTTP is simpler to integrate |
+| CI/CD Pipelines | Direct URL | No interactive process needed |
+
 ## Usage Examples
 
 ### Example 1: Search for Icons
@@ -134,7 +249,7 @@ Any MCP-compatible client can use Unicon:
 > "Search for dashboard icons in the Lucide library"
 
 **AI assistant will:**
-1. Call `search_icons` tool with query "dashboard" and source "lucide"
+1. Call `unicon_search_icons` tool with query "dashboard" and source "lucide"
 2. Show results with icon IDs, names, and categories
 3. Help you select the icons you need
 
@@ -161,7 +276,7 @@ Any MCP-compatible client can use Unicon:
 > "Get the React component for lucide:arrow-right with size 32 and strokeWidth 1.5"
 
 **AI assistant will:**
-1. Call `get_icon` tool with the icon ID and format "react"
+1. Call `unicon_get_icon` tool with the icon ID and format "react"
 2. Return ready-to-use React component code
 
 **Generated code:**
@@ -204,8 +319,8 @@ ArrowRight.displayName = 'ArrowRight';
 > "Give me React components for home, settings, and user icons from Lucide"
 
 **AI assistant will:**
-1. Call `search_icons` to find the exact icon IDs
-2. Call `get_multiple_icons` with the list of IDs
+1. Call `unicon_search_icons` to find the exact icon IDs
+2. Call `unicon_get_multiple_icons` with the list of IDs
 3. Return all components in one response
 
 ### Example 4: Different Frameworks
@@ -240,7 +355,7 @@ ArrowRight.displayName = 'ArrowRight';
 
 ## Available Tools
 
-### `search_icons`
+### `unicon_search_icons`
 
 Search through 14,700+ icons using AI-powered semantic search.
 
@@ -262,7 +377,7 @@ Search through 14,700+ icons using AI-powered semantic search.
 }
 ```
 
-### `get_icon`
+### `unicon_get_icon`
 
 Retrieve source code for a specific icon in any format.
 
@@ -285,7 +400,7 @@ Retrieve source code for a specific icon in any format.
 }
 ```
 
-### `get_multiple_icons`
+### `unicon_get_multiple_icons`
 
 Retrieve multiple icons in one request (max 50).
 
@@ -306,6 +421,34 @@ Retrieve multiple icons in one request (max 50).
     "lucide:settings",
     "lucide:user"
   ],
+  format: "react",
+  size: 24
+}
+```
+
+### `unicon_get_starter_pack`
+
+Get a curated starter pack of icons for common use cases.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `packId` | string | ✅ | Starter pack ID (dashboard, ecommerce, social, brand-ai) |
+| `format` | string | ❌ | Output format for all icons |
+| `size` | number | ❌ | Icon size for all icons |
+| `strokeWidth` | number | ❌ | Stroke width for all icons |
+
+**Available Packs:**
+- `dashboard` - Admin dashboard icons (home, settings, users, charts)
+- `ecommerce` - Shopping icons (cart, payment, shipping)
+- `social` - Social media icons (share, like, comment)
+- `brand-ai` - AI/ML brand icons (OpenAI, Anthropic, etc.)
+
+**Example:**
+```typescript
+{
+  packId: "dashboard",
   format: "react",
   size: 24
 }
@@ -360,6 +503,27 @@ Get library statistics.
   "sources": [
     { "id": "lucide", "name": "Lucide Icons", "count": 1456 },
     { "id": "phosphor", "name": "Phosphor Icons", "count": 7488 },
+    ...
+  ]
+}
+```
+
+### `unicon://starter_packs`
+
+Get available starter packs for common use cases.
+
+**Returns:**
+```json
+{
+  "total": 4,
+  "packs": [
+    {
+      "id": "dashboard",
+      "name": "Dashboard Essentials",
+      "description": "Essential icons for admin dashboards",
+      "iconCount": 15,
+      "icons": ["home", "settings", "users", ...]
+    },
     ...
   ]
 }
@@ -553,11 +717,11 @@ Be specific about which library to use:
 
 ### 3. Batch Multiple Icons
 
-Use `get_multiple_icons` for multiple icons:
+Use `unicon_get_multiple_icons` for multiple icons:
 
 ```
-❌ Making 10 separate get_icon calls
-✅ One get_multiple_icons call with array of IDs
+❌ Making 10 separate unicon_get_icon calls
+✅ One unicon_get_multiple_icons call with array of IDs
 ```
 
 ### 4. Use Semantic Search
@@ -594,7 +758,8 @@ Need higher limits? Contact us for API key access.
 
 ## What's Next?
 
-- [ ] Icon packs (curated collections)
+- [x] ~~Icon packs (curated collections)~~ - **Available now!** Use `unicon_get_starter_pack`
+- [x] ~~Direct URL access for cloud IDEs~~ - **Available now!** Use `https://unicon.webrenew.com/api/mcp`
 - [ ] Custom icon uploads
 - [ ] Team workspaces
 - [ ] Icon variants (phosphor weights)

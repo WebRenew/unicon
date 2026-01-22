@@ -4,6 +4,16 @@ Quick command reference for using Unicon with Claude/Cursor.
 
 ## Installation
 
+### Cloud IDEs (v0, Bolt, Lovable) - Direct URL
+
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+Add this URL as an MCP server in your tool's settings. No installation needed!
+
+---
+
 ### Claude Code (CLI) - One Command
 
 ```bash
@@ -135,6 +145,7 @@ import { ArrowRight } from './icons/ArrowRight';
 | `unicon://sources` | List all icon libraries |
 | `unicon://categories` | List all categories |
 | `unicon://stats` | Total counts and stats |
+| `unicon://starter_packs` | Curated icon packs |
 
 ## Tips & Tricks
 
