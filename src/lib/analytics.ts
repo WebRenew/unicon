@@ -24,7 +24,7 @@ export async function logSearch(params: LogSearchParams): Promise<void> {
       cacheHit: params.cacheHit,
       responseTimeMs: params.responseTimeMs ?? null,
       timestamp: new Date(),
-    });
+    }).run();
   } catch (error) {
     // Don't fail the request if analytics logging fails
     console.error("Failed to log search analytics:", error);
