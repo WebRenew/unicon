@@ -7,11 +7,13 @@ import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
 import { useState, useEffect } from "react";
 import type { IconData } from "@/types/icon";
 
 export function HomeHeader() {
   const [cartCount, setCartCount] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     // Update cart count from localStorage
@@ -47,66 +49,75 @@ export function HomeHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-background/95 dark:backdrop-blur dark:supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center justify-between px-4 lg:px-20 xl:px-40">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-xl" aria-hidden="true">🦄</span>
-            <span className="font-mono text-muted-foreground text-xs tracking-widest uppercase">
-              UNICON
-            </span>
-          </Link>
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-background/95 dark:backdrop-blur dark:supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-14 items-center justify-between px-4 lg:px-20 xl:px-40">
+          <div className="flex items-center gap-4 md:gap-6">
+            <MobileNavTrigger
+              isOpen={mobileNavOpen}
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            />
 
-          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-            <Link
-              href="/docs"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
-            >
-              <FileTextIcon className="w-3.5 h-3.5" />
-              Docs
-            </Link>
-            <Link
-              href="/cli"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
-            >
-              <TerminalIcon className="w-3.5 h-3.5" />
-              CLI
-            </Link>
-            <Link
-              href="/docs/mcp"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
-            >
-              <MCPIcon className="w-3.5 h-3.5" size={14} />
-              MCP
-            </Link>
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleBundleClick}
-            className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all text-sm font-medium"
-          >
-            <PackageIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Bundle</span>
-            {cartCount > 0 && (
-              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-[var(--accent-mint)] text-black text-xs rounded-full font-semibold">
-                {cartCount}
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <span className="text-xl" aria-hidden="true">🦄</span>
+              <span className="font-mono text-muted-foreground text-xs tracking-widest uppercase">
+                UNICON
               </span>
-            )}
-          </button>
-          <ThemeToggle />
-          <a
-            href="https://github.com/WebRenew/unicon"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View source on GitHub"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <GithubIcon className="w-5 h-5" />
-          </a>
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+              <Link
+                href="/docs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
+              >
+                <FileTextIcon className="w-3.5 h-3.5" />
+                Docs
+              </Link>
+              <Link
+                href="/cli"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
+              >
+                <TerminalIcon className="w-3.5 h-3.5" />
+                CLI
+              </Link>
+              <Link
+                href="/docs/mcp"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
+              >
+                <MCPIcon className="w-3.5 h-3.5" size={14} />
+                MCP
+              </Link>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBundleClick}
+              className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--accent-mint)]/30 dark:bg-[var(--accent-mint)]/20 text-black/80 dark:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/40 dark:hover:bg-[var(--accent-mint)]/30 border-2 border-[var(--accent-mint)]/50 dark:border-[var(--accent-mint)]/30 transition-all text-sm font-medium"
+            >
+              <PackageIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Bundle</span>
+              {cartCount > 0 && (
+                <span className="flex items-center justify-center min-w-5 h-5 px-1.5 bg-[var(--accent-mint)] text-black text-xs rounded-full font-semibold">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <ThemeToggle />
+            <a
+              href="https://github.com/WebRenew/unicon"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View source on GitHub"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <GithubIcon className="w-5 h-5" />
+            </a>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+    </>
   );
 }
