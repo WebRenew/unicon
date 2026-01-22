@@ -1,15 +1,15 @@
 /**
- * Unicon MCP API Endpoint
- * 
- * This endpoint provides MCP-compatible functionality over REST.
- * For full MCP integration, users should install the local server package:
- * 
- *   npx @webrenew/unicon-mcp-server
- * 
- * The local server proxies requests to this API and provides proper
- * MCP stdio/SSE transport for AI assistants.
+ * Unicon MCP Streamable HTTP Endpoint
+ *
+ * This endpoint exposes the MCP server via Streamable HTTP transport for
+ * integrations like v0, Vercel AI, and other URL-based MCP clients.
+ *
+ * URL: https://unicon.webrenew.com/api/mcp
  */
 
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { z } from "zod";
 import {
   searchIcons,
   getIconById,
@@ -22,464 +22,543 @@ import { convertIconToFormat } from "@/lib/icon-converters";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
 
-/**
- * GET /api/mcp - Server info and capabilities
- */
-export async function GET() {
-  return Response.json({
-    name: "Unicon MCP API",
+// Create a shared MCP server instance
+function createMcpServer() {
+  const server = new McpServer({
+    name: "unicon",
     version: "1.0.0",
-    description: "REST API for Unicon icon library with MCP compatibility",
-    capabilities: {
-      tools: ["search_icons", "get_icon", "get_multiple_icons", "get_starter_pack"],
-      resources: ["sources", "categories", "stats", "starter_packs"],
+  });
+
+  // Register tools
+  server.registerTool(
+    "unicon_search_icons",
+    {
+      title: "Search Icons",
+      description: `Search through 14,700+ icons across 8 libraries using semantic search.
+
+Args:
+  - query (string): Search query (e.g., 'arrow', 'dashboard', 'user profile')
+  - source (string, optional): Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons)
+  - category (string, optional): Filter by category
+  - limit (number, optional): Maximum results (1-100, default: 20)
+
+Returns:
+  Array of matching icons with id, name, source, category, and tags.
+
+Examples:
+  - "search for arrow icons" -> query="arrow"
+  - "find dashboard icons from lucide" -> query="dashboard", source="lucide"`,
+      inputSchema: {
+        query: z.string().min(1).describe("Search query"),
+        source: z
+          .enum([
+            "lucide",
+            "phosphor",
+            "hugeicons",
+            "heroicons",
+            "tabler",
+            "feather",
+            "remix",
+            "simple-icons",
+          ])
+          .optional()
+          .describe("Filter by icon library"),
+        category: z.string().optional().describe("Filter by category"),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .default(20)
+          .describe("Maximum results to return"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
-    usage: {
-      direct: "POST /api/mcp with { action, params }",
-      mcp: "Install: npx @webrenew/unicon-mcp-server",
-      docs: "https://unicon.webrenew.com/docs/mcp",
+    async (params) => {
+      const searchParams: {
+        query: string;
+        sourceId?: string;
+        category?: string;
+        limit: number;
+      } = {
+        query: params.query,
+        limit: params.limit ?? 20,
+      };
+
+      if (params.source) {
+        searchParams.sourceId = params.source;
+      }
+      if (params.category) {
+        searchParams.category = params.category;
+      }
+
+      const results = await searchIcons(searchParams);
+
+      const output = {
+        query: params.query,
+        total: results.length,
+        results: results.map((icon) => ({
+          id: icon.id,
+          name: icon.name,
+          normalizedName: icon.normalizedName,
+          source: icon.sourceId,
+          category: icon.category,
+          tags: icon.tags,
+        })),
+      };
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+        structuredContent: output,
+      };
+    }
+  );
+
+  server.registerTool(
+    "unicon_get_icon",
+    {
+      title: "Get Icon",
+      description: `Retrieve source code for a specific icon in various formats.
+
+Args:
+  - iconId (string): Icon ID in format 'source:name' (e.g., 'lucide:arrow-right')
+  - format (string, optional): Output format - svg, react, vue, svelte, json (default: react)
+  - size (number, optional): Icon size in pixels (default: 24)
+  - strokeWidth (number, optional): Stroke width for line icons (default: 2)
+
+Returns:
+  The icon source code in the requested format.
+
+Examples:
+  - "get the lucide arrow-right icon" -> iconId="lucide:arrow-right"
+  - "get phosphor house icon as SVG" -> iconId="phosphor:house", format="svg"`,
+      inputSchema: {
+        iconId: z
+          .string()
+          .describe("Icon ID in format 'source:name' (e.g., 'lucide:arrow-right')"),
+        format: z
+          .enum(["svg", "react", "vue", "svelte", "json"])
+          .default("react")
+          .describe("Output format"),
+        size: z.number().int().min(8).max(512).default(24).describe("Icon size in pixels"),
+        strokeWidth: z.number().min(0.5).max(4).default(2).describe("Stroke width"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
+    async (params) => {
+      const icon = await getIconById(params.iconId);
+      if (!icon) {
+        return {
+          content: [{ type: "text", text: `Error: Icon not found: ${params.iconId}` }],
+          isError: true,
+        };
+      }
+
+      const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const code = await convertIconToFormat(icon, format, {
+        size: params.size,
+        strokeWidth: params.strokeWidth,
+      });
+
+      const output = {
+        iconId: params.iconId,
+        format,
+        code,
+      };
+
+      return {
+        content: [{ type: "text", text: code }],
+        structuredContent: output,
+      };
+    }
+  );
+
+  server.registerTool(
+    "unicon_get_multiple_icons",
+    {
+      title: "Get Multiple Icons",
+      description: `Retrieve multiple icons at once (max 50 per request).
+
+Args:
+  - iconIds (array): Array of icon IDs (e.g., ['lucide:arrow-right', 'lucide:home'])
+  - format (string, optional): Output format - svg, react, vue, svelte, json (default: react)
+  - size (number, optional): Icon size in pixels (default: 24)
+  - strokeWidth (number, optional): Stroke width (default: 2)
+
+Returns:
+  Array of icons with their source code.`,
+      inputSchema: {
+        iconIds: z
+          .array(z.string())
+          .min(1)
+          .max(50)
+          .describe("Array of icon IDs to retrieve"),
+        format: z
+          .enum(["svg", "react", "vue", "svelte", "json"])
+          .default("react")
+          .describe("Output format"),
+        size: z.number().int().min(8).max(512).default(24).describe("Icon size"),
+        strokeWidth: z.number().min(0.5).max(4).default(2).describe("Stroke width"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (params) => {
+      const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const results: Array<{
+        id: string;
+        name: string;
+        code: string;
+        error?: string;
+      }> = [];
+
+      for (const iconId of params.iconIds) {
+        try {
+          const icon = await getIconById(iconId);
+          if (!icon) {
+            results.push({ id: iconId, name: "", code: "", error: "Icon not found" });
+            continue;
+          }
+
+          const code = await convertIconToFormat(icon, format, {
+            size: params.size,
+            strokeWidth: params.strokeWidth,
+          });
+
+          results.push({ id: icon.id, name: icon.name, code });
+        } catch (error) {
+          results.push({
+            id: iconId,
+            name: "",
+            code: "",
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
+
+      const output = { format, icons: results };
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+        structuredContent: output,
+      };
+    }
+  );
+
+  server.registerTool(
+    "unicon_get_starter_pack",
+    {
+      title: "Get Starter Pack",
+      description: `Get a curated starter pack of icons for common use cases.
+
+Available packs:
+  - dashboard: Admin dashboard icons (home, settings, users, charts)
+  - ecommerce: Shopping icons (cart, payment, shipping)
+  - social: Social media icons (share, like, comment)
+  - brand-ai: AI/ML brand icons (OpenAI, Anthropic, etc.)
+
+Args:
+  - packId (string): Starter pack ID
+  - format (string, optional): Output format (default: react)
+  - size (number, optional): Icon size (default: 24)
+  - strokeWidth (number, optional): Stroke width (default: 2)
+
+Returns:
+  All icons in the pack with their source code.`,
+      inputSchema: {
+        packId: z.string().describe("Starter pack ID (e.g., 'dashboard', 'ecommerce')"),
+        format: z
+          .enum(["svg", "react", "vue", "svelte", "json"])
+          .default("react")
+          .describe("Output format"),
+        size: z.number().int().min(8).max(512).default(24).describe("Icon size"),
+        strokeWidth: z.number().min(0.5).max(4).default(2).describe("Stroke width"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (params) => {
+      const pack = STARTER_PACKS.find((p) => p.id === params.packId);
+      if (!pack) {
+        const availablePacks = STARTER_PACKS.map((p) => p.id).join(", ");
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: Starter pack not found: ${params.packId}. Available packs: ${availablePacks}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const results: Array<{ name: string; code: string; error?: string }> = [];
+
+      const fetchedIcons = await getIconsByNames(pack.iconNames);
+      const iconsByName = new Map(
+        fetchedIcons.map((icon) => [icon.normalizedName.toLowerCase(), icon])
+      );
+
+      await Promise.all(
+        pack.iconNames.map(async (iconName) => {
+          try {
+            const icon = iconsByName.get(iconName.toLowerCase());
+            if (!icon) {
+              results.push({ name: iconName, code: "", error: "Icon not found" });
+              return;
+            }
+
+            const code = await convertIconToFormat(icon, format, {
+              size: params.size,
+              strokeWidth: params.strokeWidth,
+            });
+
+            results.push({ name: icon.normalizedName, code });
+          } catch (error) {
+            results.push({
+              name: iconName,
+              code: "",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
+          }
+        })
+      );
+
+      const output = {
+        packId: pack.id,
+        packName: pack.name,
+        description: pack.description,
+        format,
+        totalIcons: pack.iconNames.length,
+        retrievedIcons: results.filter((r) => !r.error).length,
+        icons: results,
+      };
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+        structuredContent: output,
+      };
+    }
+  );
+
+  // Register resources
+  server.registerResource(
+    "sources",
+    "unicon://sources",
+    {
+      description: "List all available icon libraries",
+      mimeType: "application/json",
+    },
+    async () => {
+      const sources = await getSources();
+      return {
+        contents: [
+          {
+            uri: "unicon://sources",
+            mimeType: "application/json",
+            text: JSON.stringify(sources, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerResource(
+    "categories",
+    "unicon://categories",
+    {
+      description: "List all icon categories",
+      mimeType: "application/json",
+    },
+    async () => {
+      const categories = await getCategories();
+      return {
+        contents: [
+          {
+            uri: "unicon://categories",
+            mimeType: "application/json",
+            text: JSON.stringify({ categories }, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerResource(
+    "stats",
+    "unicon://stats",
+    {
+      description: "Total icon count and per-library statistics",
+      mimeType: "application/json",
+    },
+    async () => {
+      const totalIcons = await getTotalIconCount();
+      const sources = await getSources();
+      const stats = {
+        totalIcons,
+        sources: sources.map((s) => ({
+          id: s.id,
+          name: s.name,
+          count: s.totalIcons,
+        })),
+      };
+      return {
+        contents: [
+          {
+            uri: "unicon://stats",
+            mimeType: "application/json",
+            text: JSON.stringify(stats, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerResource(
+    "starter_packs",
+    "unicon://starter_packs",
+    {
+      description: "Curated icon packs for common use cases",
+      mimeType: "application/json",
+    },
+    async () => {
+      const packs = {
+        total: STARTER_PACKS.length,
+        packs: STARTER_PACKS.map((pack) => ({
+          id: pack.id,
+          name: pack.name,
+          description: pack.description,
+          color: pack.color,
+          iconCount: pack.iconNames.length,
+          icons: pack.iconNames,
+        })),
+      };
+      return {
+        contents: [
+          {
+            uri: "unicon://starter_packs",
+            mimeType: "application/json",
+            text: JSON.stringify(packs, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  return server;
+}
+
+// Create transport for stateless mode (new transport per request)
+function createTransport() {
+  return new WebStandardStreamableHTTPServerTransport({
+    enableJsonResponse: true,
   });
 }
 
 /**
- * POST /api/mcp - Execute actions
+ * POST /api/mcp/sse - Handle MCP requests
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { action, params = {} } = body;
+    const server = createMcpServer();
+    const transport = createTransport();
 
-    switch (action) {
-      case "list_tools":
-        return Response.json({
-          tools: [
-            {
-              name: "search_icons",
-              description:
-                "Search through 14,700+ icons across 8 libraries using semantic search",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  query: {
-                    type: "string",
-                    description: "Search query (e.g., 'arrow', 'dashboard')",
-                  },
-                  source: {
-                    type: "string",
-                    enum: [
-                      "lucide",
-                      "phosphor",
-                      "hugeicons",
-                      "heroicons",
-                      "tabler",
-                      "feather",
-                      "remix",
-                      "simple-icons",
-                    ],
-                  },
-                  category: { type: "string" },
-                  limit: { type: "number", default: 20, maximum: 100 },
-                },
-                required: ["query"],
-              },
-            },
-            {
-              name: "get_icon",
-              description: "Retrieve source code for a specific icon",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  iconId: {
-                    type: "string",
-                    description: "Icon ID (e.g., 'lucide:arrow-right')",
-                  },
-                  format: {
-                    type: "string",
-                    enum: ["svg", "react", "vue", "svelte", "json"],
-                    default: "react",
-                  },
-                  size: { type: "number", default: 24 },
-                  strokeWidth: { type: "number", default: 2 },
-                },
-                required: ["iconId"],
-              },
-            },
-            {
-              name: "get_multiple_icons",
-              description: "Retrieve multiple icons at once",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  iconIds: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
-                  format: {
-                    type: "string",
-                    enum: ["svg", "react", "vue", "svelte", "json"],
-                    default: "react",
-                  },
-                  size: { type: "number", default: 24 },
-                  strokeWidth: { type: "number", default: 2 },
-                },
-                required: ["iconIds"],
-              },
-            },
-            {
-              name: "get_starter_pack",
-              description: "Get a curated starter pack of icons for common use cases (e.g., dashboard, ecommerce, social media). Returns all icons in the pack.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  packId: {
-                    type: "string",
-                    description: "Starter pack ID (e.g., 'dashboard', 'ecommerce', 'social', 'brand-ai'). Use the starter_packs resource to see all available packs.",
-                  },
-                  format: {
-                    type: "string",
-                    enum: ["svg", "react", "vue", "svelte", "json"],
-                    default: "react",
-                  },
-                  size: { type: "number", default: 24 },
-                  strokeWidth: { type: "number", default: 2 },
-                },
-                required: ["packId"],
-              },
-            },
-          ],
-        });
+    await server.connect(transport);
 
-      case "list_resources":
-        return Response.json({
-          resources: [
-            {
-              uri: "unicon://sources",
-              name: "Icon Sources",
-              description: "List all available icon libraries",
-              mimeType: "application/json",
-            },
-            {
-              uri: "unicon://categories",
-              name: "Icon Categories",
-              description: "List all icon categories",
-              mimeType: "application/json",
-            },
-            {
-              uri: "unicon://stats",
-              name: "Library Statistics",
-              description: "Total icon count and stats",
-              mimeType: "application/json",
-            },
-            {
-              uri: "unicon://starter_packs",
-              name: "Starter Packs",
-              description: "Curated icon packs for common use cases",
-              mimeType: "application/json",
-            },
-          ],
-        });
+    const response = await transport.handleRequest(request);
 
-      case "read_resource": {
-        const { uri } = params;
-        if (!uri || typeof uri !== "string") {
-          throw new Error("Missing or invalid uri parameter");
-        }
-
-        const url = new URL(uri);
-        const path = url.pathname.replace(/^\/\//, "");
-
-        switch (path) {
-          case "sources": {
-            const sources = await getSources();
-            return Response.json({ contents: sources });
-          }
-
-          case "categories": {
-            const categories = await getCategories();
-            return Response.json({ contents: { categories } });
-          }
-
-          case "stats": {
-            const totalIcons = await getTotalIconCount();
-            const sources = await getSources();
-            return Response.json({
-              contents: {
-                totalIcons,
-                sources: sources.map((s) => ({
-                  id: s.id,
-                  name: s.name,
-                  count: s.totalIcons,
-                })),
-              },
-            });
-          }
-
-          case "starter_packs": {
-            return Response.json({
-              contents: {
-                total: STARTER_PACKS.length,
-                packs: STARTER_PACKS.map((pack) => ({
-                  id: pack.id,
-                  name: pack.name,
-                  description: pack.description,
-                  color: pack.color,
-                  iconCount: pack.iconNames.length,
-                  icons: pack.iconNames,
-                })),
-              },
-            });
-          }
-
-          default:
-            throw new Error(`Unknown resource path: ${path}`);
-        }
-      }
-
-      case "call_tool": {
-        const { name, arguments: args = {} } = params;
-
-        switch (name) {
-          case "search_icons": {
-            const searchParams: {
-              query: string;
-              sourceId?: string;
-              category?: string;
-              limit: number;
-            } = {
-              query: args.query,
-              limit: Math.min(args.limit || 20, 100),
-            };
-
-            if (args.source) {
-              searchParams.sourceId = args.source;
-            }
-            if (args.category) {
-              searchParams.category = args.category;
-            }
-
-            const results = await searchIcons(searchParams);
-
-            return Response.json({
-              result: {
-                query: args.query,
-                total: results.length,
-                results: results.map((icon) => ({
-                  id: icon.id,
-                  name: icon.name,
-                  normalizedName: icon.normalizedName,
-                  source: icon.sourceId,
-                  category: icon.category,
-                  tags: icon.tags,
-                })),
-              },
-            });
-          }
-
-          case "get_icon": {
-            const icon = await getIconById(args.iconId);
-            if (!icon) {
-              throw new Error(`Icon not found: ${args.iconId}`);
-            }
-
-            const format = (args.format || "react") as "svg" | "react" | "vue" | "svelte" | "json";
-
-            const convertProps: {
-              size?: number;
-              strokeWidth?: number;
-            } = {};
-
-            if (args.size !== undefined) {
-              convertProps.size = args.size;
-            }
-            if (args.strokeWidth !== undefined) {
-              convertProps.strokeWidth = args.strokeWidth;
-            }
-
-            const code = await convertIconToFormat(icon, format, convertProps);
-
-            return Response.json({
-              result: {
-                iconId: args.iconId,
-                format,
-                code,
-              },
-            });
-          }
-
-          case "get_multiple_icons": {
-            if (!Array.isArray(args.iconIds) || args.iconIds.length === 0) {
-              throw new Error("iconIds must be a non-empty array");
-            }
-
-            if (args.iconIds.length > 50) {
-              throw new Error("Maximum 50 icons per request");
-            }
-
-            const format = (args.format || "react") as "svg" | "react" | "vue" | "svelte" | "json";
-            const results: Array<{
-              id: string;
-              name: string;
-              code: string;
-              error?: string;
-            }> = [];
-
-            for (const iconId of args.iconIds) {
-              try {
-                const icon = await getIconById(iconId);
-                if (!icon) {
-                  results.push({
-                    id: iconId,
-                    name: "",
-                    code: "",
-                    error: "Icon not found",
-                  });
-                  continue;
-                }
-
-                const convertProps: {
-                  size?: number;
-                  strokeWidth?: number;
-                } = {};
-
-                if (args.size !== undefined) {
-                  convertProps.size = args.size;
-                }
-                if (args.strokeWidth !== undefined) {
-                  convertProps.strokeWidth = args.strokeWidth;
-                }
-
-                const code = await convertIconToFormat(icon, format, convertProps);
-
-                results.push({
-                  id: icon.id,
-                  name: icon.name,
-                  code,
-                });
-              } catch (error) {
-                results.push({
-                  id: iconId,
-                  name: "",
-                  code: "",
-                  error: error instanceof Error ? error.message : "Unknown error",
-                });
-              }
-            }
-
-            return Response.json({
-              result: {
-                format,
-                icons: results,
-              },
-            });
-          }
-
-          case "get_starter_pack": {
-            const pack = STARTER_PACKS.find((p) => p.id === args.packId);
-            if (!pack) {
-              throw new Error(`Starter pack not found: ${args.packId}. Use the starter_packs resource to see available packs.`);
-            }
-
-            const format = (args.format || "react") as "svg" | "react" | "vue" | "svelte" | "json";
-            const results: Array<{
-              name: string;
-              code: string;
-              error?: string;
-            }> = [];
-
-            // Batch fetch all icons in the pack (eliminates N+1 waterfall)
-            const fetchedIcons = await getIconsByNames(pack.iconNames);
-            const iconsByName = new Map(
-              fetchedIcons.map(icon => [icon.normalizedName.toLowerCase(), icon])
-            );
-
-            // Process each icon in parallel
-            const convertProps: {
-              size?: number;
-              strokeWidth?: number;
-            } = {};
-
-            if (args.size !== undefined) {
-              convertProps.size = args.size;
-            }
-            if (args.strokeWidth !== undefined) {
-              convertProps.strokeWidth = args.strokeWidth;
-            }
-
-            await Promise.all(
-              pack.iconNames.map(async (iconName) => {
-                try {
-                  const icon = iconsByName.get(iconName.toLowerCase());
-
-                  if (!icon) {
-                    results.push({
-                      name: iconName,
-                      code: "",
-                      error: "Icon not found",
-                    });
-                    return;
-                  }
-
-                  const code = await convertIconToFormat(icon, format, convertProps);
-
-                  results.push({
-                    name: icon.normalizedName,
-                    code,
-                  });
-                } catch (error) {
-                  results.push({
-                    name: iconName,
-                    code: "",
-                    error: error instanceof Error ? error.message : "Unknown error",
-                  });
-                }
-              })
-            );
-
-            return Response.json({
-              result: {
-                packId: pack.id,
-                packName: pack.name,
-                description: pack.description,
-                format,
-                totalIcons: pack.iconNames.length,
-                retrievedIcons: results.filter((r) => !r.error).length,
-                icons: results,
-              },
-            });
-          }
-
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-      }
-
-      default:
-        throw new Error(`Unknown action: ${action}`);
-    }
+    return response;
   } catch (error) {
-    logger.error("MCP API Error:", error);
-    return Response.json(
-      {
+    logger.error("MCP SSE Error:", error);
+    return new Response(
+      JSON.stringify({
+        jsonrpc: "2.0",
         error: {
           code: -32603,
           message: error instanceof Error ? error.message : "Internal server error",
         },
-      },
-      { status: 500 }
+        id: null,
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }
 
 /**
- * OPTIONS /api/mcp - CORS preflight
+ * GET /api/mcp/sse - SSE stream for server-initiated messages
+ */
+export async function GET(request: Request) {
+  try {
+    const server = createMcpServer();
+    const transport = createTransport();
+
+    await server.connect(transport);
+
+    const response = await transport.handleRequest(request);
+
+    return response;
+  } catch (error) {
+    logger.error("MCP SSE GET Error:", error);
+    return new Response(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        error: {
+          code: -32603,
+          message: error instanceof Error ? error.message : "Internal server error",
+        },
+        id: null,
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+}
+
+/**
+ * DELETE /api/mcp/sse - Terminate session (stateless, so just acknowledge)
+ */
+export async function DELETE() {
+  return new Response(null, { status: 200 });
+}
+
+/**
+ * OPTIONS /api/mcp/sse - CORS preflight
  */
 export async function OPTIONS() {
   return new Response(null, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id",
     },
   });
 }
