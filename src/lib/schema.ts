@@ -80,6 +80,25 @@ export const mappings = sqliteTable(
   (table) => [index("mappings_canonical_idx").on(table.canonicalName)]
 );
 
+// Search analytics for tracking query performance and usage
+export const searchAnalytics = sqliteTable(
+  "search_analytics",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    query: text("query").notNull(),
+    searchType: text("search_type").notNull(), // 'semantic' | 'text'
+    sourceFilter: text("source_filter"), // Library filter if applied
+    resultCount: integer("result_count").notNull(),
+    cacheHit: integer("cache_hit", { mode: "boolean" }).notNull(),
+    responseTimeMs: integer("response_time_ms"), // Response time in milliseconds
+    timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    index("search_analytics_query_idx").on(table.query),
+    index("search_analytics_timestamp_idx").on(table.timestamp),
+  ]
+);
+
 // Types
 export interface PathElement {
   tag: string;

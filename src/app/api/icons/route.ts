@@ -5,6 +5,7 @@ import { getEmbedding, embeddingToVectorString, expandQueryWithAI, generateSearc
 import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
+import { logSearch } from "@/lib/analytics";
 
 /** Row type for vector search results */
 interface VectorSearchRow {
@@ -25,6 +26,7 @@ interface VectorSearchRow {
 }
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   const { searchParams } = new URL(request.url);
 
   const queryParam = searchParams.get("q");
@@ -58,10 +60,20 @@ export async function GET(request: NextRequest) {
         Math.min(limit, 320),
         offset
       );
-      
+
+      // Log analytics (fire and forget)
+      logSearch({
+        query: queryParam.trim(),
+        searchType: aiResults.searchType as "semantic" | "text",
+        sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
+        resultCount: aiResults.icons.length,
+        cacheHit: aiResults.cacheHit,
+        responseTimeMs: Date.now() - startTime,
+      });
+
       return NextResponse.json(
-        { 
-          icons: aiResults.icons, 
+        {
+          icons: aiResults.icons,
           hasMore: aiResults.icons.length === limit,
           searchType: aiResults.searchType,
           expandedQuery: aiResults.expandedQuery,
@@ -91,6 +103,18 @@ export async function GET(request: NextRequest) {
     if (categoryParam && categoryParam !== "all") params.category = categoryParam;
 
     const icons = await searchIcons(params);
+
+    // Log analytics for text search (fire and forget)
+    if (queryParam) {
+      logSearch({
+        query: queryParam,
+        searchType: "text",
+        sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
+        resultCount: icons.length,
+        cacheHit: false,
+        responseTimeMs: Date.now() - startTime,
+      });
+    }
 
     return NextResponse.json(
       { icons, hasMore: icons.length === limit, searchType: "text" },
@@ -124,7 +148,7 @@ async function aiSemanticSearch(
   sourceId: string | undefined,
   limit: number,
   offset: number
-): Promise<{ icons: IconData[]; searchType: string; expandedQuery?: string }> {
+): Promise<{ icons: IconData[]; searchType: string; expandedQuery?: string; cacheHit: boolean }> {
   // Check cache first
   const cacheKey = generateSearchCacheKey({
     query,
@@ -135,7 +159,7 @@ async function aiSemanticSearch(
   const cached = getCachedSearchResults<{ icons: IconData[]; searchType: string; expandedQuery?: string }>(cacheKey);
   if (cached) {
     logger.log(`Cache hit for search: "${query}"`);
-    return cached;
+    return { ...cached, cacheHit: true };
   }
   // Start AI expansion and original embedding in parallel for faster response
   const aiExpansionPromise = process.env.ANTHROPIC_API_KEY
@@ -181,7 +205,7 @@ async function aiSemanticSearch(
     };
     if (sourceId) searchParams.sourceId = sourceId;
     const textResults = await searchIcons(searchParams);
-    return { icons: textResults, searchType: "text" };
+    return { icons: textResults, searchType: "text", cacheHit: false };
   }
 
   // Convert embedding to Turso vector format
@@ -250,17 +274,19 @@ async function aiSemanticSearch(
     };
   });
 
-  const result: { icons: IconData[]; searchType: string; expandedQuery?: string } = {
+  const result: { icons: IconData[]; searchType: string; expandedQuery?: string; cacheHit: boolean } = {
     icons,
     searchType: "semantic",
+    cacheHit: false,
   };
 
   if (expandedQuery) {
     result.expandedQuery = expandedQuery;
   }
 
-  // Cache the result
-  setCachedSearchResults(cacheKey, result);
+  // Cache the result (without cacheHit flag)
+  const cacheData = { icons: result.icons, searchType: result.searchType, expandedQuery: result.expandedQuery };
+  setCachedSearchResults(cacheKey, cacheData);
 
   return result;
 }
