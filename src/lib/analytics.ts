@@ -16,15 +16,18 @@ interface LogSearchParams {
  */
 export async function logSearch(params: LogSearchParams): Promise<void> {
   try {
-    await db.insert(searchAnalytics).values({
-      query: params.query,
-      searchType: params.searchType,
-      sourceFilter: params.sourceFilter ?? null,
-      resultCount: params.resultCount,
-      cacheHit: params.cacheHit,
-      responseTimeMs: params.responseTimeMs ?? null,
-      timestamp: new Date(),
-    }).run();
+    await db.run(sql`
+      INSERT INTO search_analytics (query, search_type, source_filter, result_count, cache_hit, response_time_ms, timestamp)
+      VALUES (
+        ${params.query},
+        ${params.searchType},
+        ${params.sourceFilter ?? null},
+        ${params.resultCount},
+        ${params.cacheHit ? 1 : 0},
+        ${params.responseTimeMs ?? null},
+        ${Date.now()}
+      )
+    `);
   } catch (error) {
     // Don't fail the request if analytics logging fails
     console.error("Failed to log search analytics:", error);
