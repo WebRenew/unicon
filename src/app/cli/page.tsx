@@ -23,11 +23,15 @@ Command-line interface for searching and bundling icons from 14,700+ icons acros
 ## Installation
 
 \`\`\`bash
-# Install globally
-npm install -g @webrenew/unicon
+# Run without installing (recommended)
+npx @webrenew/unicon <command>      # npm
+pnpm dlx @webrenew/unicon <command> # pnpm
+yarn dlx @webrenew/unicon <command> # yarn
 
-# Or use with npx
-npx @webrenew/unicon <command>
+# Or install globally
+npm install -g @webrenew/unicon
+pnpm add -g @webrenew/unicon
+yarn global add @webrenew/unicon
 \`\`\`
 
 ## Commands
