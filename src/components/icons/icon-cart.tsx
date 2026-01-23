@@ -441,14 +441,20 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           </div>
           <button
             onClick={handleCopyV0Prompt}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
           >
             {copiedV0 ? (
-              <CheckIcon className="w-4 h-4" />
+              <>
+                <CheckIcon className="w-3.5 h-3.5" />
+                <span>Copied!</span>
+              </>
             ) : (
-              <V0Icon className="w-4 h-4" />
+              <>
+                <span>Copy</span>
+                <V0Icon className="w-3.5 h-3.5 inline-block" />
+                <span>Prompt</span>
+              </>
             )}
-            {copiedV0 ? "Copied!" : "Copy Prompt"}
           </button>
         </div>
       )}
