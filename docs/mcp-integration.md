@@ -68,12 +68,6 @@ https://unicon.webrenew.com/api/mcp
 Add the Unicon MCP server with a single command:
 
 ```bash
-npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server
-```
-
-Or if you have Claude Code installed globally:
-
-```bash
 claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server
 ```
 

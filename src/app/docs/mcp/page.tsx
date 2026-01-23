@@ -217,14 +217,7 @@ export default function MCPDocsPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Add the Unicon MCP server with a single command:
               </p>
-              <CodeBlock title="Terminal">{`npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server`}</CodeBlock>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Or if you have Claude Code installed globally:
-              </p>
-              <CodeBlock>{`claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server`}</CodeBlock>
+              <CodeBlock title="Terminal">{`claude mcp add unicon -- npx -y @webrenew/unicon-mcp-server`}</CodeBlock>
             </div>
 
             <div>
