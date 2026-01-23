@@ -12,6 +12,7 @@ import { PackageIcon } from "@/components/icons/ui/package";
 import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { V0Icon } from "@/components/icons/ui/v0";
 
 // Spaceship icon from hugeicons
@@ -29,6 +30,7 @@ function SpaceshipIcon({ className }: { className?: string }) {
 import { toast } from "sonner";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import {
+  toPascalCase,
   generateReactFile,
   generateSvgBundle,
   generateJsonBundle,
@@ -107,6 +109,18 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     await navigator.clipboard.writeText(prompt);
     setCopiedV0(true);
     setTimeout(() => setCopiedV0(false), 2000);
+  };
+
+  const handleOpenInV0 = () => {
+    const iconNames = items.map((icon) => toPascalCase(icon.normalizedName)).join(", ");
+    const svgBundle = items
+      .map((icon) => generateRenderableSvg(icon))
+      .join("\n");
+
+    const prompt = encodeURIComponent(
+      `Create a beautiful icon showcase component using these ${items.length} icons (${iconNames}):\n\n${svgBundle}\n\nMake it interactive with hover states and a clean grid layout.`
+    );
+    window.open(`https://v0.dev/?q=${prompt}`, "_blank");
   };
 
   const handleAddPack = (pack: typeof STARTER_PACKS[0]) => {
@@ -388,7 +402,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           </div>
           <button
             onClick={handleCopyV0Prompt}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 text-black dark:text-white rounded-lg text-sm font-mono transition-colors"
           >
             {copiedV0 ? (
               <CheckIcon className="w-4 h-4" />
@@ -396,6 +410,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               <V0Icon className="w-4 h-4" />
             )}
             {copiedV0 ? "Copied!" : "Copy Prompt"}
+          </button>
+          <button
+            onClick={handleOpenInV0}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
+          >
+            <V0Icon className="w-4 h-4" />
+            <span>Open in</span>
+            <ExternalLinkIcon className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
