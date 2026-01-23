@@ -13,6 +13,7 @@ import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 
 export const metadata: Metadata = {
   title: "Documentation | Unicon",
@@ -357,7 +358,7 @@ export default function DocsPage() {
               <p className="text-muted-foreground">Ask questions and share ideas.</p>
             </a>
             <a
-              href="mailto:support@webrenew.com"
+              href="mailto:contact@webrenew.io"
               className="p-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
             >
               <h3 className="font-semibold mb-2">Email Support</h3>
@@ -365,6 +366,9 @@ export default function DocsPage() {
             </a>
           </div>
         </section>
+
+        {/* Page Navigation */}
+        <DocsPageNav {...getDocsNavLinks("/docs")} />
       </div>
     </div>
   );

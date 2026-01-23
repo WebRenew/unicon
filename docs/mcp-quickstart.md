@@ -218,7 +218,7 @@ First request may be slow (cold start). Subsequent requests are fast!
 
 - 🐛 Report bugs: https://github.com/webrenew/unicon/issues
 - 💬 Ask questions: https://github.com/webrenew/unicon/discussions
-- 📧 Email: support@webrenew.com
+- 📧 Email: contact@webrenew.io
 
 ---
 

@@ -4,6 +4,7 @@ import { AlertCircleIcon } from "@/components/icons/ui/alert-circle";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MCPInstallButtons } from "@/components/mcp-install-buttons";
+import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 
 export const metadata: Metadata = {
   title: "MCP Integration | Unicon",
@@ -613,6 +614,8 @@ export default function MCPDocsPage() {
           </div>
         </section>
 
+        {/* Page Navigation */}
+        <DocsPageNav {...getDocsNavLinks("/docs/mcp")} />
       </div>
     </div>
   );

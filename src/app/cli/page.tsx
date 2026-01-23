@@ -13,6 +13,7 @@ import { DatabaseIcon } from "@/components/icons/ui/database";
 import { LayersIcon } from "@/components/icons/ui/layers";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 
 export const metadata: Metadata = {
   title: "CLI | Unicon",
@@ -498,6 +499,9 @@ unicon cache --clear  # Clear all cached data`}
           <p className="text-muted-foreground mb-4">Ready to bundle some icons?</p>
           <CodeBlock>npx @webrenew/unicon init</CodeBlock>
         </section>
+
+        {/* Page Navigation */}
+        <DocsPageNav {...getDocsNavLinks("/cli")} />
       </div>
     </div>
   );

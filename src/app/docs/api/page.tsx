@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { CodeIcon } from "@/components/icons/ui/code";
 import { CopyButton } from "@/components/ui/copy-button";
+import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 
 export const metadata: Metadata = {
   title: "API Reference | Unicon",
@@ -486,6 +487,8 @@ curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" \\
           </div>
         </section>
 
+        {/* Page Navigation */}
+        <DocsPageNav {...getDocsNavLinks("/docs/api")} />
       </div>
     </div>
   );

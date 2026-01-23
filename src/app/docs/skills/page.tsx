@@ -4,6 +4,7 @@ import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyButton } from "@/components/ui/copy-button";
 import { skillEntries } from "@/lib/skills";
+import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 
 export const metadata: Metadata = {
   title: "Skills Registry | Unicon",
@@ -152,6 +153,9 @@ unicon skill --all`}</CodeBlock>
             </p>
           </div>
         </section>
+
+        {/* Page Navigation */}
+        <DocsPageNav {...getDocsNavLinks("/docs/skills")} />
       </div>
     </div>
   );

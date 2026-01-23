@@ -748,7 +748,7 @@ Need higher limits? Contact us for API key access.
 - **Documentation:** https://unicon.webrenew.com/docs
 - **GitHub Issues:** https://github.com/webrenew/unicon/issues
 - **Discussions:** https://github.com/webrenew/unicon/discussions
-- **Email:** support@webrenew.com
+- **Email:** contact@webrenew.io
 
 ## What's Next?
 
