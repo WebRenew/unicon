@@ -58,7 +58,8 @@ const navigation: NavItem[] = [
     icon: SparklesIcon,
     items: [
       { title: "Overview", href: "/docs/skills" },
-      { title: "Install with CLI", href: "/docs/skills#install-with-the-cli" },
+      { title: "CLI Commands", href: "/docs/skills#cli-commands" },
+      { title: "Supported IDEs", href: "/docs/skills#supported-ides" },
       { title: "Direct Downloads", href: "/docs/skills#direct-downloads" },
     ],
   },

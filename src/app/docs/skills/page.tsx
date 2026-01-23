@@ -15,6 +15,57 @@ Download Unicon skills for AI assistants. Install once and let your assistant ge
 
 A skill is a markdown document that teaches AI assistants how to use Unicon. Once installed, your assistant can search for icons, generate components, and bundle icons automatically.
 
+## Two CLI Commands
+
+Unicon provides two commands for working with skills:
+
+### unicon skill (Local Installation)
+
+Installs skills directly into your AI assistant's config directory.
+
+\`\`\`bash
+unicon skill [options]
+\`\`\`
+
+| Flag | Description |
+|------|-------------|
+| \`--ide <name>\` | Target IDE: claude, cursor, windsurf, agent, antigravity, opencode, codex, aider |
+| \`--all\` | Install for all supported IDEs at once |
+| \`-l, --list\` | List all supported IDEs and their config paths |
+| \`-f, --force\` | Overwrite existing skill files |
+
+**Examples:**
+\`\`\`bash
+unicon skill --list              # See supported IDEs
+unicon skill --ide claude        # Install for Claude Code
+unicon skill --ide cursor        # Install for Cursor
+unicon skill --all               # Install for all IDEs
+unicon skill --ide claude -f     # Force overwrite existing
+\`\`\`
+
+### unicon skills (Registry Download)
+
+Lists and downloads skills from the public registry.
+
+\`\`\`bash
+unicon skills [options]
+\`\`\`
+
+| Flag | Description |
+|------|-------------|
+| \`-l, --list\` | List available skills (default if no flags) |
+| \`-g, --get <id>\` | Download a skill by ID |
+| \`-o, --output <path>\` | Write to file instead of stdout |
+| \`-j, --json\` | Output list as JSON |
+
+**Examples:**
+\`\`\`bash
+unicon skills                        # List available skills
+unicon skills --get unicon           # Download to stdout
+unicon skills --get unicon -o SKILL.md   # Save to file
+unicon skills --json                 # List as JSON (for scripts)
+\`\`\`
+
 ## Available Skills
 
 ### Unicon
@@ -31,39 +82,24 @@ Tags: mcp, ai-assistants, icons, setup
 
 Download: https://unicon.webrenew.com/skills/unicon-mcp.md
 
-## Install with the CLI
+## Supported IDEs
 
-\`\`\`bash
-# List supported IDEs
-unicon skill --list
-
-# Install for specific IDE
-unicon skill --ide cursor
-unicon skill --ide claude
-
-# Install for all IDEs
-unicon skill --all
-\`\`\`
-
-Supported IDEs:
-- Claude Code
-- Cursor
-- Windsurf
-- Agent
-- Antigravity
-- OpenCode
-- Codex
-- Aider
+| IDE | Directory | Filename |
+|-----|-----------|----------|
+| Claude Code | \`.claude/skills/unicon/\` | \`SKILL.md\` |
+| Cursor | \`.cursor/rules/\` | \`unicon.mdc\` |
+| Windsurf | \`.windsurf/rules/\` | \`unicon.md\` |
+| Agent | \`.agent/rules/\` | \`unicon.md\` |
+| Antigravity | \`.antigravity/rules/\` | \`unicon.md\` |
+| OpenCode | \`.opencode/rules/\` | \`unicon.md\` |
+| Codex | \`.codex/\` | \`unicon.md\` |
+| Aider | \`.aider/rules/\` | \`unicon.md\` |
 
 ## Direct Downloads
-
-Download skills directly from the registry:
 
 - Registry JSON: https://unicon.webrenew.com/skills/index.json
 - Unicon Skill: https://unicon.webrenew.com/skills/unicon.md
 - MCP Skill: https://unicon.webrenew.com/skills/unicon-mcp.md
-
-Place the markdown file in your assistant's rules directory.
 `;
 
 export const metadata: Metadata = {
@@ -193,25 +229,193 @@ export default function SkillsDocsPage() {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Install with the CLI</h2>
-          <CodeBlock title="Terminal">{`unicon skill --list
-unicon skill --ide cursor
-unicon skill --ide claude
-unicon skill --all`}</CodeBlock>
-          <p className="text-sm text-muted-foreground mt-3">
-            Use the CLI to install skills into your assistant&apos;s config folder. Each file is readable and
-            versioned so you can review it before enabling.
+        {/* CLI Commands */}
+        <section id="cli-commands">
+          <h2 className="text-2xl font-bold mb-6">CLI Commands</h2>
+          <p className="text-muted-foreground mb-6">
+            Unicon provides two commands for working with skills:
           </p>
+
+          {/* skill command */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+              <code className="text-[var(--accent-aqua)]">unicon skill</code>
+              <span className="text-sm font-normal text-muted-foreground">— Local Installation</span>
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Installs skills directly into your AI assistant&apos;s config directory.
+            </p>
+            
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 font-semibold">Flag</th>
+                    <th className="text-left py-2 px-3 font-semibold">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-aqua)]">--ide &lt;name&gt;</td>
+                    <td className="py-2 px-3 text-muted-foreground">Target IDE: claude, cursor, windsurf, agent, antigravity, opencode, codex, aider</td>
+                  </tr>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-aqua)]">--all</td>
+                    <td className="py-2 px-3 text-muted-foreground">Install for all supported IDEs at once</td>
+                  </tr>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-aqua)]">-l, --list</td>
+                    <td className="py-2 px-3 text-muted-foreground">List all supported IDEs and their config paths</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-mono text-[var(--accent-aqua)]">-f, --force</td>
+                    <td className="py-2 px-3 text-muted-foreground">Overwrite existing skill files</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <CodeBlock title="Examples">{`unicon skill --list              # See supported IDEs
+unicon skill --ide claude        # Install for Claude Code
+unicon skill --ide cursor        # Install for Cursor
+unicon skill --all               # Install for all IDEs
+unicon skill --ide claude -f     # Force overwrite existing`}</CodeBlock>
+          </div>
+
+          {/* skills command */}
+          <div>
+            <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+              <code className="text-[var(--accent-lavender)]">unicon skills</code>
+              <span className="text-sm font-normal text-muted-foreground">— Registry Download</span>
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Lists and downloads skills from the public registry at unicon.webrenew.com.
+            </p>
+            
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 font-semibold">Flag</th>
+                    <th className="text-left py-2 px-3 font-semibold">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-lavender)]">-l, --list</td>
+                    <td className="py-2 px-3 text-muted-foreground">List available skills (default if no flags)</td>
+                  </tr>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-lavender)]">-g, --get &lt;id&gt;</td>
+                    <td className="py-2 px-3 text-muted-foreground">Download a skill by ID</td>
+                  </tr>
+                  <tr className="border-b border-border">
+                    <td className="py-2 px-3 font-mono text-[var(--accent-lavender)]">-o, --output &lt;path&gt;</td>
+                    <td className="py-2 px-3 text-muted-foreground">Write to file instead of stdout</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-mono text-[var(--accent-lavender)]">-j, --json</td>
+                    <td className="py-2 px-3 text-muted-foreground">Output list as JSON (for scripts)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <CodeBlock title="Examples">{`unicon skills                        # List available skills
+unicon skills --get unicon           # Download to stdout
+unicon skills --get unicon -o SKILL.md   # Save to file
+unicon skills --json                 # List as JSON (for scripts)`}</CodeBlock>
+          </div>
         </section>
 
-        <section>
+        {/* Supported IDEs */}
+        <section id="supported-ides">
+          <h2 className="text-2xl font-bold mb-4">Supported IDEs</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-semibold">IDE</th>
+                  <th className="text-left py-3 px-4 font-semibold">Directory</th>
+                  <th className="text-left py-3 px-4 font-semibold">Filename</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Claude Code</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.claude/skills/unicon/</td>
+                  <td className="py-3 px-4 font-mono text-xs">SKILL.md</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Cursor</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.cursor/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.mdc</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Windsurf</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.windsurf/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Agent</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.agent/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Antigravity</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.antigravity/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">OpenCode</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.opencode/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-3 px-4">Codex</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.codex/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4">Aider</td>
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground">.aider/rules/</td>
+                  <td className="py-3 px-4 font-mono text-xs">unicon.md</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Direct Downloads */}
+        <section id="direct-downloads">
           <h2 className="text-2xl font-bold mb-4">Direct Downloads</h2>
-          <div className="p-5 rounded-xl border border-border bg-card">
+          <div className="p-5 rounded-xl border border-border bg-card space-y-3">
             <p className="text-sm text-muted-foreground">
-              Prefer manual installs? Download the markdown files directly from the registry JSON and
-              store them in your assistant&apos;s rules directory.
+              Prefer manual installs? Download the markdown files directly:
             </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="/skills/index.json"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-mono border border-border bg-background hover:bg-accent transition-colors"
+              >
+                <DownloadIcon className="w-3.5 h-3.5" />
+                index.json
+              </a>
+              <a
+                href="/skills/unicon.md"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-mono border border-border bg-background hover:bg-accent transition-colors"
+              >
+                <DownloadIcon className="w-3.5 h-3.5" />
+                unicon.md
+              </a>
+              <a
+                href="/skills/unicon-mcp.md"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-mono border border-border bg-background hover:bg-accent transition-colors"
+              >
+                <DownloadIcon className="w-3.5 h-3.5" />
+                unicon-mcp.md
+              </a>
+            </div>
           </div>
         </section>
 
