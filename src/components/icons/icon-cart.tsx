@@ -395,7 +395,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             ) : (
               <V0Icon className="w-4 h-4" />
             )}
-            {copiedV0 ? "Copied!" : "Copy v0 Prompt"}
+            {copiedV0 ? "Copied!" : "Copy Prompt"}
           </button>
         </div>
       )}
