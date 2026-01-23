@@ -257,7 +257,6 @@ export function MetallicIconBrowser({
 
       if (fetchedIcons.length > 0) {
         performAddToBundle(fetchedIcons);
-        toast.success(`Added ${fetchedIcons.length} icons to bundle`);
       } else {
         toast.error("No icons found for this pack");
       }
