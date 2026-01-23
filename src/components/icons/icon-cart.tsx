@@ -442,7 +442,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           </div>
           <button
             onClick={handleCopyV0Prompt}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono leading-none transition-colors"
           >
             {copiedV0 ? (
               <>
