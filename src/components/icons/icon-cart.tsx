@@ -451,7 +451,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             ) : (
               <>
                 <span>Copy</span>
-                <V0Icon className="w-3.5 h-3.5 inline-block" />
+                <V0Icon className="w-4 h-4 inline-block" />
                 <span>Prompt</span>
               </>
             )}
