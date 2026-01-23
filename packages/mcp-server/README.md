@@ -45,6 +45,16 @@ Add to your Cursor MCP settings:
 }
 ```
 
+### Remote URL (Cloud IDEs & Agents)
+
+For v0, Bolt, Lovable, and other URL-based MCP clients, connect directly via Streamable HTTP:
+
+```
+https://unicon.webrenew.com/api/mcp
+```
+
+No installation required — just add this URL as an MCP server in your tool's settings.
+
 ## Usage Examples
 
 Once installed, you can ask your AI assistant:
@@ -74,7 +84,7 @@ Once installed, you can ask your AI assistant:
 
 ## Available Tools
 
-### `search_icons`
+### `unicon_search_icons`
 
 Search through 14,700+ icons using semantic search.
 
@@ -83,8 +93,9 @@ Search through 14,700+ icons using semantic search.
 - `source` (optional): Filter by library (lucide, phosphor, heroicons, etc.)
 - `category` (optional): Filter by category
 - `limit` (optional): Max results (default: 20, max: 100)
+- `offset` (optional): Skip results for pagination (default: 0)
 
-### `get_icon`
+### `unicon_get_icon`
 
 Retrieve source code for a specific icon.
 
@@ -94,12 +105,22 @@ Retrieve source code for a specific icon.
 - `size` (optional): Icon size in pixels - default: 24
 - `strokeWidth` (optional): Stroke width for outline icons - default: 2
 
-### `get_multiple_icons`
+### `unicon_get_multiple_icons`
 
-Retrieve multiple icons at once.
+Retrieve multiple icons at once (max 50).
 
 **Parameters:**
 - `iconIds` (required): Array of icon IDs
+- `format` (optional): Output format - default: react
+- `size` (optional): Icon size - default: 24
+- `strokeWidth` (optional): Stroke width - default: 2
+
+### `unicon_get_starter_pack`
+
+Get a curated starter pack of icons for common use cases.
+
+**Parameters:**
+- `packId` (required): Starter pack ID (e.g., "dashboard", "ecommerce", "social", "brand-ai")
 - `format` (optional): Output format - default: react
 - `size` (optional): Icon size - default: 24
 - `strokeWidth` (optional): Stroke width - default: 2
@@ -117,6 +138,10 @@ List all icon categories for filtering searches.
 ### `unicon://stats`
 
 Get total icon count and per-library statistics.
+
+### `unicon://starter_packs`
+
+List available starter packs with their icons.
 
 ## Configuration
 

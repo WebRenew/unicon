@@ -2,7 +2,7 @@
 
 **Just the icons you need. Zero bloat.**
 
-Browse 17,786+ icons from popular libraries and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
+Browse 17,786+ icons and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
 
 [**Try it now at unicon.webrenew.com**](https://unicon.webrenew.com)
 
@@ -12,10 +12,10 @@ Browse 17,786+ icons from popular libraries and copy exactly what you need. Like
 
 Most icon libraries force you to install thousands of icons just to use a handful. Unicon lets you browse everything in one place and copy only what you need.
 
-- **Browse once, use anywhere** — Search across 8 icon libraries without installing any of them
-- **Copy exactly what you need** — Get React components, SVG code, or usage snippets with one click
-- **Bundle multiple icons** — Select several icons and export them all at once
-- **Zero dependencies** — Paste components directly into your project
+- **Browse once, use anywhere** — Search 8 icon libraries
+- **Copy exactly what you need** — React, SVG, or JSON
+- **Bundle multiple icons** — Export a set at once
+- **Zero dependencies** — Paste directly into your project
 
 ## Icon Libraries
 
@@ -34,7 +34,7 @@ Most icon libraries force you to install thousands of icons just to use a handfu
 
 ### 1. Search for icons
 
-Use natural language — search for "happy face" and find smile icons, search for "business" and find briefcases, charts, and handshakes.
+Use natural language — search "happy face" to find smile icons, or "business" for briefcases and charts.
 
 ### 2. Copy what you need
 
@@ -58,14 +58,14 @@ export const ArrowRight = (props) => (
 
 ### 3. Bundle multiple icons
 
-Building a project and need several icons? Select multiple icons, then export them all as:
-- A single file with all React components
+Select multiple icons and export as:
+- Single file with all React components
 - Individual SVG files
 - JSON metadata
 
 ### 4. Open in v0
 
-Send any icon directly to [v0.dev](https://v0.dev) to quickly prototype UI components around it.
+Send icons to [v0.dev](https://v0.dev) to prototype UI components.
 
 ## CLI
 
@@ -74,58 +74,52 @@ Install icons directly from your terminal.
 ### Installation
 
 ```bash
-# Global install
 npm install -g @webrenew/unicon
 
-# Or use with npx (no install needed)
-npx @webrenew/unicon search "dashboard"
+# Or use npx (no install)
+npx @webrenew/unicon search arrow
 ```
 
 ### Quick Start
 
 ```bash
 # Search for icons
-unicon search "dashboard settings"
+unicon search "dashboard"
 
-# Get a single icon (React component)
+# Get icon as React component
 unicon get home
 
 # Copy to clipboard (macOS)
 unicon get home | pbcopy
 
 # Save to file
-unicon get settings --format react -o ./Settings.tsx
+unicon get settings -o ./Settings.tsx
 
-# Bundle multiple icons
-unicon bundle --category Dashboards -o ./icons
+# Bundle icons by category
+unicon bundle --category Dashboards
 
-# Preview icon in terminal
-unicon preview star --width 24
+# Preview in terminal
+unicon preview star
 ```
 
 ### Output Formats
 
 | Format | Description |
 |--------|-------------|
-| `react` | TypeScript React components (default) |
-| `vue` | Vue 3 Single File Components |
+| `react` | React/TS components (default) |
+| `vue` | Vue 3 SFCs |
 | `svelte` | Svelte components |
-| `svg` | Raw SVG files |
-| `json` | Icon data as JSON |
+| `svg` | Raw SVG |
+| `json` | Icon metadata |
 
 ### Config-Driven Workflow
 
-For larger projects, use a config file to manage your icon bundles:
+For larger projects, use a config file:
 
 ```bash
-# Initialize config
 unicon init
-
-# Add bundles
 unicon add dashboard --category Dashboards
-unicon add nav --query "arrow menu chevron"
-
-# Regenerate all bundles
+unicon add nav --query "arrow chevron"
 unicon sync
 ```
 
@@ -133,61 +127,29 @@ See [CLI.md](./CLI.md) for full documentation.
 
 ## AI Integration
 
-Unicon integrates with AI coding assistants to help you find and add icons while you code.
+Unicon works with AI coding assistants.
 
 ### Skills for AI Assistants
 
-Install rules/skills that teach AI assistants how to use Unicon:
+Install rules that teach AI assistants to use Unicon:
 
 ```bash
-# Install for specific IDE
-unicon skill --ide claude    # Claude Code
-unicon skill --ide cursor    # Cursor
-unicon skill --ide windsurf  # Windsurf
-
-# Install for all supported IDEs
+unicon skill --ide claude
+unicon skill --ide cursor
 unicon skill --all
-
-# List supported IDEs
-unicon skill --list
 ```
 
-**Supported IDEs:**
+**Supported:** Claude Code, Cursor, Windsurf, Agent, Antigravity, OpenCode, Codex, Aider
 
-| IDE | Directory |
-|-----|-----------|
-| Claude Code | `.claude/skills/unicon/` |
-| Cursor | `.cursor/rules/` |
-| Windsurf | `.windsurf/rules/` |
-| Agent | `.agent/rules/` |
-| Antigravity | `.antigravity/rules/` |
-| OpenCode | `.opencode/rules/` |
-| Codex | `.codex/` |
-| Aider | `.aider/rules/` |
-
-Once installed, ask your AI assistant things like:
+Then ask your AI:
 - "Add a home icon to my project"
 - "Search for dashboard icons"
-- "Bundle navigation icons for my React app"
 
 ### MCP Server
 
-For deeper AI integration, use the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server. This gives AI assistants direct access to search and retrieve icons.
+For deeper integration, use the [MCP](https://modelcontextprotocol.io/) server.
 
-**Claude Desktop** — Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "unicon": {
-      "command": "npx",
-      "args": ["-y", "@webrenew/unicon-mcp-server"]
-    }
-  }
-}
-```
-
-**Cursor** — Add to your Cursor MCP settings:
+**Claude Desktop / Cursor:**
 
 ```json
 {
@@ -200,15 +162,15 @@ For deeper AI integration, use the [Model Context Protocol](https://modelcontext
 }
 ```
 
-**Available MCP Tools:**
+**Cloud IDEs (v0, Bolt, Lovable):**
 
-| Tool | Description |
-|------|-------------|
-| `search_icons` | Semantic search across 14,700+ icons |
-| `get_icon` | Get source code for a specific icon |
-| `get_multiple_icons` | Retrieve multiple icons at once |
+```
+https://unicon.webrenew.com/api/mcp
+```
 
-See [packages/mcp-server/README.md](./packages/mcp-server/README.md) for full MCP documentation.
+**Tools:** `search_icons`, `get_icon`, `get_multiple_icons`, `get_starter_pack`
+
+See [MCP docs](./packages/mcp-server/README.md) for details.
 
 ## Self-Hosting
 
@@ -221,12 +183,12 @@ Want to run your own instance? See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup 
 MIT License — see [LICENSE](LICENSE) for details.
 
 Icons retain their original licenses:
-- Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather — MIT
-- Remix Icon — Apache-2.0
-- Simple Icons — CC0 (brand logos are trademarks of their respective owners)
+- MIT: Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather
+- Apache-2.0: Remix Icon
+- CC0: Simple Icons (logos are trademarks of their owners)
 
 ---
 
 Built by [WebRenew](https://webrenew.com)
 
-[Live Demo](https://unicon.webrenew.com) · [Report Bug](https://github.com/WebRenew/unicon/issues) · [Request Feature](https://github.com/WebRenew/unicon/issues)
+[Live Demo](https://unicon.webrenew.com) · [Issues](https://github.com/WebRenew/unicon/issues)
