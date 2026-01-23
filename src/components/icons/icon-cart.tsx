@@ -75,7 +75,8 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
       const deltaY = e.clientY - startYRef.current;
-      const newHeight = Math.max(80, Math.min(400, startHeightRef.current + deltaY));
+      // Invert: drag up (negative deltaY) = larger preview
+      const newHeight = Math.max(80, Math.min(400, startHeightRef.current - deltaY));
       setPreviewHeight(newHeight);
     };
 
