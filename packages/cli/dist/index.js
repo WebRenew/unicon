@@ -1301,6 +1301,80 @@ function detectIDEs() {
   }
   return detected;
 }
+async function fetchSkillsIndex() {
+  const res = await fetch(`${API_BASE}/skills/index.json`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch skills registry: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.skills;
+}
+async function fetchSkillContent(file) {
+  const res = await fetch(`${API_BASE}/skills/${file}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch skill: ${res.status}`);
+  }
+  return res.text();
+}
+program.command("skills").description("List and download skills from the Unicon public registry").option("-l, --list", "List available skills").option("-g, --get <id>", "Download a skill by ID and print to stdout").option("-o, --output <path>", "Write downloaded skill to file instead of stdout").option("-j, --json", "Output list as JSON").action(async (options) => {
+  const shouldList = options.list || !options.get;
+  if (shouldList && !options.get) {
+    const spinner = ora("Fetching skills registry...").start();
+    try {
+      const skills = await fetchSkillsIndex();
+      spinner.stop();
+      if (options.json) {
+        console.log(JSON.stringify(skills, null, 2));
+        return;
+      }
+      console.log(chalk.bold(`
+Available Skills (${skills.length}):
+`));
+      for (const skill of skills) {
+        console.log(`  ${chalk.green(skill.id.padEnd(16))} ${chalk.dim(skill.name)}`);
+        console.log(`  ${" ".repeat(16)} ${skill.description}`);
+        if (skill.tags.length > 0) {
+          console.log(`  ${" ".repeat(16)} ${chalk.cyan(skill.tags.join(", "))}`);
+        }
+        console.log();
+      }
+      console.log(chalk.dim(`Download with: ${chalk.white("unicon skills --get <id>")}`));
+      console.log(chalk.dim(`Save to file:  ${chalk.white("unicon skills --get <id> -o SKILL.md")}`));
+      console.log();
+    } catch (error) {
+      spinner.fail("Failed to fetch skills registry");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+    return;
+  }
+  if (options.get) {
+    const spinner = ora(`Fetching skill "${options.get}"...`).start();
+    try {
+      const skills = await fetchSkillsIndex();
+      const skill = skills.find((s) => s.id === options.get);
+      if (!skill) {
+        spinner.fail(`Skill "${options.get}" not found`);
+        console.log(chalk.dim(`Available: ${skills.map((s) => s.id).join(", ")}`));
+        process.exit(1);
+      }
+      const content = await fetchSkillContent(skill.file);
+      spinner.stop();
+      if (options.output) {
+        const fullPath = resolve(process.cwd(), options.output);
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, content, "utf-8");
+        console.log(chalk.green(`\u2713 ${skill.name} \u2192 ${options.output}`));
+      } else {
+        console.log(content);
+      }
+    } catch (error) {
+      spinner.fail("Failed to fetch skill");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+  }
+});
 program.command("skill").description("Install Unicon skill/rules for AI coding assistants").option("--ide <ide>", "Target IDE (claude, cursor, windsurf, agent, antigravity, opencode, codex, aider)").option("--all", "Install for all supported IDEs").option("-l, --list", "List supported IDEs").option("-f, --force", "Overwrite existing skill files").action((options) => {
   if (options.list) {
     console.log(chalk.bold("\nSupported AI Coding Assistants:\n"));

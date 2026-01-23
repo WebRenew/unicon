@@ -27,6 +27,7 @@ npx @webrenew/unicon search "dashboard"
 | `unicon init` | Create .uniconrc.json config |
 | `unicon sync` | Regenerate all bundles from config |
 | `unicon skill` | Install AI assistant skills for Claude, Cursor, Windsurf, etc. |
+| `unicon skills` | List and download skills from the public registry |
 
 ## Output Formats
 

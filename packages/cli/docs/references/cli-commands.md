@@ -390,6 +390,49 @@ Installs documentation files that teach AI coding assistants how to use Unicon. 
 
 ---
 
+## unicon skills
+
+List and download skills from the Unicon public registry.
+
+```bash
+unicon skills [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-l, --list` | List available skills (default) |
+| `-g, --get <id>` | Download a skill by ID |
+| `-o, --output <path>` | Write downloaded skill to file |
+| `-j, --json` | Output list as JSON |
+
+### Examples
+
+```bash
+# List available skills
+unicon skills
+unicon skills --list
+
+# Download skill to stdout
+unicon skills --get unicon
+
+# Download skill to file
+unicon skills --get unicon-mcp -o SKILL.md
+
+# Output list as JSON
+unicon skills --json
+```
+
+### Available Skills
+
+Skills are hosted at `https://unicon.webrenew.com/skills/` and include:
+
+- **unicon** - Core CLI usage skill for AI assistants
+- **unicon-mcp** - MCP server setup guide
+
+---
+
 ## Global Options
 
 These options work with all commands:
