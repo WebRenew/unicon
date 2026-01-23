@@ -9,10 +9,10 @@ import { Trash2Icon } from "@/components/icons/ui/trash-2";
 import { FileCodeIcon } from "@/components/icons/ui/file-code";
 import { FileJsonIcon } from "@/components/icons/ui/file-json";
 import { PackageIcon } from "@/components/icons/ui/package";
-import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { V0Icon } from "@/components/icons/ui/v0";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
@@ -29,11 +29,11 @@ function SpaceshipIcon({ className }: { className?: string }) {
 import { toast } from "sonner";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import {
-  toPascalCase,
   generateReactFile,
   generateSvgBundle,
   generateJsonBundle,
   generateRenderableSvg,
+  generateV0Prompt,
 } from "@/lib/icon-utils";
 import type { IconData } from "@/types/icon";
 
@@ -51,6 +51,7 @@ type TabType = "bundle" | "packs";
 
 export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose }: IconCartProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedV0, setCopiedV0] = useState(false);
   const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
@@ -101,16 +102,11 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     URL.revokeObjectURL(url);
   };
 
-  const handleOpenInV0 = () => {
-    const iconNames = items.map((icon) => toPascalCase(icon.normalizedName)).join(", ");
-    const svgBundle = items
-      .map((icon) => generateRenderableSvg(icon))
-      .join("\n");
-
-    const prompt = encodeURIComponent(
-      `Create a beautiful icon showcase component using these ${items.length} icons (${iconNames}):\n\n${svgBundle}\n\nMake it interactive with hover states and a clean grid layout.`
-    );
-    window.open(`https://v0.dev/?q=${prompt}`, "_blank");
+  const handleCopyV0Prompt = async () => {
+    const prompt = generateV0Prompt(items);
+    await navigator.clipboard.writeText(prompt);
+    setCopiedV0(true);
+    setTimeout(() => setCopiedV0(false), 2000);
   };
 
   const handleAddPack = (pack: typeof STARTER_PACKS[0]) => {
@@ -391,11 +387,15 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             </button>
           </div>
           <button
-            onClick={handleOpenInV0}
+            onClick={handleCopyV0Prompt}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:opacity-90 rounded-lg text-sm font-mono transition-colors"
           >
-            <ExternalLinkIcon className="w-4 h-4" />
-            Open in v0
+            {copiedV0 ? (
+              <CheckIcon className="w-4 h-4" />
+            ) : (
+              <V0Icon className="w-4 h-4" />
+            )}
+            {copiedV0 ? "Copied!" : "Copy v0 Prompt"}
           </button>
         </div>
       )}
