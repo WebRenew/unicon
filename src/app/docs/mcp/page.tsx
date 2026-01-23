@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { CheckCircleIcon } from "@/components/icons/ui/check-circle";
 import { AlertCircleIcon } from "@/components/icons/ui/alert-circle";
-import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MCPInstallButtons } from "@/components/mcp-install-buttons";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 import { CopyPageButton } from "@/components/copy-page-button";
+import { CodeBlock } from "@/components/ui/code-block";
 
 const PAGE_MARKDOWN = `# Unicon MCP Integration
 
@@ -140,26 +140,6 @@ export const metadata: Metadata = {
   },
 };
 
-function CodeBlock({ children, title }: { children: string; title?: string }) {
-  return (
-    <div className="group relative rounded-lg overflow-hidden border border-border bg-muted/40">
-      {title && (
-        <div className="px-3 py-2 border-b border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
-          <span>{title}</span>
-          <CopyButton value={children} />
-        </div>
-      )}
-      {!title && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <CopyButton value={children} />
-        </div>
-      )}
-      <pre className="p-4 overflow-x-auto text-sm font-mono text-foreground/80">
-        <code>{children}</code>
-      </pre>
-    </div>
-  );
-}
 
 export default function MCPDocsPage() {
   return (

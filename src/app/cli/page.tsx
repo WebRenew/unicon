@@ -11,10 +11,10 @@ import { DownloadIcon } from "@/components/icons/ui/download";
 import { EyeIcon } from "@/components/icons/ui/eye";
 import { DatabaseIcon } from "@/components/icons/ui/database";
 import { LayersIcon } from "@/components/icons/ui/layers";
-import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 import { CopyPageButton } from "@/components/copy-page-button";
+import { CodeBlock } from "@/components/ui/code-block";
 
 const PAGE_MARKDOWN = `# Unicon CLI
 
@@ -234,27 +234,6 @@ export const metadata: Metadata = {
     description: "Search and bundle icons from the command line. Generate tree-shakeable components.",
   },
 };
-
-function CodeBlock({ children, title }: { children: string; title?: string }) {
-  return (
-    <div className="group relative rounded-lg overflow-hidden border border-border bg-muted/40">
-      {title && (
-        <div className="px-3 py-2 border-b border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
-          <span>{title}</span>
-          <CopyButton value={children} />
-        </div>
-      )}
-      {!title && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <CopyButton value={children} />
-        </div>
-      )}
-      <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm font-mono text-foreground/80 max-w-full">
-        <code className="break-all md:break-normal">{children}</code>
-      </pre>
-    </div>
-  );
-}
 
 function CommandCard({
   icon: Icon,
