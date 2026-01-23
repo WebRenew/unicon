@@ -45,9 +45,10 @@ const navigation: NavItem[] = [
     icon: MCPIcon,
     items: [
       { title: "Overview", href: "/docs/mcp" },
+      { title: "Claude Code", href: "/docs/mcp/claude-code" },
+      { title: "SSE Transport", href: "/docs/mcp/sse" },
       { title: "Claude Desktop", href: "/docs/mcp#claude-desktop" },
       { title: "Cursor IDE", href: "/docs/mcp#cursor" },
-      { title: "Usage Examples", href: "/docs/mcp#usage-examples" },
       { title: "Troubleshooting", href: "/docs/mcp#troubleshooting" },
     ],
   },

@@ -67,6 +67,8 @@ export const docsPageOrder: readonly NavLink[] = [
   { href: "/docs", title: "Getting Started" },
   { href: "/cli", title: "CLI Tool" },
   { href: "/docs/mcp", title: "MCP Integration" },
+  { href: "/docs/mcp/claude-code", title: "Claude Code" },
+  { href: "/docs/mcp/sse", title: "SSE Transport" },
   { href: "/docs/skills", title: "Skills Registry" },
   { href: "/docs/api", title: "API Reference" },
 ];
