@@ -104,28 +104,30 @@ export default function MCPDocsPage() {
         {/* Architecture */}
         <section>
           <h2 className="text-2xl font-bold mb-4">How It Works</h2>
-          <div className="p-6 rounded-xl border border-border bg-card font-mono text-sm">
-            <div className="space-y-2 text-muted-foreground">
-              <div>┌─────────────────────────────┐</div>
-              <div>│   AI Assistant (Claude)     │</div>
-              <div>│      or Cursor IDE           │</div>
-              <div>└──────────┬──────────────────┘</div>
-              <div>           │ MCP Protocol (stdio)</div>
-              <div>           │</div>
-              <div>┌──────────▼──────────────────┐</div>
-              <div>│  @webrenew/unicon-mcp-server│  (runs locally via npx)</div>
-              <div>│     (Local Bridge)           │</div>
-              <div>└──────────┬──────────────────┘</div>
-              <div>           │ HTTPS</div>
-              <div>           │</div>
-              <div>┌──────────▼──────────────────┐</div>
-              <div>│ unicon.webrenew.com/api/mcp │  (hosted API)</div>
-              <div>└─────────────────────────────┘</div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl border border-border bg-card">
+              <h3 className="text-sm font-semibold mb-3 text-[var(--accent-aqua)]">Desktop Apps (stdio)</h3>
+              <div className="font-mono text-xs space-y-1 text-muted-foreground">
+                <div>Claude Desktop / Cursor</div>
+                <div className="text-center">↓ stdio</div>
+                <div>Local Bridge (npx)</div>
+                <div className="text-center">↓ HTTPS</div>
+                <div>unicon.webrenew.com/api/mcp</div>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl border border-border bg-card">
+              <h3 className="text-sm font-semibold mb-3 text-[var(--accent-lavender)]">Cloud IDEs (HTTP)</h3>
+              <div className="font-mono text-xs space-y-1 text-muted-foreground">
+                <div>v0 / Bolt / Lovable</div>
+                <div className="text-center">↓ Streamable HTTP</div>
+                <div>unicon.webrenew.com/api/mcp</div>
+                <div className="text-center text-[var(--accent-mint)]">✓ Direct connection</div>
+              </div>
             </div>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            The local bridge provides the MCP protocol interface while the hosted API ensures you always have
-            access to the latest icon library — no database setup required.
+            Desktop apps require a local bridge for stdio transport. Cloud IDEs connect directly via HTTP.
+            Both methods provide the same functionality.
           </p>
         </section>
 
@@ -297,6 +299,50 @@ export default function MCPDocsPage() {
           </div>
         </section>
 
+        {/* Quick Start - Cloud IDEs */}
+        <section id="cloud-ides">
+          <h2 className="text-2xl font-bold mb-6">Cloud IDEs (v0, Bolt, Lovable)</h2>
+
+          <div className="space-y-6">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                For cloud-based environments that support URL-based MCP connections, use the Streamable HTTP endpoint directly — no local installation required.
+              </p>
+              <CodeBlock title="MCP Endpoint URL">{`https://unicon.webrenew.com/api/mcp`}</CodeBlock>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Supported Platforms</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">v0 (Vercel)</span>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">Bolt</span>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">Lovable</span>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">Codespaces</span>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">Gitpod</span>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card text-center">
+                  <span className="text-sm font-medium">Custom Agents</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg border border-[var(--accent-lavender)]/20 bg-[var(--accent-lavender)]/5">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Why two methods?</strong> Desktop apps like Claude Desktop and Cursor require a local bridge (stdio transport). Cloud IDEs can connect directly via HTTP.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Usage Examples */}
         <section id="usage-examples">
           <h2 className="text-2xl font-bold mb-6">Usage Examples</h2>
@@ -372,7 +418,7 @@ export default function MCPDocsPage() {
 
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">search_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_search_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Search through 14,700+ icons using AI-powered semantic search.
               </p>
@@ -383,12 +429,13 @@ export default function MCPDocsPage() {
                   <div>• source (optional) - Filter by library</div>
                   <div>• category (optional) - Filter by category</div>
                   <div>• limit (optional) - Max results (default: 20)</div>
+                  <div>• offset (optional) - Skip results for pagination</div>
                 </div>
               </div>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_icon</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_icon</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve source code for a specific icon in any format.
               </p>
@@ -404,7 +451,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_multiple_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_multiple_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve multiple icons in one request (max 50).
               </p>
@@ -412,6 +459,22 @@ export default function MCPDocsPage() {
                 <div>Parameters:</div>
                 <div className="ml-4 mt-1">
                   <div>• iconIds (required) - Array of icon IDs</div>
+                  <div>• format (optional) - Output format for all icons</div>
+                  <div>• size (optional) - Size for all icons</div>
+                  <div>• strokeWidth (optional) - Stroke width for all icons</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_starter_pack</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Get a curated starter pack of icons for common use cases.
+              </p>
+              <div className="text-xs font-mono text-muted-foreground">
+                <div>Parameters:</div>
+                <div className="ml-4 mt-1">
+                  <div>• packId (required) - Pack ID (dashboard, ecommerce, social, brand-ai)</div>
                   <div>• format (optional) - Output format for all icons</div>
                   <div>• size (optional) - Size for all icons</div>
                   <div>• strokeWidth (optional) - Stroke width for all icons</div>
@@ -446,6 +509,13 @@ export default function MCPDocsPage() {
                 Get library statistics including total icon count and breakdown by source.
               </p>
             </div>
+
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <h3 className="font-mono text-[var(--accent-lavender)] font-semibold mb-2">unicon://starter_packs</h3>
+              <p className="text-sm text-muted-foreground">
+                List available starter packs with their icons for common use cases.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -468,7 +538,7 @@ export default function MCPDocsPage() {
               <h3 className="font-semibold mb-2">Icon not found</h3>
               <div className="text-sm text-muted-foreground space-y-2">
                 <p>1. Verify icon ID format: <code className="text-[var(--accent-aqua)]">source:icon-name</code> (all lowercase)</p>
-                <p>2. Use <code className="text-[var(--accent-aqua)]">search_icons</code> tool first to find the exact ID</p>
+                <p>2. Use <code className="text-[var(--accent-aqua)]">unicon_search_icons</code> tool first to find the exact ID</p>
                 <p>3. Check icon exists at{" "}
                   <a href="https://unicon.webrenew.com" className="text-[var(--accent-lavender)] hover:underline">
                     unicon.webrenew.com
