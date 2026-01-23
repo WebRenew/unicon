@@ -29,6 +29,7 @@ For the best experience, install the Unicon skill which teaches Claude how to us
 \`\`\`bash
 npx @webrenew/unicon skill --ide claude      # npm
 pnpm dlx @webrenew/unicon skill --ide claude # pnpm
+bunx @webrenew/unicon skill --ide claude     # bun
 \`\`\`
 
 This creates \`.claude/skills/unicon/SKILL.md\` in your project with comprehensive documentation Claude can reference.
@@ -86,6 +87,7 @@ Once set up, you can ask Claude things like:
 \`\`\`bash
 npx @webrenew/unicon skill --ide claude      # npm
 pnpm dlx @webrenew/unicon skill --ide claude # pnpm
+bunx @webrenew/unicon skill --ide claude     # bun
 \`\`\`
 
 ### Manual Installation
@@ -245,7 +247,8 @@ export default function ClaudeCodeDocsPage() {
                 For the best experience, install the Unicon skill which teaches Claude how to use the icon tools effectively:
               </p>
               <CodeBlock title="Terminal">{`npx @webrenew/unicon skill --ide claude      # npm
-pnpm dlx @webrenew/unicon skill --ide claude # pnpm`}</CodeBlock>
+pnpm dlx @webrenew/unicon skill --ide claude # pnpm
+bunx @webrenew/unicon skill --ide claude     # bun`}</CodeBlock>
               <p className="text-xs text-muted-foreground mt-3">
                 This creates <code className="text-[var(--accent-aqua)]">.claude/skills/unicon/SKILL.md</code> in your project.
               </p>
@@ -395,7 +398,8 @@ pnpm dlx @webrenew/unicon skill --ide claude # pnpm`}</CodeBlock>
             <div>
               <h3 className="text-lg font-semibold mb-3">Via CLI (Recommended)</h3>
               <CodeBlock title="Terminal">{`npx @webrenew/unicon skill --ide claude      # npm
-pnpm dlx @webrenew/unicon skill --ide claude # pnpm`}</CodeBlock>
+pnpm dlx @webrenew/unicon skill --ide claude # pnpm
+bunx @webrenew/unicon skill --ide claude     # bun`}</CodeBlock>
             </div>
 
             <div>

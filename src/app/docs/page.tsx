@@ -48,14 +48,9 @@ Browse and search icons visually at https://unicon.webrenew.com. Copy React, Vue
 Command-line interface for searching, bundling, and generating icon components. Perfect for CI/CD.
 
 \`\`\`bash
-# npm
-npx @webrenew/unicon search "dashboard"
-
-# pnpm
-pnpm dlx @webrenew/unicon search "dashboard"
-
-# yarn
-yarn dlx @webrenew/unicon search "dashboard"
+npx @webrenew/unicon search "dashboard"      # npm
+pnpm dlx @webrenew/unicon search "dashboard" # pnpm
+bunx @webrenew/unicon search "dashboard"     # bun
 \`\`\`
 
 ### MCP Server (AI Integration)
