@@ -5,6 +5,66 @@ import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyButton } from "@/components/ui/copy-button";
 import { skillEntries } from "@/lib/skills";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
+import { CopyPageButton } from "@/components/copy-page-button";
+
+const PAGE_MARKDOWN = `# Unicon Skills Registry
+
+Download Unicon skills for AI assistants. Install once and let your assistant generate icons on demand.
+
+## What is a Skill?
+
+A skill is a markdown document that teaches AI assistants how to use Unicon. Once installed, your assistant can search for icons, generate components, and bundle icons automatically.
+
+## Available Skills
+
+### Unicon
+Help users add icons to React, Vue, Svelte, or web projects using the Unicon CLI and API.
+
+Tags: icons, cli, ai-assistants, api
+
+Download: https://unicon.webrenew.com/skills/unicon.md
+
+### Unicon MCP
+Guide setup and usage of the Unicon MCP server in Claude, Cursor, and other MCP clients.
+
+Tags: mcp, ai-assistants, icons, setup
+
+Download: https://unicon.webrenew.com/skills/unicon-mcp.md
+
+## Install with the CLI
+
+\`\`\`bash
+# List supported IDEs
+unicon skill --list
+
+# Install for specific IDE
+unicon skill --ide cursor
+unicon skill --ide claude
+
+# Install for all IDEs
+unicon skill --all
+\`\`\`
+
+Supported IDEs:
+- Claude Code
+- Cursor
+- Windsurf
+- Agent
+- Antigravity
+- OpenCode
+- Codex
+- Aider
+
+## Direct Downloads
+
+Download skills directly from the registry:
+
+- Registry JSON: https://unicon.webrenew.com/skills/index.json
+- Unicon Skill: https://unicon.webrenew.com/skills/unicon.md
+- MCP Skill: https://unicon.webrenew.com/skills/unicon-mcp.md
+
+Place the markdown file in your assistant's rules directory.
+`;
 
 export const metadata: Metadata = {
   title: "Skills Registry | Unicon",
@@ -58,10 +118,11 @@ export default function SkillsDocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
             <SparklesIcon className="w-6 h-6 text-[var(--accent-lavender)]" />
           </div>
+          <CopyPageButton markdown={PAGE_MARKDOWN} />
           <span className="px-3 py-1 rounded-full text-xs font-mono bg-[var(--accent-lavender)]/10 text-[var(--accent-lavender)] border border-[var(--accent-lavender)]/30">
             Skills Registry
           </span>

@@ -3,6 +3,153 @@ import Link from "next/link";
 import { CodeIcon } from "@/components/icons/ui/code";
 import { CopyButton } from "@/components/ui/copy-button";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
+import { CopyPageButton } from "@/components/copy-page-button";
+
+const PAGE_MARKDOWN = `# Unicon API Reference
+
+REST API for programmatic access to 14,700+ icons across 8 libraries.
+
+Base URL: \`https://unicon.webrenew.com\`
+
+## GET /api/icons
+
+Search and retrieve icons.
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| q | string | Search query (AI-powered semantic search) |
+| names | string | Comma-separated icon IDs for exact lookup |
+| source | string | Filter by library (lucide, phosphor, etc.) |
+| category | string | Filter by category |
+| limit | number | Max results (default: 50, max: 200) |
+| offset | number | Pagination offset |
+
+### Response
+
+\`\`\`json
+{
+  "icons": [
+    {
+      "id": "lucide:home",
+      "name": "Home",
+      "normalizedName": "home",
+      "sourceId": "lucide",
+      "viewBox": "0 0 24 24",
+      "content": "<path d='...'/>",
+      "category": "Buildings",
+      "tags": ["house", "building", "residence"]
+    }
+  ],
+  "total": 150,
+  "hasMore": true,
+  "searchType": "semantic",
+  "expandedQuery": "home house building residence"
+}
+\`\`\`
+
+### Examples
+
+\`\`\`bash
+# Search for icons
+curl "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10"
+
+# Get specific icons by name
+curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"
+
+# Filter by library
+curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide"
+
+# Paginate results
+curl "https://unicon.webrenew.com/api/icons?q=social&limit=20&offset=40"
+\`\`\`
+
+## POST /api/search
+
+Advanced search with more control.
+
+### Request Body
+
+\`\`\`json
+{
+  "query": "dashboard analytics",
+  "sources": ["lucide", "phosphor"],
+  "categories": ["Dashboards"],
+  "limit": 20
+}
+\`\`\`
+
+### Response
+
+Same format as GET /api/icons.
+
+## Rate Limits
+
+| Tier | Requests | Window |
+|------|----------|--------|
+| Free | 100 | per minute |
+| Burst | 10 | per second |
+
+Rate limit headers included in responses:
+- \`X-RateLimit-Limit\`
+- \`X-RateLimit-Remaining\`
+- \`X-RateLimit-Reset\`
+
+## Code Examples
+
+### JavaScript/TypeScript
+
+\`\`\`typescript
+async function searchIcons(query: string, limit = 20) {
+  const url = new URL("https://unicon.webrenew.com/api/icons");
+  url.searchParams.set("q", query);
+  url.searchParams.set("limit", String(limit));
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.icons;
+}
+
+// Usage
+const icons = await searchIcons("dashboard");
+\`\`\`
+
+### Python
+
+\`\`\`python
+import requests
+
+def search_icons(query, limit=20):
+    response = requests.get(
+        "https://unicon.webrenew.com/api/icons",
+        params={"q": query, "limit": limit}
+    )
+    response.raise_for_status()
+    return response.json()["icons"]
+
+# Usage
+icons = search_icons("dashboard")
+\`\`\`
+
+### cURL
+
+\`\`\`bash
+# Search for icons
+curl -s "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10" | jq '.icons[] | {name: .name, source: .sourceId}'
+
+# Get specific icons
+curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" | jq '.icons'
+\`\`\`
+
+## CORS
+
+All API endpoints support CORS and can be called from any origin.
+
+\`\`\`
+Access-Control-Allow-Origin: *
+\`\`\`
+`;
 
 export const metadata: Metadata = {
   title: "API Reference | Unicon",
@@ -97,10 +244,11 @@ export default function APIDocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
             <CodeIcon className="w-6 h-6 text-[var(--accent-aqua)]" />
           </div>
+          <CopyPageButton markdown={PAGE_MARKDOWN} />
         </div>
         <h1 className="text-4xl font-bold mb-4">API Reference</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">

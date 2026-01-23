@@ -5,6 +5,116 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MCPInstallButtons } from "@/components/mcp-install-buttons";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
+import { CopyPageButton } from "@/components/copy-page-button";
+
+const PAGE_MARKDOWN = `# Unicon MCP Integration
+
+Use Unicon with Claude Desktop, Cursor, and other AI assistants via Model Context Protocol (MCP).
+
+## What is MCP?
+
+Model Context Protocol (MCP) lets AI assistants use external tools. With Unicon MCP, you can search and generate icons using natural language directly in your AI assistant.
+
+## Quick Start
+
+### Claude Desktop
+
+Add to your Claude config file:
+
+**macOS**: \`~/Library/Application Support/Claude/claude_desktop_config.json\`
+**Windows**: \`%APPDATA%\\Claude\\claude_desktop_config.json\`
+
+\`\`\`json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-remote@latest", "https://unicon.webrenew.com/api/mcp"]
+    }
+  }
+}
+\`\`\`
+
+Restart Claude Desktop after saving.
+
+### Cursor IDE
+
+Add to \`.cursor/mcp.json\` in your project:
+
+\`\`\`json
+{
+  "mcpServers": {
+    "unicon": {
+      "url": "https://unicon.webrenew.com/api/mcp"
+    }
+  }
+}
+\`\`\`
+
+## Available Tools
+
+### search_icons
+Search for icons using AI-powered semantic search.
+
+Parameters:
+- \`query\` (required) - Search terms
+- \`library\` - Filter by source (lucide, phosphor, etc.)
+- \`limit\` - Max results (default: 20)
+
+### get_icon
+Get a specific icon by ID.
+
+Parameters:
+- \`id\` (required) - Icon ID from search
+- \`format\` - react, vue, svelte, svg, json (default: react)
+
+### get_multiple_icons
+Get multiple icons at once.
+
+Parameters:
+- \`ids\` (required) - Array of icon IDs
+- \`format\` - Output format (default: react)
+
+### list_libraries
+List all available icon libraries.
+
+### list_categories
+List available categories.
+
+## Example Prompts
+
+- "Search for dashboard icons"
+- "Find me a home icon from Lucide"
+- "Get React components for home, settings, and user icons"
+- "Search for icons related to notifications"
+- "What icon libraries are available?"
+
+## Verification
+
+After setup, ask your AI assistant: "What MCP tools do you have access to?"
+
+You should see the Unicon tools listed.
+
+## Troubleshooting
+
+### Tools not appearing
+1. Restart your AI application
+2. Check config file syntax (valid JSON)
+3. Verify network connectivity
+
+### Slow responses
+The MCP server is hosted at unicon.webrenew.com. First requests may be slower due to cold starts.
+
+### Icon not found
+Use \`search_icons\` first to find the correct icon ID, then \`get_icon\` with that ID.
+
+## Best Practices
+
+1. **Search before getting**: Always search first to find the right icon ID
+2. **Specify library**: Be specific about which library for focused results
+3. **Batch multiple icons**: Use get_multiple_icons for multiple icons
+4. **Use semantic search**: Describe what you need ("loading spinner", "send message")
+`;
 
 export const metadata: Metadata = {
   title: "MCP Integration | Unicon",
@@ -56,10 +166,11 @@ export default function MCPDocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
             <MCPIcon className="w-6 h-6 text-[var(--accent-lavender)]" size={24} />
           </div>
+          <CopyPageButton markdown={PAGE_MARKDOWN} />
           <span className="px-3 py-1 rounded-full text-xs font-mono bg-[var(--accent-lavender)]/10 text-[var(--accent-lavender)] border border-[var(--accent-lavender)]/30">
             MCP Server
           </span>

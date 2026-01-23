@@ -14,6 +14,188 @@ import { LayersIcon } from "@/components/icons/ui/layers";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
+import { CopyPageButton } from "@/components/copy-page-button";
+
+const PAGE_MARKDOWN = `# Unicon CLI
+
+Command-line interface for searching and bundling icons from 14,700+ icons across 8 libraries.
+
+## Installation
+
+\`\`\`bash
+# Install globally
+npm install -g @webrenew/unicon
+
+# Or use with npx
+npx @webrenew/unicon <command>
+\`\`\`
+
+## Commands
+
+### search <query>
+AI-powered semantic search for icons.
+
+\`\`\`bash
+unicon search "dashboard"
+unicon search "notification bell"
+unicon search "arrow" --source lucide --limit 10
+\`\`\`
+
+Options:
+- \`--source <id>\` - Filter by library (lucide, phosphor, etc.)
+- \`--category <name>\` - Filter by category
+- \`--limit <n>\` - Max results (default: 20)
+- \`--json\` - Output as JSON
+
+### get <name>
+Get a single icon and output to stdout or file.
+
+\`\`\`bash
+unicon get home
+unicon get home --format svg
+unicon get home -o src/icons/Home.tsx
+\`\`\`
+
+Options:
+- \`--format <type>\` - react, vue, svelte, svg, json (default: react)
+- \`--source <id>\` - Specify source if ambiguous
+- \`-o, --output <path>\` - Write to file
+
+### bundle
+Bundle multiple icons into files (tree-shakeable by default).
+
+\`\`\`bash
+unicon bundle --query "arrow chevron" -o src/icons/
+unicon bundle --category Navigation -o src/icons/
+unicon bundle --query "dashboard" --single-file -o icons.tsx
+\`\`\`
+
+Options:
+- \`--query <text>\` - Search query
+- \`--category <name>\` - Filter by category
+- \`--source <id>\` - Filter by library
+- \`--format <type>\` - Output format (default: react)
+- \`--limit <n>\` - Max icons (default: 50)
+- \`-o, --output <path>\` - Output directory or file
+- \`--single-file\` - All icons in one file (not recommended)
+
+### init
+Create a \`.uniconrc.json\` config file.
+
+\`\`\`bash
+unicon init
+\`\`\`
+
+### sync
+Regenerate all bundles from config.
+
+\`\`\`bash
+unicon sync
+unicon sync --name dashboard
+unicon sync --dry-run
+\`\`\`
+
+### add <name>
+Add a bundle to config.
+
+\`\`\`bash
+unicon add navigation --query "arrow menu chevron"
+unicon add social --category Social --source phosphor
+\`\`\`
+
+### info <name>
+Show detailed icon information.
+
+### preview <name>
+ASCII art preview in terminal.
+
+### categories / sources
+List available categories and sources.
+
+### cache
+Manage local cache.
+
+\`\`\`bash
+unicon cache --stats
+unicon cache --clear
+\`\`\`
+
+### skill
+Install AI assistant skills.
+
+\`\`\`bash
+unicon skill --list
+unicon skill --ide cursor
+unicon skill --all
+\`\`\`
+
+## Config File (.uniconrc.json)
+
+\`\`\`json
+{
+  "bundles": [
+    {
+      "name": "dashboard",
+      "category": "Dashboards",
+      "limit": 50,
+      "format": "react",
+      "output": "./src/icons/dashboard.tsx"
+    },
+    {
+      "name": "navigation",
+      "query": "arrow chevron menu",
+      "limit": 30,
+      "format": "react",
+      "output": "./src/icons/navigation.tsx"
+    }
+  ]
+}
+\`\`\`
+
+## Output Formats
+
+| Format | Extension | Use Case |
+|--------|-----------|----------|
+| react | .tsx | React/Next.js (default) |
+| vue | .vue | Vue 3 SFC |
+| svelte | .svelte | Svelte components |
+| svg | .svg | Raw SVG |
+| json | .json | Data/programmatic |
+
+## Icon Sources
+
+| Source | Icons | Description |
+|--------|-------|-------------|
+| lucide | 1,900+ | Stroke icons |
+| phosphor | 1,500+ | Fill icons (6 weights) |
+| hugeicons | 1,800+ | Modern outlined |
+| heroicons | 292 | Tailwind Labs |
+| tabler | 4,600+ | Pixel-perfect stroke |
+| feather | 287 | Minimalist |
+| remix | 2,800+ | Comprehensive |
+| simple-icons | 3,300+ | Brand logos |
+
+## Tree-Shaking
+
+Default bundle mode creates one file per icon:
+
+\`\`\`
+src/icons/
+├── index.ts      # Re-exports
+├── home.tsx
+├── settings.tsx
+└── user.tsx
+\`\`\`
+
+Import only what you use:
+\`\`\`tsx
+import { Home, Settings } from "./icons"
+\`\`\`
+
+## Offline Support
+
+Icons are cached at \`~/.unicon/cache\` for 24 hours.
+`;
 
 export const metadata: Metadata = {
   title: "CLI | Unicon",
@@ -100,10 +282,11 @@ export default function CLIPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16 bg-background text-foreground">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center gap-2 md:gap-3 mb-4 flex-wrap">
+        <div className="flex items-center justify-between gap-2 md:gap-3 mb-4 flex-wrap">
           <div className="p-2 md:p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
             <TerminalIcon className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
           </div>
+          <CopyPageButton markdown={PAGE_MARKDOWN} />
           <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-muted text-muted-foreground">
             @webrenew/unicon
           </span>

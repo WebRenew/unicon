@@ -14,6 +14,79 @@ import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
+import { CopyPageButton } from "@/components/copy-page-button";
+
+const PAGE_MARKDOWN = `# Unicon Documentation
+
+Everything you need to know about using Unicon — from browsing icons in the web interface to integrating with your development workflow.
+
+## What is Unicon?
+
+Unicon is a comprehensive icon management tool that gives you access to **14,700+ icons** from 8 popular icon libraries — all in one place. Unlike traditional icon packages that bloat your bundle with thousands of unused icons, Unicon lets you generate only the icons you need.
+
+Whether you prefer browsing icons visually, using a command-line interface, or letting AI assistants find icons for you, Unicon has you covered.
+
+## Icon Libraries
+
+| Library | Icons | Description |
+|---------|-------|-------------|
+| Lucide | 1,900+ | Beautiful & consistent stroke icons |
+| Phosphor | 1,500+ | 6 weights available |
+| Hugeicons | 1,800+ | Modern outlined icons |
+| Heroicons | 292 | Tailwind Labs icons |
+| Tabler | 4,600+ | Pixel-perfect stroke icons |
+| Feather | 287 | Simple and clean |
+| Remix | 2,800+ | Comprehensive icon set |
+| Simple Icons | 3,300+ | Brand logos |
+
+## Getting Started
+
+### Web Interface
+Browse and search icons visually at https://unicon.webrenew.com. Copy React, Vue, Svelte components or raw SVG with one click.
+
+### CLI Tool
+Command-line interface for searching, bundling, and generating icon components. Perfect for CI/CD.
+
+\`\`\`bash
+npm install -g @webrenew/unicon
+npx @webrenew/unicon search "dashboard"
+\`\`\`
+
+### MCP Server (AI Integration)
+Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
+
+## Key Features
+
+- **AI-Powered Search**: Semantic search understands intent. Search for "celebration" and find party, confetti, and cake icons.
+- **Tree-Shakeable**: Generate one file per icon for perfect tree-shaking. Only bundle icons you actually use.
+- **Multi-Framework**: Export as React, Vue 3, Svelte components, or plain SVG. Full TypeScript support.
+- **Zero Dependencies**: Generated components have no external dependencies. Copy and own your icons.
+- **Bundle Builder**: Define icon bundles in config file. Regenerate anytime with a single command.
+- **Customizable**: Control size, stroke width, colors, and all standard SVG properties.
+
+## Why Unicon?
+
+### Traditional Icon Packages
+- Download thousands of unused icons
+- Bloated bundle sizes
+- Rely on bundler tree-shaking (unreliable)
+- External dependencies to maintain
+
+### Unicon Approach
+- Generate only the icons you need
+- Zero bundle bloat
+- One file per icon = perfect tree-shaking
+- No external dependencies
+- Access 14,700+ icons from 8 libraries
+
+## Links
+
+- CLI Documentation: https://unicon.webrenew.com/cli
+- MCP Integration: https://unicon.webrenew.com/docs/mcp
+- API Reference: https://unicon.webrenew.com/docs/api
+- Skills Registry: https://unicon.webrenew.com/docs/skills
+- GitHub: https://github.com/WebRenew/unicon
+`;
 
 export const metadata: Metadata = {
   title: "Documentation | Unicon",
@@ -80,10 +153,11 @@ export default function DocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
             <FileCodeIcon className="w-6 h-6 text-[var(--accent-lavender)]" />
           </div>
+          <CopyPageButton markdown={PAGE_MARKDOWN} />
         </div>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Documentation</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
