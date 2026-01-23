@@ -359,7 +359,16 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
 
       {/* Export Options - Only show when bundle has items and on bundle tab */}
       {items.length > 0 && activeTab === "bundle" && (
-        <div className="border-t border-black/10 dark:border-white/10 p-4 space-y-4">
+        <div className="border-t border-black/10 dark:border-white/10 flex flex-col">
+          {/* Resize handle at top */}
+          <div
+            onMouseDown={handleResizeStart}
+            className="h-3 cursor-ns-resize flex items-center justify-center group shrink-0"
+          >
+            <div className="w-12 h-1 rounded-full bg-black/10 dark:bg-white/10 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-colors" />
+          </div>
+          
+          <div className="px-4 pb-4 space-y-4">
           {/* Format selector */}
           <div className="flex gap-2">
             <button
@@ -401,24 +410,15 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               {exportFormat === "svg" && `${items.length} SVG${items.length > 1 ? "s" : ""}`}
               {exportFormat === "json" && `${items.length} icon${items.length > 1 ? "s" : ""} in JSON`}
             </div>
-            <div className="relative">
-              <div
-                className="bg-black/5 dark:bg-black/40 rounded-lg p-3 overflow-y-auto border border-black/5 dark:border-white/5"
-                style={{ height: previewHeight }}
-              >
-                <SyntaxHighlighter
-                  code={exportContent}
-                  language={exportFormat === "json" ? "json" : exportFormat === "svg" ? "xml" : "jsx"}
-                  className="text-black/70 dark:text-white/70"
-                />
-              </div>
-              {/* Resize handle */}
-              <div
-                onMouseDown={handleResizeStart}
-                className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize flex items-center justify-center group"
-              >
-                <div className="w-12 h-1 rounded-full bg-black/10 dark:bg-white/10 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-colors" />
-              </div>
+            <div
+              className="bg-black/5 dark:bg-black/40 rounded-lg p-3 overflow-y-auto border border-black/5 dark:border-white/5"
+              style={{ height: previewHeight }}
+            >
+              <SyntaxHighlighter
+                code={exportContent}
+                language={exportFormat === "json" ? "json" : exportFormat === "svg" ? "xml" : "jsx"}
+                className="text-black/70 dark:text-white/70"
+              />
             </div>
           </div>
 
@@ -456,6 +456,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               </>
             )}
           </button>
+          </div>
         </div>
       )}
     </div>
