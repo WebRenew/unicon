@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { XIcon } from "@/components/icons/ui/x";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyIcon } from "@/components/icons/ui/copy";
@@ -58,6 +58,45 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
+  const [previewHeight, setPreviewHeight] = useState(192); // Default ~max-h-48
+  const isDraggingRef = useRef(false);
+  const startYRef = useRef(0);
+  const startHeightRef = useRef(0);
+
+  // Handle resize drag
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    startYRef.current = e.clientY;
+    startHeightRef.current = previewHeight;
+    document.body.style.cursor = "ns-resize";
+    document.body.style.userSelect = "none";
+  }, [previewHeight]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const deltaY = e.clientY - startYRef.current;
+      const newHeight = Math.max(80, Math.min(400, startHeightRef.current + deltaY));
+      setPreviewHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   // Memoize export content to ensure it uses the latest items
   const exportContent = useMemo(() => {
@@ -376,12 +415,24 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               {exportFormat === "svg" && `${items.length} SVG${items.length > 1 ? "s" : ""}`}
               {exportFormat === "json" && `${items.length} icon${items.length > 1 ? "s" : ""} in JSON`}
             </div>
-            <div className="bg-black/5 dark:bg-black/40 rounded-lg p-3 max-h-48 overflow-y-auto border border-black/5 dark:border-white/5">
-              <SyntaxHighlighter
-                code={exportContent}
-                language={exportFormat === "json" ? "json" : exportFormat === "svg" ? "xml" : "jsx"}
-                className="text-black/70 dark:text-white/70"
-              />
+            <div className="relative">
+              <div
+                className="bg-black/5 dark:bg-black/40 rounded-lg p-3 overflow-y-auto border border-black/5 dark:border-white/5"
+                style={{ height: previewHeight }}
+              >
+                <SyntaxHighlighter
+                  code={exportContent}
+                  language={exportFormat === "json" ? "json" : exportFormat === "svg" ? "xml" : "jsx"}
+                  className="text-black/70 dark:text-white/70"
+                />
+              </div>
+              {/* Resize handle */}
+              <div
+                onMouseDown={handleResizeStart}
+                className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize flex items-center justify-center group"
+              >
+                <div className="w-12 h-1 rounded-full bg-black/10 dark:bg-white/10 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-colors" />
+              </div>
             </div>
           </div>
 
