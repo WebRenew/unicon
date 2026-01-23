@@ -14,6 +14,7 @@ import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { V0Icon } from "@/components/icons/ui/v0";
+import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
@@ -375,11 +376,12 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               {exportFormat === "svg" && `${items.length} SVG${items.length > 1 ? "s" : ""}`}
               {exportFormat === "json" && `${items.length} icon${items.length > 1 ? "s" : ""} in JSON`}
             </div>
-            <div className="bg-black/5 dark:bg-black/40 rounded-lg p-3 max-h-32 overflow-y-auto border border-black/5 dark:border-white/5">
-              <pre className="text-[10px] text-black/50 dark:text-white/50 font-mono whitespace-pre-wrap break-all">
-                {exportContent.slice(0, 800)}
-                {exportContent.length > 800 && "\n\n... (more content)"}
-              </pre>
+            <div className="bg-black/5 dark:bg-black/40 rounded-lg p-3 max-h-48 overflow-y-auto border border-black/5 dark:border-white/5">
+              <SyntaxHighlighter
+                code={exportContent}
+                language={exportFormat === "json" ? "json" : exportFormat === "svg" ? "xml" : "jsx"}
+                className="text-black/70 dark:text-white/70"
+              />
             </div>
           </div>
 
