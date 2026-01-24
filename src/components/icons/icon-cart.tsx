@@ -13,6 +13,7 @@ import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { V0Icon } from "@/components/icons/ui/v0";
+import { LayersIcon } from "@/components/icons/ui/layers";
 import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 import { BundleMixingWarning } from "./bundle-mixing-warning";
 
@@ -38,7 +39,7 @@ import {
   generateV0Prompt,
   normalizeIcons,
 } from "@/lib/icon-utils";
-import { analyzeBundleMixing } from "@/lib/bundle-utils";
+import { analyzeBundleMixing, getBundleLibrarySummary } from "@/lib/bundle-utils";
 import type { IconData } from "@/types/icon";
 
 interface IconCartProps {
@@ -60,14 +61,68 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
   const [previewHeight, setPreviewHeight] = useState(192); // Default ~max-h-48
-  const [normalizeStrokes, setNormalizeStrokes] = useState(false);
-  const [targetStrokeWidth, setTargetStrokeWidth] = useState(2);
+  const [normalizeStrokes, setNormalizeStrokes] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("unicon-normalize-strokes") === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [targetStrokeWidth, setTargetStrokeWidth] = useState(() => {
+    if (typeof window === "undefined") return 2;
+    try {
+      const stored = localStorage.getItem("unicon-target-stroke-width");
+      return stored ? Number(stored) : 2;
+    } catch {
+      return 2;
+    }
+  });
+  const [groupByLibrary, setGroupByLibrary] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("unicon-group-by-library") === "true";
+    } catch {
+      return false;
+    }
+  });
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
 
   // Analyze bundle for mixing issues
   const mixingAnalysis = useMemo(() => analyzeBundleMixing(items), [items]);
+
+  // Group icons by library for grouped view
+  const librarySummary = useMemo(() => getBundleLibrarySummary(items), [items]);
+  const iconsByLibrary = useMemo(() => {
+    const map = new Map<string, typeof items>();
+    for (const icon of items) {
+      const existing = map.get(icon.sourceId) ?? [];
+      existing.push(icon);
+      map.set(icon.sourceId, existing);
+    }
+    return map;
+  }, [items]);
+
+  // Persist normalization preferences to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-normalize-strokes", String(normalizeStrokes));
+    } catch {}
+  }, [normalizeStrokes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-target-stroke-width", String(targetStrokeWidth));
+    } catch {}
+  }, [targetStrokeWidth]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-group-by-library", String(groupByLibrary));
+    } catch {}
+  }, [groupByLibrary]);
 
   // Handle resize drag
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -293,27 +348,89 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-6 gap-2">
-              {items.map((icon) => (
-                <div
-                  key={icon.id}
-                  className="group relative flex items-center justify-center w-12 h-12 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10"
+            <div className="space-y-4">
+              {/* Group by library toggle - only show when multiple libraries */}
+              {librarySummary.length > 1 && (
+                <button
+                  onClick={() => setGroupByLibrary(!groupByLibrary)}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                    groupByLibrary
+                      ? "bg-black/10 dark:bg-white/10 text-black dark:text-white"
+                      : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
+                  }`}
                 >
-                  <div
-                    className="w-5 h-5 text-black/70 dark:text-white/70"
-                    dangerouslySetInnerHTML={{
-                      __html: generateRenderableSvg(icon, { size: 20 }),
-                    }}
-                  />
-                  <button
-                    onClick={() => onRemove(icon.id)}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label={`Remove ${icon.normalizedName} from bundle`}
-                  >
-                    <XIcon className="w-3 h-3 text-white" />
-                  </button>
+                  <LayersIcon className="w-3.5 h-3.5" />
+                  Group by library
+                </button>
+              )}
+
+              {groupByLibrary && librarySummary.length > 1 ? (
+                // Grouped view
+                <div className="space-y-4">
+                  {librarySummary.map(({ sourceId, count, meta }) => (
+                    <div key={sourceId}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-mono text-black/60 dark:text-white/60">
+                          {meta.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
+                          {count}
+                        </span>
+                        <span className="text-[10px] font-mono text-black/20 dark:text-white/20">
+                          {meta.defaultStrokeWidth}px
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-6 gap-2">
+                        {iconsByLibrary.get(sourceId)?.map((icon) => (
+                          <div
+                            key={icon.id}
+                            className="group relative flex items-center justify-center w-12 h-12 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10"
+                          >
+                            <div
+                              className="w-5 h-5 text-black/70 dark:text-white/70"
+                              // SVG content is from trusted icon library data, not user input
+                              dangerouslySetInnerHTML={{
+                                __html: generateRenderableSvg(icon, { size: 20 }),
+                              }}
+                            />
+                            <button
+                              onClick={() => onRemove(icon.id)}
+                              className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label={`Remove ${icon.normalizedName} from bundle`}
+                            >
+                              <XIcon className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                // Flat view
+                <div className="grid grid-cols-6 gap-2">
+                  {items.map((icon) => (
+                    <div
+                      key={icon.id}
+                      className="group relative flex items-center justify-center w-12 h-12 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10"
+                    >
+                      <div
+                        className="w-5 h-5 text-black/70 dark:text-white/70"
+                        dangerouslySetInnerHTML={{
+                          __html: generateRenderableSvg(icon, { size: 20 }),
+                        }}
+                      />
+                      <button
+                        onClick={() => onRemove(icon.id)}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove ${icon.normalizedName} from bundle`}
+                      >
+                        <XIcon className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )
         ) : (

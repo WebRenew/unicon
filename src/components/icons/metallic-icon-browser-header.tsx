@@ -48,6 +48,7 @@ interface MetallicIconBrowserHeaderProps {
   canBundleAll: boolean;
   iconsNotInBundleCount: number;
   onBundleAll: () => void;
+  hoveredSource?: string | null;
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -72,6 +73,18 @@ const SOURCE_COLORS_SELECTED: Record<string, string> = {
   remix: "bg-red-500/69",
   "simple-icons": "bg-gray-500/69",
   iconoir: "bg-teal-500/69",
+};
+
+const SOURCE_COLORS_HOVER: Record<string, string> = {
+  lucide: "bg-orange-500/30",
+  phosphor: "bg-emerald-500/30",
+  hugeicons: "bg-violet-500/30",
+  heroicons: "bg-blue-500/30",
+  tabler: "bg-cyan-500/30",
+  feather: "bg-pink-500/30",
+  remix: "bg-red-500/30",
+  "simple-icons": "bg-gray-500/30",
+  iconoir: "bg-teal-500/30",
 };
 
 const SOURCE_OPTIONS = [
@@ -120,6 +133,7 @@ export function MetallicIconBrowserHeader({
   canBundleAll,
   iconsNotInBundleCount,
   onBundleAll,
+  hoveredSource,
 }: MetallicIconBrowserHeaderProps) {
   return (
     <>
@@ -155,7 +169,9 @@ export function MetallicIconBrowserHeader({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
               selectedSource === source
                 ? `${SOURCE_COLORS_SELECTED[source]} text-white border-2 border-current shadow-sm`
-                : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
+                : hoveredSource === source
+                  ? `${SOURCE_COLORS_HOVER[source]} border-2 border-black/20 dark:border-white/20 text-black/80 dark:text-white/80`
+                  : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${selectedSource === source ? "bg-white" : SOURCE_COLORS[source]}`} />

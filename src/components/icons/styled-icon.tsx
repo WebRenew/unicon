@@ -28,6 +28,19 @@ import {
 import type { IconData } from "@/types/icon";
 import { IconDetailDialog } from "./icon-detail-dialog";
 
+// Hex colors for gradient border effect on hover
+const libraryGradientColors: Record<string, string> = {
+  lucide: "#f97316",      // orange-500
+  phosphor: "#10b981",    // emerald-500
+  hugeicons: "#8b5cf6",   // violet-500
+  heroicons: "#3b82f6",   // blue-500
+  tabler: "#06b6d4",      // cyan-500
+  feather: "#ec4899",     // pink-500
+  remix: "#ef4444",       // red-500
+  "simple-icons": "#6b7280", // gray-500
+  iconoir: "#14b8a6",     // teal-500
+};
+
 export type IconStyle = "metal" | "brutal" | "glow";
 
 export const ICON_STYLES: Record<IconStyle, { container: string; icon: string; css: string }> = {
@@ -101,6 +114,8 @@ interface StyledIconProps {
   iconSize?: number;
   /** Override container size in pixels */
   containerSize?: number;
+  /** Callback when hovering to highlight library chip */
+  onHoverSource?: ((source: string | null) => void) | undefined;
 }
 
 export const StyledIcon = memo(function StyledIcon({
@@ -112,6 +127,7 @@ export const StyledIcon = memo(function StyledIcon({
   strokeWeight,
   iconSize = 24,
   containerSize = 56,
+  onHoverSource,
 }: StyledIconProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -195,20 +211,31 @@ export const StyledIcon = memo(function StyledIcon({
         <ContextMenuTrigger asChild>
           <button
             onClick={handleClick}
+            onMouseEnter={() => onHoverSource?.(icon.sourceId)}
+            onMouseLeave={() => onHoverSource?.(null)}
             style={containerStyle}
-            className={`relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
+            className={`group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 overflow-hidden ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
               }`}
           >
+            {/* Gradient corner accent on hover */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+              style={{
+                background: `radial-gradient(circle at 0% 0%, ${libraryGradientColors[icon.sourceId] || "#6b7280"}40 0%, transparent 50%)`,
+              }}
+            />
             <div
               style={iconStyle}
-              className={brandColor ? undefined : styles.icon}
+              className={`relative z-10 ${brandColor ? "" : styles.icon}`}
               suppressHydrationWarning
+              // SVG content from trusted icon library data
               dangerouslySetInnerHTML={{
                 __html: generateRenderableSvg(icon, svgOptions),
               }}
             />
             {isSelected && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center z-20">
                 <CheckIcon className="w-2.5 h-2.5 text-white" />
               </div>
             )}

@@ -87,6 +87,9 @@ export function MetallicIconBrowser({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemIds = new Set(cartItems.map((item) => item.id));
 
+  // Hover state for library chip highlighting
+  const [hoveredSource, setHoveredSource] = useState<string | null>(null);
+
   const handleResize = useCallback(() => {
     setViewportWidth(window.innerWidth);
   }, []);
@@ -422,6 +425,7 @@ export function MetallicIconBrowser({
           canBundleAll={canBundleAll}
           iconsNotInBundleCount={iconsNotInBundleCount}
           onBundleAll={handleBundleAll}
+          hoveredSource={hoveredSource}
         />
 
         <MetallicIconBrowserResults
@@ -438,6 +442,7 @@ export function MetallicIconBrowser({
           totalPages={totalPages}
           totalResults={totalResults}
           onPageChange={goToPage}
+          onHoverSource={setHoveredSource}
         />
 
         <MetallicIconBrowserCartLayer

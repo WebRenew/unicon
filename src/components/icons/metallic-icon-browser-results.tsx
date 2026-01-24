@@ -19,6 +19,7 @@ interface MetallicIconBrowserResultsProps {
   totalPages: number;
   totalResults: number;
   onPageChange: (page: number) => void;
+  onHoverSource?: (source: string | null) => void;
 }
 
 function getVisiblePages(page: number, totalPages: number): number[] {
@@ -56,6 +57,7 @@ export function MetallicIconBrowserResults({
   totalPages,
   totalResults,
   onPageChange,
+  onHoverSource,
 }: MetallicIconBrowserResultsProps) {
   return (
     <>
@@ -88,6 +90,7 @@ export function MetallicIconBrowserResults({
                 strokeWeight={strokeWeight}
                 iconSize={iconSize}
                 containerSize={containerSize}
+                onHoverSource={onHoverSource}
               />
             ))}
           </div>
