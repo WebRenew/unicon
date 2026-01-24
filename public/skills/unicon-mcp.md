@@ -49,7 +49,7 @@ Use the Unicon MCP server to search and generate icon components through AI assi
 
 ### search_icons
 
-Search through 14,700+ icons with optional filters.
+Search through 19,000+ icons with optional filters.
 
 **Parameters**
 - `query` (required)

@@ -56,7 +56,7 @@ Dependencies: 2
 
 ## 🔧 Available Tools
 
-1. **search_icons** - Search 14,700+ icons across 8 libraries
+1. **search_icons** - Search 19,000+ icons across 9 libraries
 2. **get_icon** - Get icon code in React/Vue/Svelte/SVG/JSON
 3. **get_multiple_icons** - Batch retrieve up to 50 icons
 
@@ -132,7 +132,7 @@ See [MCP Integration Guide](docs/mcp-integration.md) for details.
 
 > 🎉 Just published @webrenew/unicon-mcp-server!
 > 
-> Connect Claude to 14,700+ icons from Lucide, Phosphor, Heroicons & more.
+> Connect Claude to 19,000+ icons from Lucide, Phosphor, Heroicons, Iconoir & more.
 > 
 > Generate React/Vue/Svelte components instantly via natural language.
 > 

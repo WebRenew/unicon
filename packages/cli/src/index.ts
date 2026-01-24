@@ -5,9 +5,12 @@ import chalk from "chalk";
 import ora from "ora";
 import figlet from "figlet";
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
-import { dirname, resolve, join } from "path";
+import { dirname, resolve, join, extname } from "path";
 import { homedir } from "os";
 import { createInterface } from "readline";
+import * as p from "@clack/prompts";
+import clipboard from "clipboardy";
+import chokidar from "chokidar";
 
 /**
  * Simple yes/no confirmation prompt
@@ -29,7 +32,293 @@ function confirm(message: string): Promise<boolean> {
 const API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
 const CONFIG_FILE = ".uniconrc.json";
 const CACHE_DIR = join(homedir(), ".unicon", "cache");
+const FAVORITES_FILE = join(homedir(), ".unicon", "favorites.json");
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Framework Auto-Detection
+// ─────────────────────────────────────────────────────────────────────────────
+
+type FrameworkType = "react" | "vue" | "svelte" | null;
+
+interface FrameworkDetectionResult {
+  framework: FrameworkType;
+  reason: string;
+}
+
+function detectFramework(): FrameworkDetectionResult {
+  const packageJsonPath = resolve(process.cwd(), "package.json");
+
+  if (!existsSync(packageJsonPath)) {
+    return { framework: null, reason: "No package.json found" };
+  }
+
+  try {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+    // Check for React/Next.js
+    if (deps.react || deps.next || deps["@remix-run/react"]) {
+      const detected = deps.next ? "next" : deps["@remix-run/react"] ? "remix" : "react";
+      return { framework: "react", reason: `Detected ${detected} in dependencies` };
+    }
+
+    // Check for Vue/Nuxt
+    if (deps.vue || deps.nuxt || deps["@nuxt/kit"]) {
+      const detected = deps.nuxt || deps["@nuxt/kit"] ? "nuxt" : "vue";
+      return { framework: "vue", reason: `Detected ${detected} in dependencies` };
+    }
+
+    // Check for Svelte/SvelteKit
+    if (deps.svelte || deps["@sveltejs/kit"]) {
+      const detected = deps["@sveltejs/kit"] ? "@sveltejs/kit" : "svelte";
+      return { framework: "svelte", reason: `Detected ${detected} in dependencies` };
+    }
+
+    return { framework: null, reason: "No supported framework detected" };
+  } catch {
+    return { framework: null, reason: "Failed to parse package.json" };
+  }
+}
+
+function getFormatForFramework(framework: FrameworkType): "react" | "vue" | "svelte" {
+  return framework || "react";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Clipboard Support
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function copyToClipboard(content: string): Promise<boolean> {
+  try {
+    await clipboard.write(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Favorites System
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface FavoriteIcon {
+  name: string;
+  sourceId: string;
+  addedAt: string;
+}
+
+interface FavoritesData {
+  favorites: FavoriteIcon[];
+}
+
+function ensureFavoritesDir(): void {
+  const dir = dirname(FAVORITES_FILE);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+function loadFavorites(): FavoritesData {
+  ensureFavoritesDir();
+
+  if (!existsSync(FAVORITES_FILE)) {
+    return { favorites: [] };
+  }
+
+  try {
+    const content = readFileSync(FAVORITES_FILE, "utf-8");
+    return JSON.parse(content) as FavoritesData;
+  } catch {
+    return { favorites: [] };
+  }
+}
+
+function saveFavorites(data: FavoritesData): void {
+  ensureFavoritesDir();
+  writeFileSync(FAVORITES_FILE, JSON.stringify(data, null, 2), "utf-8");
+}
+
+function addFavorite(icon: Icon): boolean {
+  const data = loadFavorites();
+
+  // Check if already favorited
+  if (data.favorites.some(f => f.name === icon.normalizedName)) {
+    return false;
+  }
+
+  data.favorites.push({
+    name: icon.normalizedName,
+    sourceId: icon.sourceId,
+    addedAt: new Date().toISOString(),
+  });
+
+  saveFavorites(data);
+  return true;
+}
+
+function removeFavorite(name: string): boolean {
+  const data = loadFavorites();
+  const index = data.favorites.findIndex(f => f.name === name);
+
+  if (index === -1) {
+    return false;
+  }
+
+  data.favorites.splice(index, 1);
+  saveFavorites(data);
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Watch Mode
+// ─────────────────────────────────────────────────────────────────────────────
+
+function watchConfig(configPath: string, onChange: () => Promise<void>): { close: () => void } {
+  const watcher = chokidar.watch(configPath, {
+    persistent: true,
+    ignoreInitial: true,
+  });
+
+  watcher.on("change", async () => {
+    await onChange();
+  });
+
+  return {
+    close: () => watcher.close(),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Usage Audit
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface AuditResult {
+  bundled: string[];
+  used: string[];
+  unused: string[];
+  missing: string[];
+  usageLocations: Record<string, string[]>;
+}
+
+async function scanProjectForIconUsage(patterns: string[]): Promise<{ iconName: string; file: string }[]> {
+  const usages: { iconName: string; file: string }[] = [];
+
+  // Recursively scan directories
+  function scanDir(dir: string): void {
+    if (!existsSync(dir)) return;
+
+    const entries = readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+
+      // Skip node_modules, .git, dist, build
+      if (entry.isDirectory()) {
+        if (["node_modules", ".git", "dist", "build", ".next", ".nuxt"].includes(entry.name)) {
+          continue;
+        }
+        scanDir(fullPath);
+      } else if (entry.isFile()) {
+        const ext = extname(entry.name);
+        if ([".tsx", ".jsx", ".vue", ".svelte", ".ts", ".js"].includes(ext)) {
+          try {
+            const content = readFileSync(fullPath, "utf-8");
+
+            // Look for icon imports
+            // Match: import { IconName } from
+            // Match: import IconName from
+            const importMatches = content.matchAll(/import\s*\{?\s*([A-Z][a-zA-Z0-9]+(?:Icon)?)\s*\}?\s*from/g);
+
+            for (const match of importMatches) {
+              const name = match[1];
+              if (name && /^[A-Z]/.test(name)) {
+                // Convert PascalCase to kebab-case for matching
+                const kebabName = name
+                  .replace(/Icon$/, "")
+                  .replace(/([a-z])([A-Z])/g, "$1-$2")
+                  .toLowerCase();
+                usages.push({ iconName: kebabName, file: fullPath });
+              }
+            }
+
+            // Also look for direct component usage: <Home /> <HomeIcon />
+            const componentMatches = content.matchAll(/<([A-Z][a-zA-Z0-9]+(?:Icon)?)\s*[^>]*\/?>/g);
+            for (const match of componentMatches) {
+              const name = match[1];
+              if (name && /^[A-Z]/.test(name)) {
+                const kebabName = name
+                  .replace(/Icon$/, "")
+                  .replace(/([a-z])([A-Z])/g, "$1-$2")
+                  .toLowerCase();
+                usages.push({ iconName: kebabName, file: fullPath });
+              }
+            }
+          } catch {
+            // Skip files that can't be read
+          }
+        }
+      }
+    }
+  }
+
+  scanDir(process.cwd());
+  return usages;
+}
+
+async function auditProject(): Promise<AuditResult> {
+  const config = loadConfig();
+  const bundled: Set<string> = new Set();
+
+  // Get all bundled icons from config
+  if (config) {
+    for (const bundle of config.bundles) {
+      if (bundle.query || bundle.category || bundle.source) {
+        try {
+          const { icons } = await fetchIcons({
+            query: bundle.query,
+            category: bundle.category,
+            source: bundle.source,
+            limit: bundle.limit || 100,
+          });
+          for (const icon of icons) {
+            bundled.add(icon.normalizedName);
+          }
+        } catch {
+          // Skip failed fetches
+        }
+      }
+    }
+  }
+
+  // Scan project for icon usage
+  const usages = await scanProjectForIconUsage([]);
+  const used = new Set<string>();
+  const usageLocations: Record<string, string[]> = {};
+
+  for (const usage of usages) {
+    used.add(usage.iconName);
+    if (!usageLocations[usage.iconName]) {
+      usageLocations[usage.iconName] = [];
+    }
+    const locations = usageLocations[usage.iconName]!;
+    if (!locations.includes(usage.file)) {
+      locations.push(usage.file);
+    }
+  }
+
+  // Calculate unused (bundled but not used) and missing (used but not bundled)
+  const unused = [...bundled].filter(name => !used.has(name));
+  const missing = [...used].filter(name => !bundled.has(name));
+
+  return {
+    bundled: [...bundled],
+    used: [...used],
+    unused,
+    missing,
+    usageLocations,
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalized SVG Generation Constants
@@ -57,7 +346,7 @@ interface BundleConfig {
   query?: string;
   category?: string;
   source?: string;
-  format?: "react" | "svg" | "json";
+  format?: "react" | "vue" | "svelte" | "svg" | "json";
   limit?: number;
   output: string;
 }
@@ -527,6 +816,7 @@ program
   .option("-c, --category <category>", "Filter by category")
   .option("-l, --limit <number>", "Maximum number of results", "20")
   .option("-j, --json", "Output as JSON")
+  .option("-p, --pick", "Interactively select icons from results")
   .action(async (query: string, options) => {
     const spinner = ora("Searching icons...").start();
 
@@ -550,6 +840,139 @@ program
         return;
       }
 
+      // Interactive pick mode
+      if (options.pick) {
+        if (searchType === "semantic" && expandedQuery) {
+          console.log(chalk.dim(`AI expanded: "${expandedQuery}"\n`));
+        }
+
+        const selected = await p.multiselect({
+          message: `Select icons (${icons.length} found)`,
+          options: icons.map(icon => ({
+            value: icon,
+            label: icon.normalizedName,
+            hint: `${icon.sourceId}${icon.category ? ` / ${icon.category}` : ""}`,
+          })),
+        });
+
+        if (p.isCancel(selected)) {
+          console.log(chalk.dim("Cancelled."));
+          return;
+        }
+
+        const selectedIcons = selected as Icon[];
+        if (selectedIcons.length === 0) {
+          console.log(chalk.yellow("No icons selected."));
+          return;
+        }
+
+        // Ask what to do with selected icons
+        const action = await p.select({
+          message: "What would you like to do?",
+          options: [
+            { value: "copy", label: "Copy to clipboard", hint: "Copy React component(s)" },
+            { value: "save", label: "Save to file", hint: "Write to disk" },
+            { value: "star", label: "Add to favorites", hint: "Star for later" },
+            { value: "bundle", label: "Create bundle", hint: "Add to .uniconrc.json" },
+          ],
+        });
+
+        if (p.isCancel(action)) {
+          console.log(chalk.dim("Cancelled."));
+          return;
+        }
+
+        const { framework } = detectFramework();
+        const format = getFormatForFramework(framework);
+
+        switch (action) {
+          case "copy": {
+            const components = selectedIcons.map(icon => {
+              const name = toPascalCase(icon.normalizedName);
+              const jsxAttrs = getJsxAttributes(icon);
+              return `export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${jsxAttrs} aria-hidden="true" focusable="false" className={className} {...props}>
+      ${icon.content}
+    </svg>
+  );
+}`;
+            });
+            const content = `import type { SVGProps } from "react";\n\n${components.join("\n\n")}`;
+            const success = await copyToClipboard(content);
+            if (success) {
+              console.log(chalk.green(`✓ ${selectedIcons.length} icon(s) copied to clipboard`));
+            } else {
+              console.log(chalk.red("Failed to copy to clipboard"));
+            }
+            break;
+          }
+          case "save": {
+            const outputPath = await p.text({
+              message: "Output directory:",
+              placeholder: "./src/icons",
+              defaultValue: "./src/icons",
+            });
+            if (p.isCancel(outputPath)) return;
+
+            const outDir = resolve(process.cwd(), outputPath as string);
+            mkdirSync(outDir, { recursive: true });
+
+            for (const icon of selectedIcons) {
+              const name = toPascalCase(icon.normalizedName);
+              const jsxAttrs = getJsxAttributes(icon);
+              const content = `import type { SVGProps } from "react";
+
+export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${jsxAttrs} aria-hidden="true" focusable="false" className={className} {...props}>
+      ${icon.content}
+    </svg>
+  );
+}`;
+              writeFileSync(join(outDir, `${icon.normalizedName}.tsx`), content, "utf-8");
+            }
+            console.log(chalk.green(`✓ ${selectedIcons.length} icon(s) saved to ${outputPath}`));
+            break;
+          }
+          case "star": {
+            let added = 0;
+            for (const icon of selectedIcons) {
+              if (addFavorite(icon)) added++;
+            }
+            console.log(chalk.green(`✓ Added ${added} icon(s) to favorites`));
+            break;
+          }
+          case "bundle": {
+            const bundleName = await p.text({
+              message: "Bundle name:",
+              placeholder: "my-icons",
+            });
+            if (p.isCancel(bundleName)) return;
+
+            let config = loadConfig();
+            if (!config) {
+              config = { bundles: [] };
+            }
+
+            const iconNames = selectedIcons.map(i => i.normalizedName).join(" ");
+            const newBundle: BundleConfig = {
+              name: bundleName as string,
+              query: iconNames,
+              format,
+              output: `./src/icons/${bundleName}.tsx`,
+            };
+
+            config.bundles.push(newBundle);
+            const configPath = resolve(process.cwd(), CONFIG_FILE);
+            writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+            console.log(chalk.green(`✓ Added bundle "${bundleName}" to ${CONFIG_FILE}`));
+            break;
+          }
+        }
+        return;
+      }
+
       if (searchType === "semantic" && expandedQuery) {
         console.log(chalk.dim(`AI expanded: "${expandedQuery}"\n`));
       }
@@ -564,6 +987,9 @@ program
 
       console.log(
         chalk.dim(`\nUse ${chalk.white("unicon get <name>")} to copy a single icon.`)
+      );
+      console.log(
+        chalk.dim(`Use ${chalk.white("unicon search <query> --pick")} to select interactively.`)
       );
     } catch (error) {
       spinner.fail("Search failed");
@@ -624,8 +1050,9 @@ program
   .command("get <name>")
   .description("Get a single icon by name (outputs to stdout)")
   .option("-s, --source <source>", "Prefer source (lucide, phosphor, hugeicons)")
-  .option("-f, --format <format>", "Output format: react, vue, svelte, svg, json", "react")
+  .option("-f, --format <format>", "Output format: react, vue, svelte, svg, json")
   .option("-o, --output <path>", "Write to file instead of stdout")
+  .option("-c, --copy", "Copy to clipboard instead of stdout")
   .action(async (name: string, options) => {
     try {
       const { icons } = await fetchIcons({
@@ -646,12 +1073,22 @@ program
         process.exit(1);
       }
 
+      // Auto-detect format if not specified
+      let format = options.format;
+      if (!format) {
+        const { framework, reason } = detectFramework();
+        format = getFormatForFramework(framework);
+        if (framework && (options.copy || options.output)) {
+          console.error(chalk.dim(`Auto-detected: ${reason} → ${format}`));
+        }
+      }
+
       let content: string;
       const componentName = toPascalCase(icon.normalizedName);
       const svgAttrs = getSvgAttributes(icon);
       const jsxAttrs = getJsxAttributes(icon);
 
-      switch (options.format) {
+      switch (format) {
         case "svg":
           content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${svgAttrs} aria-hidden="true" focusable="false">
   ${icon.content}
@@ -727,7 +1164,16 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
           break;
       }
 
-      if (options.output) {
+      // Handle output: clipboard, file, or stdout
+      if (options.copy) {
+        const success = await copyToClipboard(content);
+        if (success) {
+          console.log(chalk.green(`✓ ${componentName} copied to clipboard (${format})`));
+        } else {
+          console.error(chalk.red("Failed to copy to clipboard"));
+          process.exit(1);
+        }
+      } else if (options.output) {
         const fullPath = resolve(process.cwd(), options.output);
         mkdirSync(dirname(fullPath), { recursive: true });
         writeFileSync(fullPath, content, "utf-8");
@@ -749,16 +1195,37 @@ program
   .option("-q, --query <query>", "Search query")
   .option("-c, --category <category>", "Filter by category")
   .option("-s, --source <source>", "Filter by source (lucide, phosphor, hugeicons)")
-  .option("-f, --format <format>", "Output format: react, vue, svelte, svg, json", "react")
+  .option("-f, --format <format>", "Output format: react, vue, svelte, svg, json")
   .option("-o, --output <path>", "Output file/directory path")
   .option("-l, --limit <number>", "Maximum number of icons", "100")
   .option("--single-file", "Combine all icons into one file (not recommended for components)")
+  .option("--stars", "Bundle all favorited icons")
   .action(async (options) => {
+    // Check for --stars flag
+    if (options.stars) {
+      const favorites = loadFavorites();
+      if (favorites.favorites.length === 0) {
+        console.log(chalk.yellow("No favorited icons. Use 'unicon star <name>' to add favorites."));
+        process.exit(1);
+      }
+      // Convert favorites to query
+      options.query = favorites.favorites.map(f => f.name).join(" ");
+    }
+
     if (!options.query && !options.category && !options.source) {
       console.log(
-        chalk.yellow("Please provide at least one filter: --query, --category, or --source")
+        chalk.yellow("Please provide at least one filter: --query, --category, --source, or --stars")
       );
       process.exit(1);
+    }
+
+    // Auto-detect format if not specified
+    if (!options.format) {
+      const { framework, reason } = detectFramework();
+      options.format = getFormatForFramework(framework);
+      if (framework) {
+        console.log(chalk.dim(`Auto-detected: ${reason} → ${options.format}`));
+      }
     }
 
     const isComponentFormat = ["react", "vue", "svelte"].includes(options.format);
@@ -1034,14 +1501,158 @@ program
   .command("init")
   .description("Initialize a .uniconrc.json config file")
   .option("-f, --force", "Overwrite existing config")
-  .action((options) => {
+  .option("-i, --interactive", "Interactive setup wizard")
+  .action(async (options) => {
     const configPath = resolve(process.cwd(), CONFIG_FILE);
-    
+
     if (existsSync(configPath) && !options.force) {
       console.log(chalk.yellow(`${CONFIG_FILE} already exists. Use --force to overwrite.`));
       process.exit(1);
     }
 
+    // Interactive mode
+    if (options.interactive) {
+      console.log();
+      p.intro(chalk.cyan("Unicon Setup Wizard"));
+
+      // Step 1: Detect framework
+      const { framework, reason } = detectFramework();
+      let selectedFormat: "react" | "vue" | "svelte" = "react";
+
+      if (framework) {
+        console.log(chalk.dim(`  ${reason}`));
+        const useDetected = await p.confirm({
+          message: `Use ${framework} format?`,
+          initialValue: true,
+        });
+
+        if (p.isCancel(useDetected)) {
+          p.outro(chalk.dim("Setup cancelled."));
+          return;
+        }
+
+        if (useDetected) {
+          selectedFormat = framework;
+        } else {
+          const formatChoice = await p.select({
+            message: "Select output format:",
+            options: [
+              { value: "react", label: "React", hint: "React/Next.js/Remix" },
+              { value: "vue", label: "Vue", hint: "Vue 3/Nuxt" },
+              { value: "svelte", label: "Svelte", hint: "Svelte/SvelteKit" },
+            ],
+          });
+          if (p.isCancel(formatChoice)) {
+            p.outro(chalk.dim("Setup cancelled."));
+            return;
+          }
+          selectedFormat = formatChoice as "react" | "vue" | "svelte";
+        }
+      } else {
+        const formatChoice = await p.select({
+          message: "Select output format:",
+          options: [
+            { value: "react", label: "React", hint: "React/Next.js/Remix" },
+            { value: "vue", label: "Vue", hint: "Vue 3/Nuxt" },
+            { value: "svelte", label: "Svelte", hint: "Svelte/SvelteKit" },
+          ],
+        });
+        if (p.isCancel(formatChoice)) {
+          p.outro(chalk.dim("Setup cancelled."));
+          return;
+        }
+        selectedFormat = formatChoice as "react" | "vue" | "svelte";
+      }
+
+      // Step 2: Choose icon libraries
+      const libraries = await p.multiselect({
+        message: "Which icon libraries do you want to use?",
+        options: [
+          { value: "lucide", label: "Lucide", hint: "1,900+ stroke icons" },
+          { value: "phosphor", label: "Phosphor", hint: "1,500+ fill icons" },
+          { value: "heroicons", label: "Heroicons", hint: "292 Tailwind icons" },
+          { value: "tabler", label: "Tabler", hint: "4,600+ stroke icons" },
+          { value: "feather", label: "Feather", hint: "287 minimalist icons" },
+          { value: "simple-icons", label: "Simple Icons", hint: "3,300+ brand logos" },
+        ],
+        required: false,
+      });
+
+      if (p.isCancel(libraries)) {
+        p.outro(chalk.dim("Setup cancelled."));
+        return;
+      }
+
+      // Step 3: Set output directory
+      const outputDir = await p.text({
+        message: "Icon output directory:",
+        placeholder: "./src/icons",
+        defaultValue: "./src/icons",
+      });
+
+      if (p.isCancel(outputDir)) {
+        p.outro(chalk.dim("Setup cancelled."));
+        return;
+      }
+
+      // Step 4: Create starter bundle?
+      const createStarter = await p.confirm({
+        message: "Create a starter bundle with common icons?",
+        initialValue: true,
+      });
+
+      if (p.isCancel(createStarter)) {
+        p.outro(chalk.dim("Setup cancelled."));
+        return;
+      }
+
+      // Build config
+      const ext = selectedFormat === "react" ? "tsx" : selectedFormat;
+      const bundles: BundleConfig[] = [];
+
+      if (createStarter) {
+        bundles.push({
+          name: "common",
+          query: "home settings user search menu close check arrow-right arrow-left",
+          format: selectedFormat,
+          limit: 20,
+          output: `${outputDir}/common.${ext}`,
+        });
+      }
+
+      // Add library-specific bundles if selected
+      const selectedLibraries = libraries as string[];
+      if (selectedLibraries.length > 0) {
+        for (const lib of selectedLibraries) {
+          bundles.push({
+            name: lib,
+            source: lib,
+            format: selectedFormat,
+            limit: 50,
+            output: `${outputDir}/${lib}.${ext}`,
+          });
+        }
+      }
+
+      const config: UniconConfig = {
+        $schema: "https://unicon.webrenew.com/schema/uniconrc.json",
+        bundles,
+      };
+
+      writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+
+      p.outro(chalk.green(`Created ${CONFIG_FILE}`));
+      console.log();
+      console.log(chalk.dim("Bundles configured:"));
+      config.bundles.forEach((bundle) => {
+        console.log(`  ${chalk.cyan(bundle.name)} → ${bundle.output}`);
+      });
+      console.log();
+      console.log(chalk.dim(`Run ${chalk.white("unicon sync")} to generate bundles.`));
+      return;
+    }
+
+    // Non-interactive mode
     const config = createDefaultConfig();
     writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
 
@@ -1059,84 +1670,138 @@ program
   .description("Generate all bundles from .uniconrc.json")
   .option("-n, --name <name>", "Sync only a specific bundle by name")
   .option("-d, --dry-run", "Show what would be generated without writing files")
+  .option("-w, --watch", "Watch for config changes and re-sync automatically")
   .action(async (options) => {
-    const config = loadConfig();
-    
-    if (!config) {
-      console.log(chalk.yellow(`No ${CONFIG_FILE} found. Run ${chalk.white("unicon init")} first.`));
-      process.exit(1);
-    }
+    // Helper function to perform sync
+    async function performSync(): Promise<{ success: number; error: number }> {
+      const config = loadConfig();
 
-    const bundlesToSync = options.name
-      ? config.bundles.filter((b) => b.name === options.name)
-      : config.bundles;
-
-    if (bundlesToSync.length === 0) {
-      if (options.name) {
-        console.log(chalk.yellow(`Bundle "${options.name}" not found in config.`));
-      } else {
-        console.log(chalk.yellow("No bundles configured."));
+      if (!config) {
+        console.log(chalk.yellow(`No ${CONFIG_FILE} found. Run ${chalk.white("unicon init")} first.`));
+        return { success: 0, error: 1 };
       }
-      process.exit(1);
-    }
 
-    console.log(chalk.bold(`Syncing ${bundlesToSync.length} bundle${bundlesToSync.length > 1 ? "s" : ""}...\n`));
+      const bundlesToSync = options.name
+        ? config.bundles.filter((b) => b.name === options.name)
+        : config.bundles;
 
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const bundle of bundlesToSync) {
-      const spinner = ora(`${bundle.name}: Fetching icons...`).start();
-
-      try {
-        if (!bundle.query && !bundle.category && !bundle.source) {
-          spinner.warn(`${bundle.name}: Skipped (no query, category, or source specified)`);
-          continue;
-        }
-
-        const { icons } = await fetchIcons({
-          query: bundle.query,
-          category: bundle.category,
-          source: bundle.source,
-          limit: bundle.limit || 100,
-        });
-
-        if (icons.length === 0) {
-          spinner.warn(`${bundle.name}: No icons found`);
-          continue;
-        }
-
-        const format = bundle.format || "react";
-        let content: string;
-
-        switch (format) {
-          case "svg":
-            content = generateSvgBundle(icons);
-            break;
-          case "json":
-            content = generateJsonBundle(icons);
-            break;
-          case "react":
-          default:
-            content = generateReactComponents(icons);
-            break;
-        }
-
-        if (options.dryRun) {
-          spinner.info(`${bundle.name}: Would write ${icons.length} icons to ${bundle.output}`);
+      if (bundlesToSync.length === 0) {
+        if (options.name) {
+          console.log(chalk.yellow(`Bundle "${options.name}" not found in config.`));
         } else {
-          const fullPath = resolve(process.cwd(), bundle.output);
-          mkdirSync(dirname(fullPath), { recursive: true });
-          writeFileSync(fullPath, content, "utf-8");
-          spinner.succeed(`${bundle.name}: ${chalk.green(icons.length)} icons → ${chalk.cyan(bundle.output)}`);
+          console.log(chalk.yellow("No bundles configured."));
         }
-
-        successCount++;
-      } catch (error) {
-        spinner.fail(`${bundle.name}: ${error instanceof Error ? error.message : "Unknown error"}`);
-        errorCount++;
+        return { success: 0, error: 1 };
       }
+
+      console.log(chalk.bold(`Syncing ${bundlesToSync.length} bundle${bundlesToSync.length > 1 ? "s" : ""}...\n`));
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const bundle of bundlesToSync) {
+        const spinner = ora(`${bundle.name}: Fetching icons...`).start();
+
+        try {
+          if (!bundle.query && !bundle.category && !bundle.source) {
+            spinner.warn(`${bundle.name}: Skipped (no query, category, or source specified)`);
+            continue;
+          }
+
+          const { icons } = await fetchIcons({
+            query: bundle.query,
+            category: bundle.category,
+            source: bundle.source,
+            limit: bundle.limit || 100,
+          }, { useCache: !options.watch }); // Disable cache in watch mode
+
+          if (icons.length === 0) {
+            spinner.warn(`${bundle.name}: No icons found`);
+            continue;
+          }
+
+          // Auto-detect format if not specified
+          let format = bundle.format;
+          if (!format) {
+            const { framework } = detectFramework();
+            format = getFormatForFramework(framework);
+          }
+
+          let content: string;
+
+          switch (format) {
+            case "svg":
+              content = generateSvgBundle(icons);
+              break;
+            case "json":
+              content = generateJsonBundle(icons);
+              break;
+            case "react":
+            default:
+              content = generateReactComponents(icons);
+              break;
+          }
+
+          if (options.dryRun) {
+            spinner.info(`${bundle.name}: Would write ${icons.length} icons to ${bundle.output}`);
+          } else {
+            const fullPath = resolve(process.cwd(), bundle.output);
+            mkdirSync(dirname(fullPath), { recursive: true });
+            writeFileSync(fullPath, content, "utf-8");
+            spinner.succeed(`${bundle.name}: ${chalk.green(icons.length)} icons → ${chalk.cyan(bundle.output)}`);
+          }
+
+          successCount++;
+        } catch (error) {
+          spinner.fail(`${bundle.name}: ${error instanceof Error ? error.message : "Unknown error"}`);
+          errorCount++;
+        }
+      }
+
+      return { success: successCount, error: errorCount };
     }
+
+    // Watch mode
+    if (options.watch) {
+      const configPath = resolve(process.cwd(), CONFIG_FILE);
+
+      if (!existsSync(configPath)) {
+        console.log(chalk.yellow(`No ${CONFIG_FILE} found. Run ${chalk.white("unicon init")} first.`));
+        process.exit(1);
+      }
+
+      console.log(chalk.cyan("Watch mode enabled. Press Ctrl+C to exit.\n"));
+
+      // Initial sync
+      await performSync();
+      console.log();
+      console.log(chalk.dim(`Watching ${CONFIG_FILE} for changes...`));
+
+      // Watch for changes
+      const watcher = watchConfig(configPath, async () => {
+        console.log();
+        console.log(chalk.cyan(`${CONFIG_FILE} changed, re-syncing...`));
+        console.log();
+        await performSync();
+        console.log();
+        console.log(chalk.dim(`Watching ${CONFIG_FILE} for changes...`));
+      });
+
+      // Keep process running
+      process.on("SIGINT", () => {
+        console.log();
+        console.log(chalk.dim("Watch mode stopped."));
+        watcher.close();
+        process.exit(0);
+      });
+
+      // Prevent the process from exiting
+      await new Promise(() => {});
+      return;
+    }
+
+    // Normal sync
+    const { success: successCount, error: errorCount } = await performSync();
 
     console.log();
     if (errorCount === 0) {
@@ -1888,6 +2553,516 @@ program
     console.log(chalk.dim("Your AI assistant can now help you add icons with Unicon!"));
     console.log(chalk.dim(`Try: "Add a home icon to my project"`));
     console.log();
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Favorites Commands
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Star command - Add to favorites
+program
+  .command("star <name>")
+  .description("Add an icon to favorites")
+  .option("-s, --source <source>", "Prefer source (lucide, phosphor, hugeicons)")
+  .action(async (name: string, options) => {
+    const spinner = ora("Finding icon...").start();
+
+    try {
+      const { icons } = await fetchIcons({
+        query: name,
+        source: options.source,
+        limit: 10,
+      });
+
+      const exactMatch = icons.find(
+        (i) => i.normalizedName === name || i.normalizedName === name.toLowerCase()
+      );
+      const icon = exactMatch || icons[0];
+
+      if (!icon) {
+        spinner.fail(`Icon "${name}" not found.`);
+        process.exit(1);
+      }
+
+      spinner.stop();
+
+      const added = addFavorite(icon);
+      if (added) {
+        console.log(chalk.green(`★ Added ${chalk.bold(icon.normalizedName)} to favorites`));
+      } else {
+        console.log(chalk.yellow(`${icon.normalizedName} is already in favorites`));
+      }
+    } catch (error) {
+      spinner.fail("Failed to add favorite");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+  });
+
+// Unstar command - Remove from favorites
+program
+  .command("unstar <name>")
+  .description("Remove an icon from favorites")
+  .action((name: string) => {
+    const removed = removeFavorite(name);
+    if (removed) {
+      console.log(chalk.green(`☆ Removed ${chalk.bold(name)} from favorites`));
+    } else {
+      console.log(chalk.yellow(`${name} is not in favorites`));
+    }
+  });
+
+// Stars command - List favorites
+program
+  .command("stars")
+  .description("List all favorited icons")
+  .option("-j, --json", "Output as JSON")
+  .action((options) => {
+    const data = loadFavorites();
+
+    if (data.favorites.length === 0) {
+      console.log(chalk.yellow("No favorites yet. Use 'unicon star <name>' to add icons."));
+      return;
+    }
+
+    if (options.json) {
+      console.log(JSON.stringify(data.favorites, null, 2));
+      return;
+    }
+
+    console.log(chalk.bold(`\nFavorites (${data.favorites.length}):\n`));
+
+    for (const fav of data.favorites) {
+      const date = new Date(fav.addedAt).toLocaleDateString();
+      console.log(`  ${chalk.yellow("★")} ${chalk.green(fav.name)} ${chalk.dim(`[${fav.sourceId}]`)} ${chalk.dim(date)}`);
+    }
+
+    console.log();
+    console.log(chalk.dim(`Bundle all: ${chalk.white("unicon bundle --stars")}`));
+    console.log(chalk.dim(`Remove:     ${chalk.white("unicon unstar <name>")}`));
+    console.log();
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Quick Add to Bundle
+// ─────────────────────────────────────────────────────────────────────────────
+
+program
+  .command("bundle:add <bundle> <icons...>")
+  .description("Add icons to an existing bundle")
+  .action(async (bundleName: string, iconNames: string[]) => {
+    const config = loadConfig();
+
+    if (!config) {
+      console.log(chalk.yellow(`No ${CONFIG_FILE} found. Run ${chalk.white("unicon init")} first.`));
+      process.exit(1);
+    }
+
+    const bundle = config.bundles.find(b => b.name === bundleName);
+
+    if (!bundle) {
+      console.log(chalk.yellow(`Bundle "${bundleName}" not found.`));
+      console.log(chalk.dim(`Available bundles: ${config.bundles.map(b => b.name).join(", ")}`));
+      process.exit(1);
+    }
+
+    // Append icons to existing query
+    const existingQuery = bundle.query || "";
+    const newIcons = iconNames.join(" ");
+    bundle.query = existingQuery ? `${existingQuery} ${newIcons}` : newIcons;
+
+    // Save updated config
+    const configPath = resolve(process.cwd(), CONFIG_FILE);
+    writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+
+    console.log(chalk.green(`✓ Added ${iconNames.length} icon(s) to bundle "${bundleName}"`));
+    console.log(chalk.dim(`  Query: ${bundle.query}`));
+    console.log();
+
+    // Re-sync the bundle
+    const shouldSync = await confirm("Sync bundle now?");
+    if (shouldSync) {
+      const spinner = ora(`${bundleName}: Fetching icons...`).start();
+
+      try {
+        const { icons } = await fetchIcons({
+          query: bundle.query,
+          category: bundle.category,
+          source: bundle.source,
+          limit: bundle.limit || 100,
+        });
+
+        if (icons.length === 0) {
+          spinner.warn(`${bundleName}: No icons found`);
+          return;
+        }
+
+        const format = bundle.format || "react";
+        let content: string;
+
+        switch (format) {
+          case "svg":
+            content = generateSvgBundle(icons);
+            break;
+          case "json":
+            content = generateJsonBundle(icons);
+            break;
+          case "react":
+          default:
+            content = generateReactComponents(icons);
+            break;
+        }
+
+        const fullPath = resolve(process.cwd(), bundle.output);
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, content, "utf-8");
+        spinner.succeed(`${bundleName}: ${chalk.green(icons.length)} icons → ${chalk.cyan(bundle.output)}`);
+      } catch (error) {
+        spinner.fail(`${bundleName}: ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Interactive Browse
+// ─────────────────────────────────────────────────────────────────────────────
+
+program
+  .command("browse")
+  .description("Interactive icon browser with fuzzy search")
+  .option("-s, --source <source>", "Filter by source")
+  .option("-c, --category <category>", "Filter by category")
+  .action(async (options) => {
+    console.log();
+    p.intro(chalk.cyan("Unicon Browser"));
+
+    // Get search query
+    const query = await p.text({
+      message: "Search icons:",
+      placeholder: "e.g., arrow, dashboard, notification",
+    });
+
+    if (p.isCancel(query)) {
+      p.outro(chalk.dim("Cancelled."));
+      return;
+    }
+
+    const spinner = ora("Searching...").start();
+
+    try {
+      const { icons } = await fetchIcons({
+        query: query as string,
+        source: options.source,
+        category: options.category,
+        limit: 50,
+      });
+
+      spinner.stop();
+
+      if (icons.length === 0) {
+        p.outro(chalk.yellow("No icons found."));
+        return;
+      }
+
+      // Multi-select icons
+      const selected = await p.multiselect({
+        message: `Found ${icons.length} icons. Select to continue:`,
+        options: icons.map(icon => ({
+          value: icon,
+          label: icon.normalizedName,
+          hint: `${icon.sourceId}${icon.category ? ` / ${icon.category}` : ""}`,
+        })),
+      });
+
+      if (p.isCancel(selected)) {
+        p.outro(chalk.dim("Cancelled."));
+        return;
+      }
+
+      const selectedIcons = selected as Icon[];
+      if (selectedIcons.length === 0) {
+        p.outro(chalk.yellow("No icons selected."));
+        return;
+      }
+
+      // Ask what to do
+      const action = await p.select({
+        message: `What would you like to do with ${selectedIcons.length} icon(s)?`,
+        options: [
+          { value: "copy", label: "Copy to clipboard", hint: "Copy as React components" },
+          { value: "save", label: "Save to files", hint: "Write individual files" },
+          { value: "star", label: "Add to favorites", hint: "Star for later use" },
+          { value: "preview", label: "Preview ASCII", hint: "Show ASCII art previews" },
+        ],
+      });
+
+      if (p.isCancel(action)) {
+        p.outro(chalk.dim("Cancelled."));
+        return;
+      }
+
+      const { framework } = detectFramework();
+      const format = getFormatForFramework(framework);
+
+      switch (action) {
+        case "copy": {
+          const components = selectedIcons.map(icon => {
+            const name = toPascalCase(icon.normalizedName);
+            const jsxAttrs = getJsxAttributes(icon);
+            return `export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${jsxAttrs} aria-hidden="true" focusable="false" className={className} {...props}>
+      ${icon.content}
+    </svg>
+  );
+}`;
+          });
+          const content = `import type { SVGProps } from "react";\n\n${components.join("\n\n")}`;
+          const success = await copyToClipboard(content);
+          p.outro(success
+            ? chalk.green(`✓ ${selectedIcons.length} icon(s) copied to clipboard`)
+            : chalk.red("Failed to copy to clipboard")
+          );
+          break;
+        }
+        case "save": {
+          const outputPath = await p.text({
+            message: "Output directory:",
+            placeholder: "./src/icons",
+            defaultValue: "./src/icons",
+          });
+          if (p.isCancel(outputPath)) {
+            p.outro(chalk.dim("Cancelled."));
+            return;
+          }
+
+          const outDir = resolve(process.cwd(), outputPath as string);
+          mkdirSync(outDir, { recursive: true });
+
+          for (const icon of selectedIcons) {
+            const name = toPascalCase(icon.normalizedName);
+            const jsxAttrs = getJsxAttributes(icon);
+            const content = `import type { SVGProps } from "react";
+
+export function ${name}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${jsxAttrs} aria-hidden="true" focusable="false" className={className} {...props}>
+      ${icon.content}
+    </svg>
+  );
+}`;
+            writeFileSync(join(outDir, `${icon.normalizedName}.tsx`), content, "utf-8");
+          }
+          p.outro(chalk.green(`✓ ${selectedIcons.length} icon(s) saved to ${outputPath}`));
+          break;
+        }
+        case "star": {
+          let added = 0;
+          for (const icon of selectedIcons) {
+            if (addFavorite(icon)) added++;
+          }
+          p.outro(chalk.green(`✓ Added ${added} icon(s) to favorites`));
+          break;
+        }
+        case "preview": {
+          console.log();
+          for (const icon of selectedIcons) {
+            console.log(chalk.bold.cyan(icon.normalizedName) + chalk.dim(` (${icon.sourceId})`));
+            console.log(chalk.dim("─".repeat(20)));
+            console.log(chalk.yellow(renderAsciiPreview(icon, 20, 10)));
+            console.log();
+          }
+          p.outro(chalk.dim("Preview complete."));
+          break;
+        }
+      }
+    } catch (error) {
+      spinner.stop();
+      p.outro(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Icon Comparison
+// ─────────────────────────────────────────────────────────────────────────────
+
+program
+  .command("compare <concept>")
+  .description("Compare the same icon concept across different libraries")
+  .option("-w, --width <number>", "Preview width", "16")
+  .option("-h, --height <number>", "Preview height", "10")
+  .action(async (concept: string, options) => {
+    const spinner = ora(`Finding "${concept}" across libraries...`).start();
+
+    const sources = ["lucide", "phosphor", "heroicons", "tabler", "feather", "iconoir"];
+    const results: { source: string; icon: Icon | null }[] = [];
+
+    try {
+      // Fetch from each source
+      for (const source of sources) {
+        try {
+          const { icons } = await fetchIcons({
+            query: concept,
+            source,
+            limit: 1,
+          });
+
+          const match = icons.find(i =>
+            i.normalizedName.includes(concept.toLowerCase()) ||
+            concept.toLowerCase().includes(i.normalizedName)
+          ) || icons[0] || null;
+
+          results.push({ source, icon: match });
+        } catch {
+          results.push({ source, icon: null });
+        }
+      }
+
+      spinner.stop();
+
+      console.log();
+      console.log(chalk.bold(`Comparison: "${concept}"\n`));
+
+      const width = parseInt(options.width, 10);
+      const height = parseInt(options.height, 10);
+
+      // Display side by side
+      for (const { source, icon } of results) {
+        if (!icon) {
+          console.log(chalk.dim(`${source.padEnd(12)} - not found`));
+          continue;
+        }
+
+        console.log(chalk.cyan(source.padEnd(12)) + chalk.green(icon.normalizedName));
+        console.log(chalk.dim("─".repeat(width)));
+
+        const preview = renderAsciiPreview(icon, width, height);
+        const lines = preview.split("\n");
+        for (const line of lines) {
+          console.log(chalk.yellow(line));
+        }
+
+        console.log();
+      }
+
+      console.log(chalk.dim("Get an icon:"));
+      results
+        .filter(r => r.icon)
+        .slice(0, 3)
+        .forEach(r => {
+          console.log(chalk.dim(`  unicon get ${r.icon!.normalizedName} --source ${r.source}`));
+        });
+      console.log();
+    } catch (error) {
+      spinner.fail("Comparison failed");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Usage Audit
+// ─────────────────────────────────────────────────────────────────────────────
+
+program
+  .command("audit")
+  .description("Audit project for icon usage vs bundled icons")
+  .option("-j, --json", "Output as JSON")
+  .option("-v, --verbose", "Show file locations for each icon")
+  .action(async (options) => {
+    const spinner = ora("Scanning project...").start();
+
+    try {
+      const result = await auditProject();
+      spinner.stop();
+
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+        return;
+      }
+
+      console.log();
+      console.log(chalk.bold("Icon Usage Audit\n"));
+
+      // Summary
+      console.log(chalk.dim("─".repeat(50)));
+      console.log(`  ${chalk.cyan("Bundled:")}  ${result.bundled.length} icons in config`);
+      console.log(`  ${chalk.green("Used:")}     ${result.used.length} icons found in code`);
+      console.log(`  ${chalk.yellow("Unused:")}   ${result.unused.length} bundled but not imported`);
+      console.log(`  ${chalk.red("Missing:")}  ${result.missing.length} imported but not bundled`);
+      console.log(chalk.dim("─".repeat(50)));
+      console.log();
+
+      // Unused icons (bundled but not used)
+      if (result.unused.length > 0) {
+        console.log(chalk.yellow.bold(`Unused Icons (${result.unused.length}):`));
+        console.log(chalk.dim("These icons are bundled but not imported in your code:\n"));
+        for (const name of result.unused.slice(0, 20)) {
+          console.log(`  ${chalk.yellow("○")} ${name}`);
+        }
+        if (result.unused.length > 20) {
+          console.log(chalk.dim(`  ... and ${result.unused.length - 20} more`));
+        }
+        console.log();
+      }
+
+      // Missing icons (used but not bundled)
+      if (result.missing.length > 0) {
+        console.log(chalk.red.bold(`Missing Icons (${result.missing.length}):`));
+        console.log(chalk.dim("These icons are imported but not in your bundles:\n"));
+        for (const name of result.missing.slice(0, 20)) {
+          const locations = result.usageLocations[name] || [];
+          console.log(`  ${chalk.red("✗")} ${name}`);
+          if (options.verbose && locations.length > 0) {
+            for (const loc of locations.slice(0, 3)) {
+              const relPath = loc.replace(process.cwd() + "/", "");
+              console.log(chalk.dim(`      ${relPath}`));
+            }
+            if (locations.length > 3) {
+              console.log(chalk.dim(`      ... and ${locations.length - 3} more files`));
+            }
+          }
+        }
+        if (result.missing.length > 20) {
+          console.log(chalk.dim(`  ... and ${result.missing.length - 20} more`));
+        }
+        console.log();
+
+        // Suggest adding missing icons
+        if (result.missing.length > 0 && result.missing.length <= 10) {
+          console.log(chalk.dim("Add missing icons:"));
+          console.log(chalk.dim(`  unicon bundle --query "${result.missing.join(" ")}" -o ./src/icons/`));
+          console.log();
+        }
+      }
+
+      // Used icons (verbose mode)
+      if (options.verbose && result.used.length > 0) {
+        console.log(chalk.green.bold(`Used Icons (${result.used.length}):`));
+        for (const name of result.used.slice(0, 30)) {
+          const locations = result.usageLocations[name] || [];
+          console.log(`  ${chalk.green("✓")} ${name} ${chalk.dim(`(${locations.length} file${locations.length > 1 ? "s" : ""})`)}`);
+        }
+        if (result.used.length > 30) {
+          console.log(chalk.dim(`  ... and ${result.used.length - 30} more`));
+        }
+        console.log();
+      }
+
+      // Final verdict
+      if (result.unused.length === 0 && result.missing.length === 0) {
+        console.log(chalk.green("✓ All bundled icons are used and all used icons are bundled!"));
+      } else if (result.missing.length > 0) {
+        console.log(chalk.yellow("⚠ Some icons need attention. See above for details."));
+      } else {
+        console.log(chalk.dim("Consider removing unused icons to reduce bundle size."));
+      }
+      console.log();
+    } catch (error) {
+      spinner.fail("Audit failed");
+      console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+      process.exit(1);
+    }
   });
 
 program.parse();

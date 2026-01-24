@@ -200,7 +200,7 @@ Test the local bridge server:
 
 - [ ] **Test: List libraries**
   Prompt: "What icon libraries are available in Unicon?"
-  Expected: Should show 8 libraries with counts
+  Expected: Should show 9 libraries with counts
 
 - [ ] **Test: Search**
   Prompt: "Search for arrow icons in Lucide"
@@ -240,7 +240,7 @@ Test the local bridge server:
 
 - [ ] **Test: Library stats**
   Prompt: "How many icons does Unicon have?"
-  Expected: Should show ~14,700 total with breakdown
+  Expected: Should show ~19,000 total with breakdown
 
 ## Post-Deployment Testing
 

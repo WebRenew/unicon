@@ -2,7 +2,7 @@
 
 ## Overview
 
-Create a Claude Code Skill to help **users integrate Unicon icons into their projects**. Unicon provides 14,700+ icons from 8 libraries (Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons) via a CLI tool and API.
+Create a Claude Code Skill to help **users integrate Unicon icons into their projects**. Unicon provides 19,000+ icons from 9 libraries (Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons) via a CLI tool and API.
 
 ---
 
@@ -46,7 +46,7 @@ From the skill-creator guide:
 ### Trigger Description
 ```
 Help users add icons to their projects using the Unicon icon library. 
-Unicon provides 14,700+ icons from Lucide, Phosphor, Hugeicons, Heroicons, 
+Unicon provides 19,000+ icons from Lucide, Phosphor, Hugeicons, Heroicons, 
 Tabler, Feather, Remix, and Simple Icons. Use when:
 (1) Adding icons to React, Vue, Svelte, or any web project
 (2) Using the unicon CLI to search, get, or bundle icons
@@ -87,7 +87,7 @@ unicon bundle --category Dashboards -o ./icons
 ```
 
 ### Section 2: Core Concepts (~100 words)
-- **14,700+ icons** from 8 libraries in one place
+- **19,000+ icons** from 9 libraries in one place
 - **Output formats**: react, vue, svelte, svg, json
 - **Tree-shakeable**: generates only icons you use
 - **Config-driven**: define bundles in `.uniconrc.json`, regenerate with `unicon sync`

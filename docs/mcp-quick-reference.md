@@ -112,6 +112,7 @@ All icons use: `library:icon-name`
 | Remix | `remix` | 2,000+ | Line & Fill |
 | Hugeicons | `hugeicons` | 3,000+ | Multiple styles |
 | Simple Icons | `simple-icons` | 2,000+ | Brand logos |
+| Iconoir | `iconoir` | 1,600+ | Outline |
 
 ## Output Formats
 

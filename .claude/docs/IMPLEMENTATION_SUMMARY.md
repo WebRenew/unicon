@@ -19,7 +19,7 @@ REST API that provides MCP-compatible functionality:
 - **OPTIONS /api/mcp** - CORS support
 
 **Available Tools:**
-- `search_icons` - Search 14,700+ icons across 8 libraries
+- `search_icons` - Search 19,000+ icons across 9 libraries
 - `get_icon` - Get icon code in React/Vue/Svelte/SVG/JSON
 - `get_multiple_icons` - Batch retrieve up to 50 icons
 
@@ -102,7 +102,7 @@ Complete documentation for users:
          │
 ┌────────▼─────────┐
 │  SQLite DB       │  Icon Database
-│  14,700+ icons   │
+│  19,000+ icons   │
 └──────────────────┘
 ```
 

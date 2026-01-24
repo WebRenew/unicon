@@ -66,7 +66,7 @@ Claude will read the `unicon://sources` resource and show you:
 - Lucide Icons (1,456 icons)
 - Phosphor Icons (7,488 icons)
 - Heroicons (292 icons)
-- And 5 more libraries!
+- And 6 more libraries!
 
 ### 2. Search for Icons
 

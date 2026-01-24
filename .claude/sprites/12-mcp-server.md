@@ -2,7 +2,7 @@
 
 ## Overview
 
-Create a **hosted MCP (Model Context Protocol) server** that allows LLM applications (Claude, Cursor, etc.) to search, retrieve, and add icons from Unicon's 14,700+ icon library directly into user projects.
+Create a **hosted MCP (Model Context Protocol) server** that allows LLM applications (Claude, Cursor, etc.) to search, retrieve, and add icons from Unicon's 19,000+ icon library directly into user projects.
 
 **Value Proposition:**
 - LLMs can programmatically access icon data during code generation
@@ -39,7 +39,7 @@ Create a **hosted MCP (Model Context Protocol) server** that allows LLM applicat
 │                 │                                │
 │  ┌──────────────▼───────────────────────────┐   │
 │  │      Unicon Database (SQLite/Turso)      │   │
-│  │  - 14,700+ icons                         │   │
+│  │  - 19,000+ icons                         │   │
 │  │  - Embeddings for semantic search        │   │
 │  └──────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────┘
@@ -111,7 +111,7 @@ Allow LLMs to perform searches and retrieve icon code in various formats.
 
 #### Tool: `search_icons`
 
-**Purpose:** AI-powered semantic search across 14,700+ icons
+**Purpose:** AI-powered semantic search across 19,000+ icons
 
 **Input Schema:**
 ```typescript
@@ -268,7 +268,7 @@ server.prompt("add_icons_to_project", async () => ({
 2. Which format? (React, Vue, Svelte, or plain SVG)
 3. Which icon library do you prefer? (Lucide, Phosphor, Heroicons, etc.)
 
-I'll search Unicon's 14,700+ icon library and generate the code for you.`
+I'll search Unicon's 19,000+ icon library and generate the code for you.`
     }
   }]
 }));
@@ -751,7 +751,7 @@ User's Machine                  Cloud
                                       │
                                ┌──────▼───────┐
                                │ SQLite DB    │
-                               │ 14,700 icons │
+                               │ 19,000 icons │
                                └──────────────┘
 ```
 

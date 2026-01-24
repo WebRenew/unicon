@@ -228,3 +228,4 @@ Icon libraries and their licenses:
 - [Feather Icons](https://feathericons.com) — MIT License
 - [Remix Icon](https://remixicon.com) — Apache-2.0 License
 - [Simple Icons](https://simpleicons.org) — CC0 1.0 Universal (brand logos are trademarks of their respective owners)
+- [Iconoir](https://iconoir.com) — MIT License

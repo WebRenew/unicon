@@ -10,7 +10,7 @@ Created comprehensive hosted documentation for Unicon covering CLI, MCP, and gen
 
 **Content:**
 - Overview of what Unicon is
-- Introduction to all 8 icon libraries (14,700+ icons)
+- Introduction to all 9 icon libraries (19,000+ icons)
 - Three ways to use Unicon:
   - Web Interface
   - CLI Tool
