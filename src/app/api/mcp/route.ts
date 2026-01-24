@@ -150,14 +150,14 @@ function createMcpServer() {
   const server = new McpServer({
     name: "unicon",
     version: "1.0.0",
-    description: `19,000+ icons from 9 libraries in React/Vue/Svelte/SVG. Quick start: unicon_get_starter_pack({ packId: "shadcn-ui" }) for shadcn/ui projects, or "dashboard" for admin UIs. Use unicon_search_icons to find specific icons.`,
+    description: `19,000+ icons from 9 libraries in React/Vue/Svelte/SVG. Quick start: get_starter_pack({ packId: "shadcn-ui" }) for shadcn/ui projects, or "dashboard" for admin UIs. Use search_icons to find specific icons.`,
   });
 
   // ============================================
-  // TOOL: unicon_search_icons
+  // TOOL: search_icons
   // ============================================
   server.registerTool(
-    "unicon_search_icons",
+    "search_icons",
     {
       title: "Search Icons",
       description: `Search through 19,000+ icons across 9 libraries using semantic search.
@@ -281,10 +281,10 @@ Examples:
   );
 
   // ============================================
-  // TOOL: unicon_get_icon
+  // TOOL: get_icon
   // ============================================
   server.registerTool(
-    "unicon_get_icon",
+    "get_icon",
     {
       title: "Get Icon",
       description: `Retrieve source code for a specific icon in various formats.
@@ -330,7 +330,7 @@ Examples:
           content: [
             {
               type: "text",
-              text: `Error: Icon not found: "${params.iconId}". Use unicon_search_icons to find valid icon IDs, or browse https://unicon.webrenew.com`,
+              text: `Error: Icon not found: "${params.iconId}". Use search_icons to find valid icon IDs, or browse https://unicon.webrenew.com`,
             },
           ],
           isError: true,
@@ -357,10 +357,10 @@ Examples:
   );
 
   // ============================================
-  // TOOL: unicon_get_multiple_icons
+  // TOOL: get_multiple_icons
   // ============================================
   server.registerTool(
-    "unicon_get_multiple_icons",
+    "get_multiple_icons",
     {
       title: "Get Multiple Icons",
       description: `Retrieve multiple icons at once (max 50 per request).
@@ -424,7 +424,7 @@ Returns:
                 id: iconId,
                 name: "",
                 code: "",
-                error: "Icon not found. Use unicon_search_icons to find valid IDs.",
+                error: "Icon not found. Use search_icons to find valid IDs.",
               };
             }
 
@@ -464,10 +464,10 @@ Returns:
   );
 
   // ============================================
-  // TOOL: unicon_get_starter_pack
+  // TOOL: get_starter_pack
   // ============================================
   server.registerTool(
-    "unicon_get_starter_pack",
+    "get_starter_pack",
     {
       title: "Get Starter Pack",
       description: `Get a curated starter pack of icons for common use cases.

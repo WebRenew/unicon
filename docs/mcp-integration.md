@@ -214,7 +214,7 @@ curl -X POST https://unicon.webrenew.com/api/mcp \
     "id": 3,
     "method": "tools/call",
     "params": {
-      "name": "unicon_search_icons",
+      "name": "search_icons",
       "arguments": { "query": "arrow", "limit": 5 }
     }
   }'
@@ -243,7 +243,7 @@ curl -X POST https://unicon.webrenew.com/api/mcp \
 > "Search for dashboard icons in the Lucide library"
 
 **AI assistant will:**
-1. Call `unicon_search_icons` tool with query "dashboard" and source "lucide"
+1. Call `search_icons` tool with query "dashboard" and source "lucide"
 2. Show results with icon IDs, names, and categories
 3. Help you select the icons you need
 
@@ -270,7 +270,7 @@ curl -X POST https://unicon.webrenew.com/api/mcp \
 > "Get the React component for lucide:arrow-right with size 32 and strokeWidth 1.5"
 
 **AI assistant will:**
-1. Call `unicon_get_icon` tool with the icon ID and format "react"
+1. Call `get_icon` tool with the icon ID and format "react"
 2. Return ready-to-use React component code
 
 **Generated code:**
@@ -313,8 +313,8 @@ ArrowRight.displayName = 'ArrowRight';
 > "Give me React components for home, settings, and user icons from Lucide"
 
 **AI assistant will:**
-1. Call `unicon_search_icons` to find the exact icon IDs
-2. Call `unicon_get_multiple_icons` with the list of IDs
+1. Call `search_icons` to find the exact icon IDs
+2. Call `get_multiple_icons` with the list of IDs
 3. Return all components in one response
 
 ### Example 4: Different Frameworks
@@ -349,7 +349,7 @@ ArrowRight.displayName = 'ArrowRight';
 
 ## Available Tools
 
-### `unicon_search_icons`
+### `search_icons`
 
 Search through 19,000+ icons using AI-powered semantic search.
 
@@ -371,7 +371,7 @@ Search through 19,000+ icons using AI-powered semantic search.
 }
 ```
 
-### `unicon_get_icon`
+### `get_icon`
 
 Retrieve source code for a specific icon in any format.
 
@@ -394,7 +394,7 @@ Retrieve source code for a specific icon in any format.
 }
 ```
 
-### `unicon_get_multiple_icons`
+### `get_multiple_icons`
 
 Retrieve multiple icons in one request (max 50).
 
@@ -420,7 +420,7 @@ Retrieve multiple icons in one request (max 50).
 }
 ```
 
-### `unicon_get_starter_pack`
+### `get_starter_pack`
 
 Get a curated starter pack of icons for common use cases.
 
@@ -711,11 +711,11 @@ Be specific about which library to use:
 
 ### 3. Batch Multiple Icons
 
-Use `unicon_get_multiple_icons` for multiple icons:
+Use `get_multiple_icons` for multiple icons:
 
 ```
-❌ Making 10 separate unicon_get_icon calls
-✅ One unicon_get_multiple_icons call with array of IDs
+❌ Making 10 separate get_icon calls
+✅ One get_multiple_icons call with array of IDs
 ```
 
 ### 4. Use Semantic Search
@@ -752,7 +752,7 @@ Need higher limits? Contact us for API key access.
 
 ## What's Next?
 
-- [x] ~~Icon packs (curated collections)~~ - **Available now!** Use `unicon_get_starter_pack`
+- [x] ~~Icon packs (curated collections)~~ - **Available now!** Use `get_starter_pack`
 - [x] ~~Direct URL access for cloud IDEs~~ - **Available now!** Use `https://unicon.webrenew.com/api/mcp`
 - [ ] Custom icon uploads
 - [ ] Team workspaces

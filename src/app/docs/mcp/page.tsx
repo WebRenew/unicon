@@ -503,7 +503,7 @@ export default function MCPDocsPage() {
 
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_search_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">search_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Search through 19,000+ icons using AI-powered semantic search.
               </p>
@@ -520,7 +520,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_icon</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_icon</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve source code for a specific icon in any format.
               </p>
@@ -536,7 +536,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_multiple_icons</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_multiple_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Retrieve multiple icons in one request (max 50).
               </p>
@@ -552,7 +552,7 @@ export default function MCPDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
-              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_get_starter_pack</h3>
+              <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">get_starter_pack</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Get a curated starter pack of icons for common use cases.
               </p>
@@ -623,7 +623,7 @@ export default function MCPDocsPage() {
               <h3 className="font-semibold mb-2">Icon not found</h3>
               <div className="text-sm text-muted-foreground space-y-2">
                 <p>1. Verify icon ID format: <code className="text-[var(--accent-aqua)]">source:icon-name</code> (all lowercase)</p>
-                <p>2. Use <code className="text-[var(--accent-aqua)]">unicon_search_icons</code> tool first to find the exact ID</p>
+                <p>2. Use <code className="text-[var(--accent-aqua)]">search_icons</code> tool first to find the exact ID</p>
                 <p>3. Check icon exists at{" "}
                   <a href="https://unicon.webrenew.com" className="text-[var(--accent-lavender)] hover:underline">
                     unicon.webrenew.com

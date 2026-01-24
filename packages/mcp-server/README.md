@@ -84,7 +84,7 @@ Once installed, you can ask your AI assistant:
 
 ## Available Tools
 
-### `unicon_search_icons`
+### `search_icons`
 
 Search through 19,000+ icons using semantic search.
 
@@ -95,7 +95,7 @@ Search through 19,000+ icons using semantic search.
 - `limit` (optional): Max results (default: 20, max: 100)
 - `offset` (optional): Skip results for pagination (default: 0)
 
-### `unicon_get_icon`
+### `get_icon`
 
 Retrieve source code for a specific icon.
 
@@ -105,7 +105,7 @@ Retrieve source code for a specific icon.
 - `size` (optional): Icon size in pixels - default: 24
 - `strokeWidth` (optional): Stroke width for outline icons - default: 2
 
-### `unicon_get_multiple_icons`
+### `get_multiple_icons`
 
 Retrieve multiple icons at once (max 50).
 
@@ -115,7 +115,7 @@ Retrieve multiple icons at once (max 50).
 - `size` (optional): Icon size - default: 24
 - `strokeWidth` (optional): Stroke width - default: 2
 
-### `unicon_get_starter_pack`
+### `get_starter_pack`
 
 Get a curated starter pack of icons for common use cases.
 
