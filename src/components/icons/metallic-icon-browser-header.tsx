@@ -151,7 +151,7 @@ export function MetallicIconBrowserHeader({
           onClick={() => onSelectSource("all")}
           aria-label="Show all libraries"
           aria-pressed={selectedSource === "all"}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-[background-color,border-color,color,transform] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
             selectedSource === "all"
               ? "bg-black/90 dark:bg-white/90 text-white dark:text-black border-2 border-black dark:border-white"
               : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
@@ -166,15 +166,15 @@ export function MetallicIconBrowserHeader({
             onClick={() => onSelectSource(source as IconLibrary)}
             aria-label={`Filter by ${source} library`}
             aria-pressed={selectedSource === source}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
               selectedSource === source
                 ? `${SOURCE_COLORS_SELECTED[source]} text-white border-2 border-current shadow-sm`
                 : hoveredSource === source
-                  ? `${SOURCE_COLORS_HOVER[source]} border-2 border-black/20 dark:border-white/20 text-black/80 dark:text-white/80`
+                  ? `${SOURCE_COLORS_HOVER[source]} border-2 border-black/20 dark:border-white/20 text-black/80 dark:text-white/80 shadow-sm`
                   : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${selectedSource === source ? "bg-white" : SOURCE_COLORS[source]}`} />
+            <span className={`w-2 h-2 rounded-full transition-colors duration-300 ease-out ${selectedSource === source ? "bg-white" : SOURCE_COLORS[source]}`} />
             <span className="capitalize font-medium">{source}</span>
             <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>
               {count?.toLocaleString("en-US")}
