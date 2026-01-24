@@ -128,19 +128,21 @@ export const ICON_ALIASES: Record<string, string[]> = {
 /**
  * Expand a search query with aliases.
  * Returns array of terms to search for.
+ * Uses exact matching only to avoid over-expansion (e.g., "checkbox" won't expand to all "check" aliases).
  */
 export function expandSearchQuery(query: string): string[] {
   const normalizedQuery = query.toLowerCase().trim();
   const terms = new Set<string>([normalizedQuery]);
 
-  // Check if query matches any alias
+  // Check if query matches any alias key (e.g., "checkmark" -> ["check", "check-circle"])
   if (ICON_ALIASES[normalizedQuery]) {
     ICON_ALIASES[normalizedQuery].forEach((alias) => terms.add(alias));
   }
 
-  // Also check if query matches any alias value (reverse lookup)
+  // Reverse lookup: if query matches an alias value exactly, add the key and siblings
+  // (e.g., "check-circle" -> also search for "checkmark", "tick", "check")
   for (const [key, values] of Object.entries(ICON_ALIASES)) {
-    if (values.some((v) => v === normalizedQuery || normalizedQuery.includes(v))) {
+    if (values.includes(normalizedQuery)) {
       terms.add(key);
       values.forEach((v) => terms.add(v));
     }

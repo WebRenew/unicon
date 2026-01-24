@@ -6,6 +6,7 @@ from .tabler import TablerExtractor
 from .feather import FeatherExtractor
 from .remix import RemixExtractor
 from .simple_icons import SimpleIconsExtractor
+from .iconoir import IconoirExtractor
 from .base import ExtractedIcon
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "FeatherExtractor",
     "RemixExtractor",
     "SimpleIconsExtractor",
+    "IconoirExtractor",
     "ExtractedIcon",
 ]

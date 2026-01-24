@@ -27,6 +27,7 @@ from extractors import (
     FeatherExtractor,
     RemixExtractor,
     SimpleIconsExtractor,
+    IconoirExtractor,
 )
 from registry import IconRegistry
 from mapper import IconMapper
@@ -73,6 +74,11 @@ PACKAGES = {
         "npm": "simple-icons",
         "name": "Simple Icons",
         "license": "CC0-1.0",
+    },
+    "iconoir": {
+        "npm": "iconoir",
+        "name": "Iconoir",
+        "license": "MIT",
     },
 }
 
@@ -300,6 +306,31 @@ def extract_simple_icons(registry: IconRegistry, node_modules: Path) -> int:
     return inserted
 
 
+def extract_iconoir(registry: IconRegistry, node_modules: Path) -> int:
+    """Extract Iconoir icons."""
+    print("\n" + "=" * 50)
+    print("Extracting Iconoir icons...")
+    print("=" * 50)
+
+    extractor = IconoirExtractor(node_modules)
+    version = extractor.get_version()
+    icons = extractor.extract_all()
+
+    if not icons:
+        print("⚠ No Iconoir icons extracted")
+        return 0
+
+    registry.insert_source(
+        "iconoir",
+        PACKAGES["iconoir"]["name"],
+        version,
+        PACKAGES["iconoir"]["license"],
+        len(icons),
+    )
+    inserted, _ = registry.batch_insert(icons)
+    return inserted
+
+
 def run_mapping(turso_url: str, auth_token: str):
     """Run cross-library mapping."""
     print("\n" + "=" * 50)
@@ -327,6 +358,7 @@ def main():
             "feather",
             "remix",
             "simple-icons",
+            "iconoir",
             "all",
         ],
         default="all",
@@ -389,6 +421,7 @@ def main():
             "feather",
             "remix",
             "simple-icons",
+            "iconoir",
         ]
     else:
         sources = [args.source]
@@ -422,6 +455,9 @@ def main():
 
     if "simple-icons" in sources:
         total_extracted += extract_simple_icons(registry, node_modules)
+
+    if "iconoir" in sources:
+        total_extracted += extract_iconoir(registry, node_modules)
 
     print("\n" + "=" * 50)
     print(f"EXTRACTION COMPLETE: {total_extracted} total icons")

@@ -65,7 +65,7 @@ The MCP server gives Claude the *tools* to work with icons. The skill gives Clau
 | search_icons | AI-powered semantic icon search |
 | get_icon | Get a single icon by ID in any format |
 | get_multiple_icons | Get multiple icons at once |
-| list_libraries | List all 8 icon libraries |
+| list_libraries | List all 9 icon libraries |
 | list_categories | Browse icons by category |
 | get_starter_pack | Get curated icon sets |
 
@@ -332,7 +332,7 @@ bunx @webrenew/unicon skill --ide claude     # bun`}</CodeBlock>
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">list_libraries</td>
-                  <td className="py-3 px-4 text-muted-foreground">List all 8 icon libraries</td>
+                  <td className="py-3 px-4 text-muted-foreground">List all 9 icon libraries</td>
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">list_categories</td>

@@ -270,16 +270,26 @@ Examples:
 
       // If includeCode is true, return bundled code with results
       if (includeCode && dbResults.length > 0) {
-        let bundleText: string;
+        // Validate format supports bundling
+        if (format !== "react" && format !== "svg" && format !== "json") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: includeCode only supports format="react", "svg", or "json". Got "${format}". Use output="individual" for Vue/Svelte.`,
+              },
+            ],
+            isError: true,
+          };
+        }
 
+        let bundleText: string;
         if (format === "react") {
           bundleText = generateReactBundle(dbResults);
         } else if (format === "svg") {
           bundleText = generateSvgBundle(dbResults);
-        } else if (format === "json") {
-          bundleText = generateJsonBundle(dbResults);
         } else {
-          bundleText = `// Bundle mode not supported for ${format}. Use format="react".`;
+          bundleText = generateJsonBundle(dbResults);
         }
 
         const output = {
@@ -476,8 +486,20 @@ Returns:
 
       // Bundle mode: single file output (70% smaller)
       if (outputMode === "bundle") {
-        let bundleText: string;
+        // Validate format supports bundling
+        if (format !== "react" && format !== "svg" && format !== "json") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Bundle mode only supports format="react", "svg", or "json". Got "${format}". Use output="individual" for Vue/Svelte.`,
+              },
+            ],
+            isError: true,
+          };
+        }
 
+        let bundleText: string;
         if (format === "react") {
           bundleText = generateReactBundle(orderedIcons, {
             size: params.size,
@@ -488,11 +510,8 @@ Returns:
             size: params.size,
             strokeWidth: params.strokeWidth,
           });
-        } else if (format === "json") {
-          bundleText = generateJsonBundle(orderedIcons);
         } else {
-          // Vue/Svelte don't support bundle mode well, fall back to individual
-          bundleText = `// Bundle mode not supported for ${format}. Use output="individual" or format="react".`;
+          bundleText = generateJsonBundle(orderedIcons);
         }
 
         const text = truncateIfNeeded(bundleText);
@@ -648,8 +667,20 @@ Returns:
 
       // Bundle mode: single file output (70% smaller)
       if (outputMode === "bundle") {
-        let bundleText: string;
+        // Validate format supports bundling
+        if (format !== "react" && format !== "svg" && format !== "json") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Bundle mode only supports format="react", "svg", or "json". Got "${format}". Use output="individual" for Vue/Svelte.`,
+              },
+            ],
+            isError: true,
+          };
+        }
 
+        let bundleText: string;
         if (format === "react") {
           bundleText = generateReactBundle(orderedIcons, {
             size: params.size,
@@ -660,11 +691,8 @@ Returns:
             size: params.size,
             strokeWidth: params.strokeWidth,
           });
-        } else if (format === "json") {
-          bundleText = generateJsonBundle(orderedIcons);
         } else {
-          // Vue/Svelte don't support bundle mode well, fall back to individual
-          bundleText = `// Bundle mode not supported for ${format}. Use output="individual" or format="react".`;
+          bundleText = generateJsonBundle(orderedIcons);
         }
 
         const text = truncateIfNeeded(bundleText);
