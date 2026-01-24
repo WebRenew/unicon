@@ -14,6 +14,7 @@ import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { V0Icon } from "@/components/icons/ui/v0";
 import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
+import { BundleMixingWarning } from "./bundle-mixing-warning";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
@@ -250,6 +251,11 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
             </div>
           </div>
         </div>
+      )}
+
+      {/* Library Mixing Warning */}
+      {activeTab === "bundle" && items.length > 0 && (
+        <BundleMixingWarning items={items} />
       )}
 
       {/* Content */}
