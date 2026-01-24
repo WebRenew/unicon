@@ -122,7 +122,7 @@ function watchConfig(configPath, onChange) {
     close: () => watcher.close()
   };
 }
-async function scanProjectForIconUsage(patterns) {
+async function scanProjectForIconUsage() {
   const usages = [];
   function scanDir(dir) {
     if (!existsSync(dir)) return;
@@ -185,7 +185,7 @@ async function auditProject() {
       }
     }
   }
-  const usages = await scanProjectForIconUsage([]);
+  const usages = await scanProjectForIconUsage();
   const used = /* @__PURE__ */ new Set();
   const usageLocations = {};
   for (const usage of usages) {
@@ -2125,8 +2125,7 @@ program.command("browse").description("Interactive icon browser with fuzzy searc
       p.outro(chalk.dim("Cancelled."));
       return;
     }
-    const { framework } = detectFramework();
-    const format = getFormatForFramework(framework);
+    detectFramework();
     switch (action) {
       case "copy": {
         const components = selectedIcons.map((icon) => {

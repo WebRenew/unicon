@@ -201,7 +201,7 @@ interface AuditResult {
   usageLocations: Record<string, string[]>;
 }
 
-async function scanProjectForIconUsage(patterns: string[]): Promise<{ iconName: string; file: string }[]> {
+async function scanProjectForIconUsage(): Promise<{ iconName: string; file: string }[]> {
   const usages: { iconName: string; file: string }[] = [];
 
   // Recursively scan directories
@@ -292,7 +292,7 @@ async function auditProject(): Promise<AuditResult> {
   }
 
   // Scan project for icon usage
-  const usages = await scanProjectForIconUsage([]);
+  const usages = await scanProjectForIconUsage();
   const used = new Set<string>();
   const usageLocations: Record<string, string[]> = {};
 
@@ -2801,8 +2801,7 @@ program
         return;
       }
 
-      const { framework } = detectFramework();
-      const format = getFormatForFramework(framework);
+      detectFramework();
 
       switch (action) {
         case "copy": {
