@@ -7,6 +7,24 @@ import figlet from "figlet";
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
 import { dirname, resolve, join } from "path";
 import { homedir } from "os";
+import { createInterface } from "readline";
+
+/**
+ * Simple yes/no confirmation prompt
+ */
+function confirm(message: string): Promise<boolean> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${message} [y/N] `, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
+    });
+  });
+}
 
 const API_BASE = process.env.UNICON_API_URL || "https://unicon.webrenew.com";
 const CONFIG_FILE = ".uniconrc.json";
@@ -1267,10 +1285,11 @@ interface IDEConfig {
   name: string;
   dir: string;
   filename: string;
-  format: "claude" | "cursor" | "windsurf" | "generic";
+  format: "claude" | "cursor" | "generic";
   description: string;
 }
 
+// All IDEs use consistent structure: .<ide>/skills/unicon/SKILL.md + README.md
 const IDE_CONFIGS: Record<string, IDEConfig> = {
   claude: {
     name: "Claude Code",
@@ -1279,54 +1298,47 @@ const IDE_CONFIGS: Record<string, IDEConfig> = {
     format: "claude",
     description: "Claude Code (Anthropic CLI)",
   },
-  cursor: {
-    name: "Cursor",
-    dir: ".cursor/rules",
-    filename: "unicon.mdc",
-    format: "cursor",
-    description: "Cursor IDE",
-  },
-  windsurf: {
-    name: "Windsurf",
-    dir: ".windsurf/rules",
-    filename: "unicon.md",
-    format: "windsurf",
-    description: "Windsurf (Codeium)",
-  },
-  agent: {
-    name: "Agent",
-    dir: ".agent/rules",
-    filename: "unicon.md",
-    format: "generic",
-    description: "Generic .agent directory",
-  },
-  antigravity: {
-    name: "Antigravity",
-    dir: ".antigravity/rules",
-    filename: "unicon.md",
-    format: "generic",
-    description: "Antigravity AI",
-  },
-  opencode: {
-    name: "OpenCode",
-    dir: ".opencode/rules",
-    filename: "unicon.md",
-    format: "generic",
-    description: "OpenCode",
-  },
   codex: {
     name: "Codex",
-    dir: ".codex",
-    filename: "unicon.md",
+    dir: ".codex/skills/unicon",
+    filename: "SKILL.md",
     format: "generic",
     description: "OpenAI Codex CLI",
   },
-  aider: {
-    name: "Aider",
-    dir: ".aider/rules",
-    filename: "unicon.md",
+  cursor: {
+    name: "Cursor",
+    dir: ".cursor/skills/unicon",
+    filename: "SKILL.md",
+    format: "cursor",
+    description: "Cursor IDE",
+  },
+  agents: {
+    name: "Agents",
+    dir: ".agents/skills/unicon",
+    filename: "SKILL.md",
     format: "generic",
-    description: "Aider AI pair programming",
+    description: "Generic .agents directory",
+  },
+  windsurf: {
+    name: "Windsurf",
+    dir: ".windsurf/skills/unicon",
+    filename: "SKILL.md",
+    format: "generic",
+    description: "Windsurf (Codeium)",
+  },
+  opencode: {
+    name: "OpenCode",
+    dir: ".opencode/skills/unicon",
+    filename: "SKILL.md",
+    format: "generic",
+    description: "OpenCode",
+  },
+  gemini: {
+    name: "Gemini",
+    dir: ".gemini/skills/unicon",
+    filename: "SKILL.md",
+    format: "generic",
+    description: "Google Gemini CLI",
   },
 };
 
@@ -1521,63 +1533,7 @@ export function IconName({ className, ...props }: SVGProps<SVGSVGElement>) {
 `;
   }
 
-  // Windsurf format
-  if (format === "windsurf") {
-    return `# Unicon - Unified Icon Library
-
-Add icons from 15,000+ icons across Lucide, Phosphor, Heroicons, Tabler, Feather, Remix, and Simple Icons. AI-powered semantic search finds the right icon.
-
-## Quick Commands
-
-\`\`\`bash
-# Search for icons
-npx @webrenew/unicon search "dashboard"
-npx @webrenew/unicon search "notification bell"
-
-# Get single icon (React)
-npx @webrenew/unicon get home -o src/icons/Home.tsx
-
-# Get single icon (Vue/Svelte)
-npx @webrenew/unicon get home --format vue -o src/icons/Home.vue
-npx @webrenew/unicon get home --format svelte -o src/icons/Home.svelte
-
-# Bundle multiple icons (tree-shakeable)
-npx @webrenew/unicon bundle --query "arrow chevron" -o src/icons/
-npx @webrenew/unicon bundle --category Navigation -o src/icons/
-\`\`\`
-
-## Formats
-- \`--format react\` (default)
-- \`--format vue\`
-- \`--format svelte\`
-- \`--format svg\`
-
-## Sources
-- \`--source lucide\` - stroke icons
-- \`--source phosphor\` - fill icons
-- \`--source heroicons\` - Tailwind icons
-- \`--source tabler\` - stroke icons
-- \`--source simple-icons\` - brand logos
-
-## Generated React Component
-\`\`\`tsx
-export function IconName({ className, ...props }: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className} {...props}>
-      {/* paths */}
-    </svg>
-  );
-}
-\`\`\`
-
-## Tips
-- Use semantic search: "loading spinner", "send message"
-- Tree-shakeable bundles (default) - only imported icons ship
-- One icon source per project for consistency
-`;
-  }
-
-  // Generic format (for agent, antigravity, opencode, etc.)
+  // Generic format (for codex, agents, windsurf, opencode, gemini)
   return `# Unicon - Unified Icon Library
 
 Add icons from 15,000+ icons across Lucide, Phosphor, Heroicons, Tabler, Feather, Remix, and Simple Icons.
@@ -1636,6 +1592,39 @@ export function IconName({ className, ...props }: SVGProps<SVGSVGElement>) {
 1. Use semantic search - describe what you need, not exact names
 2. Use tree-shakeable bundles (default) - only imported icons ship to users
 3. Stick to one icon source per project for visual consistency
+`;
+}
+
+function getReadmeContent(): string {
+  return `# Unicon Skill
+
+This skill enables AI assistants to help you add icons to your project using the [Unicon](https://unicon.dev) unified icon library.
+
+## What is Unicon?
+
+Unicon provides access to 15,000+ icons from popular libraries:
+- **Lucide** - 1,900+ stroke icons
+- **Phosphor** - 1,500+ fill icons
+- **Heroicons** - 292 Tailwind icons
+- **Tabler** - 4,600+ stroke icons
+- **Feather** - 287 minimalist icons
+- **Remix** - 2,800+ icons
+- **Simple Icons** - 3,300+ brand logos
+- **Iconoir** - 1,500+ minimalist icons
+
+## Usage
+
+Ask your AI assistant to:
+- "Add a home icon to my project"
+- "Search for dashboard icons"
+- "Bundle navigation icons for my app"
+- "Get a loading spinner icon"
+
+## Learn More
+
+- Website: https://unicon.dev
+- CLI: \`npx @webrenew/unicon --help\`
+- GitHub: https://github.com/WebRenew/unicon
 `;
 }
 
@@ -1766,17 +1755,20 @@ program
 program
   .command("skill")
   .description("Install Unicon skill/rules for AI coding assistants")
-  .option("--ide <ide>", "Target IDE (claude, cursor, windsurf, agent, antigravity, opencode, codex, aider)")
+  .option("--ide <ide>", "Target IDE (claude, codex, cursor, agents, windsurf, opencode, gemini)")
   .option("--all", "Install for all supported IDEs")
   .option("-l, --list", "List supported IDEs")
   .option("-f, --force", "Overwrite existing skill files")
-  .action((options) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (options) => {
     // List supported IDEs
     if (options.list) {
       console.log(chalk.bold("\nSupported AI Coding Assistants:\n"));
       for (const [key, config] of Object.entries(IDE_CONFIGS)) {
         console.log(`  ${chalk.green(key.padEnd(12))} ${chalk.dim(config.description)}`);
-        console.log(`  ${" ".repeat(12)} ${chalk.dim(`→ ${config.dir}/${config.filename}`)}`);
+        console.log(`  ${" ".repeat(12)} ${chalk.dim(`→ ${config.dir}/`)}`);
+        console.log(`  ${" ".repeat(12)}   ${chalk.dim(`├── ${config.filename}`)}`);
+        console.log(`  ${" ".repeat(12)}   ${chalk.dim(`└── README.md`)}`);
       }
       console.log();
       console.log(chalk.dim(`Install with: ${chalk.white("npx @webrenew/unicon skill --ide <name>")}`));
@@ -1787,10 +1779,12 @@ program
 
     const cwd = process.cwd();
     let targetIDEs: string[] = [];
+    let needsConfirmation = false;
 
     // Install all
     if (options.all) {
       targetIDEs = Object.keys(IDE_CONFIGS);
+      needsConfirmation = true;
     }
     // Specific IDE
     else if (options.ide) {
@@ -1801,18 +1795,44 @@ program
         process.exit(1);
       }
       targetIDEs = [ide];
+      // Single explicit IDE doesn't need confirmation
     }
     // Auto-detect or prompt
     else {
       const detected = detectIDEs();
       if (detected.length > 0) {
-        console.log(chalk.cyan(`Detected IDE configurations: ${detected.join(", ")}`));
         targetIDEs = detected;
+        needsConfirmation = true; // Auto-detected needs confirmation
       } else {
         // Default to common ones if nothing detected
         console.log(chalk.yellow("No IDE configuration detected. Installing for Claude Code by default."));
         console.log(chalk.dim(`Use --ide <name> or --all for other targets.`));
         targetIDEs = ["claude"];
+      }
+    }
+
+    // Show what will be installed and ask for confirmation
+    if (needsConfirmation && !options.yes) {
+      console.log(chalk.bold("\nThe following skill directories will be created:\n"));
+      for (const ideKey of targetIDEs) {
+        const config = IDE_CONFIGS[ideKey];
+        if (!config) continue;
+        const skillFile = join(cwd, config.dir, config.filename);
+        const exists = existsSync(skillFile);
+        if (exists && !options.force) {
+          console.log(chalk.dim(`  ⊘ ${config.name.padEnd(14)} ${config.dir}/ (already exists)`));
+        } else {
+          console.log(`  ${chalk.green("+")} ${config.name.padEnd(14)} ${chalk.cyan(config.dir + "/")}`);
+          console.log(chalk.dim(`    ${" ".repeat(14)} ├── ${config.filename}`));
+          console.log(chalk.dim(`    ${" ".repeat(14)} └── README.md`));
+        }
+      }
+      console.log();
+
+      const confirmed = await confirm("Proceed with installation?");
+      if (!confirmed) {
+        console.log(chalk.yellow("\nInstallation cancelled."));
+        return;
       }
     }
 
@@ -1826,21 +1846,31 @@ program
       if (!config) continue;
 
       const targetDir = join(cwd, config.dir);
-      const targetFile = join(targetDir, config.filename);
+      const skillFile = join(targetDir, config.filename);
+      const readmeFile = join(targetDir, "README.md");
 
-      // Check if file exists
-      if (existsSync(targetFile) && !options.force) {
+      // Check if skill file exists
+      if (existsSync(skillFile) && !options.force) {
         console.log(chalk.yellow(`  ⊘ ${config.name}: Already exists (use --force to overwrite)`));
         skipped++;
         continue;
       }
 
-      // Create directory and write file
+      // Create directory and write files
       try {
         mkdirSync(targetDir, { recursive: true });
-        const content = getSkillContent(config.format);
-        writeFileSync(targetFile, content, "utf-8");
-        console.log(chalk.green(`  ✓ ${config.name}: ${config.dir}/${config.filename}`));
+
+        // Write SKILL.md
+        const skillContent = getSkillContent(config.format);
+        writeFileSync(skillFile, skillContent, "utf-8");
+
+        // Write README.md
+        const readmeContent = getReadmeContent();
+        writeFileSync(readmeFile, readmeContent, "utf-8");
+
+        console.log(chalk.green(`  ✓ ${config.name}: ${config.dir}/`));
+        console.log(chalk.dim(`      ├── ${config.filename}`));
+        console.log(chalk.dim(`      └── README.md`));
         installed++;
       } catch (error) {
         console.log(chalk.red(`  ✗ ${config.name}: ${error instanceof Error ? error.message : "Failed"}`));
@@ -1849,10 +1879,10 @@ program
 
     console.log();
     if (installed > 0) {
-      console.log(chalk.green(`Installed ${installed} skill file${installed > 1 ? "s" : ""}.`));
+      console.log(chalk.green(`Installed ${installed} skill${installed > 1 ? "s" : ""}.`));
     }
     if (skipped > 0) {
-      console.log(chalk.dim(`Skipped ${skipped} existing file${skipped > 1 ? "s" : ""}.`));
+      console.log(chalk.dim(`Skipped ${skipped} existing skill${skipped > 1 ? "s" : ""}.`));
     }
     console.log();
     console.log(chalk.dim("Your AI assistant can now help you add icons with Unicon!"));
