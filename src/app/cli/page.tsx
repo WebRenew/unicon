@@ -18,7 +18,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 
 const PAGE_MARKDOWN = `# Unicon CLI
 
-Command-line interface for searching and bundling icons from 14,700+ icons across 8 libraries.
+Command-line interface for searching and bundling icons from 19,000+ icons across 9 libraries.
 
 ## Installation
 
@@ -178,6 +178,7 @@ unicon skill --all
 | feather | 287 | Minimalist |
 | remix | 2,800+ | Comprehensive |
 | simple-icons | 3,300+ | Brand logos |
+| iconoir | 1,600+ | Regular & solid |
 
 ## Tree-Shaking
 
@@ -276,7 +277,7 @@ export default function CLIPage() {
         </div>
         <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
         <p className="text-base md:text-xl text-muted-foreground max-w-2xl">
-          Search and bundle icons from 8 libraries via command line. Define your icon sets once,
+          Search and bundle icons from 9 libraries via command line. Define your icon sets once,
           regenerate anytime with a single command.
         </p>
       </div>
@@ -504,7 +505,7 @@ unicon cache --clear  # Clear all cached data`}
         <section>
           <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Icon Sources</h2>
           <p className="text-muted-foreground mb-4 text-sm">
-            Access 14,700+ icons from 8 popular icon libraries:
+            Access 19,000+ icons from 9 popular icon libraries:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl border border-orange-500/20 bg-orange-500/5">
@@ -538,6 +539,10 @@ unicon cache --clear  # Clear all cached data`}
             <div className="p-4 rounded-xl border border-slate-500/20 bg-slate-500/5">
               <h3 className="font-mono font-medium mb-1 text-slate-400">simple-icons</h3>
               <p className="text-muted-foreground text-xs">2,000+ brand logos</p>
+            </div>
+            <div className="p-4 rounded-xl border border-teal-500/20 bg-teal-500/5">
+              <h3 className="font-mono font-medium mb-1 text-teal-400">iconoir</h3>
+              <p className="text-muted-foreground text-xs">1,600+ icons</p>
             </div>
           </div>
         </section>

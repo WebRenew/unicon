@@ -20,6 +20,12 @@ const libraryColors: Record<string, string> = {
   lucide: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20",
   phosphor: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20",
   hugeicons: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20",
+  heroicons: "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20",
+  tabler: "bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20",
+  feather: "bg-pink-500/10 text-pink-600 hover:bg-pink-500/20",
+  remix: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
+  "simple-icons": "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
+  iconoir: "bg-teal-500/10 text-teal-600 hover:bg-teal-500/20",
 };
 
 // Tooltip library colors - optimized for inverted tooltip backgrounds
@@ -29,6 +35,12 @@ const tooltipLibraryColors: Record<string, string> = {
   lucide: "text-orange-400 dark:text-orange-600",
   phosphor: "text-emerald-400 dark:text-emerald-600",
   hugeicons: "text-violet-400 dark:text-violet-600",
+  heroicons: "text-blue-400 dark:text-blue-600",
+  tabler: "text-cyan-400 dark:text-cyan-600",
+  feather: "text-pink-400 dark:text-pink-600",
+  remix: "text-red-400 dark:text-red-600",
+  "simple-icons": "text-gray-400 dark:text-gray-600",
+  iconoir: "text-teal-400 dark:text-teal-600",
 };
 
 export const IconCard = memo(function IconCard({ icon, isSelected, onClick }: IconCardProps) {

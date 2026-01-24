@@ -59,6 +59,7 @@ const SOURCE_COLORS: Record<string, string> = {
   feather: "bg-pink-500",
   remix: "bg-red-500",
   "simple-icons": "bg-gray-500",
+  iconoir: "bg-teal-500",
 };
 
 const SOURCE_COLORS_SELECTED: Record<string, string> = {
@@ -70,6 +71,7 @@ const SOURCE_COLORS_SELECTED: Record<string, string> = {
   feather: "bg-pink-500/69",
   remix: "bg-red-500/69",
   "simple-icons": "bg-gray-500/69",
+  iconoir: "bg-teal-500/69",
 };
 
 const SOURCE_OPTIONS = [
@@ -82,6 +84,7 @@ const SOURCE_OPTIONS = [
   "feather",
   "remix",
   "simple-icons",
+  "iconoir",
 ] as const;
 
 function toTitleCase(value: string): string {

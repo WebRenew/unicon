@@ -22,7 +22,7 @@ Everything you need to know about using Unicon — from browsing icons in the we
 
 ## What is Unicon?
 
-Unicon is a comprehensive icon management tool that gives you access to **14,700+ icons** from 8 popular icon libraries — all in one place. Unlike traditional icon packages that bloat your bundle with thousands of unused icons, Unicon lets you generate only the icons you need.
+Unicon is a comprehensive icon management tool that gives you access to **19,000+ icons** from 9 popular icon libraries — all in one place. Unlike traditional icon packages that bloat your bundle with thousands of unused icons, Unicon lets you generate only the icons you need.
 
 Whether you prefer browsing icons visually, using a command-line interface, or letting AI assistants find icons for you, Unicon has you covered.
 
@@ -38,6 +38,7 @@ Whether you prefer browsing icons visually, using a command-line interface, or l
 | Feather | 287 | Simple and clean |
 | Remix | 2,800+ | Comprehensive icon set |
 | Simple Icons | 3,300+ | Brand logos |
+| Iconoir | 1,600+ | Regular & solid styles |
 
 ## Getting Started
 
@@ -78,7 +79,7 @@ Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 - Zero bundle bloat
 - One file per icon = perfect tree-shaking
 - No external dependencies
-- Access 14,700+ icons from 8 libraries
+- Access 19,000+ icons from 9 libraries
 
 ## Links
 
@@ -91,7 +92,7 @@ Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 
 export const metadata: Metadata = {
   title: "Documentation | Unicon",
-  description: "Complete guide to using Unicon - browse 14,700+ icons from 8 libraries, use the CLI tool, or integrate with AI assistants via MCP.",
+  description: "Complete guide to using Unicon - browse 19,000+ icons from 9 libraries, use the CLI tool, or integrate with AI assistants via MCP.",
   keywords: [
     "icon library",
     "icon documentation",
@@ -108,7 +109,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Unicon Documentation",
-    description: "Browse, search, and export 14,700+ icons. CLI tool and AI assistant integration included.",
+    description: "Browse, search, and export 19,000+ icons. CLI tool and AI assistant integration included.",
     url: "https://unicon.webrenew.com/docs",
     type: "website",
   },
@@ -174,7 +175,7 @@ export default function DocsPage() {
           <div className="prose prose-invert max-w-none">
             <p className="text-muted-foreground leading-relaxed mb-4">
               Unicon is a comprehensive icon management tool that gives you access to{" "}
-              <strong className="text-foreground">14,700+ icons</strong> from 8 popular icon libraries —
+              <strong className="text-foreground">19,000+ icons</strong> from 9 popular icon libraries —
               all in one place. Unlike traditional icon packages that bloat your bundle with thousands of
               unused icons, Unicon lets you generate only the icons you need.
             </p>
@@ -220,6 +221,10 @@ export default function DocsPage() {
             <div className="p-4 rounded-xl border border-slate-500/20 bg-slate-500/5">
               <h3 className="font-mono font-medium mb-1 text-slate-400">Simple Icons</h3>
               <p className="text-muted-foreground text-xs">3,300+ brand logos</p>
+            </div>
+            <div className="p-4 rounded-xl border border-teal-500/20 bg-teal-500/5">
+              <h3 className="font-mono font-medium mb-1 text-teal-400">Iconoir</h3>
+              <p className="text-muted-foreground text-xs">1,600+ icons</p>
             </div>
           </div>
         </section>
@@ -402,7 +407,7 @@ export default function DocsPage() {
                   </div>
                   <div className="flex gap-2">
                     <span className="text-[var(--accent-mint)]">✓</span>
-                    <span>Access 14,700+ icons from 8 libraries</span>
+                    <span>Access 19,000+ icons from 9 libraries</span>
                   </div>
                 </div>
               </div>
