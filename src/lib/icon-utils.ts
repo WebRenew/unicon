@@ -312,6 +312,70 @@ ${components.join("\n\n---\n\n")}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Stroke Normalization
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface NormalizationOptions {
+  /** Target stroke width for all icons */
+  strokeWidth: number;
+  /** Only normalize stroke-based icons (skip fill-based) */
+  skipFillIcons?: boolean;
+}
+
+/**
+ * Normalize stroke width in SVG content.
+ * Replaces stroke-width attributes and inline styles with the target value.
+ */
+export function normalizeStrokeInContent(
+  content: string,
+  targetStrokeWidth: number
+): string {
+  // Replace stroke-width attributes
+  let normalized = content.replace(
+    /stroke-width="[^"]*"/gi,
+    `stroke-width="${targetStrokeWidth}"`
+  );
+  
+  // Replace strokeWidth in inline styles (rare, but possible)
+  normalized = normalized.replace(
+    /stroke-width:\s*[^;}"']+/gi,
+    `stroke-width: ${targetStrokeWidth}`
+  );
+  
+  return normalized;
+}
+
+/**
+ * Create a normalized copy of an icon with adjusted stroke width.
+ * Returns a new object, does not mutate the original.
+ */
+export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill">>(
+  icon: T,
+  options: NormalizationOptions
+): T {
+  // Skip fill-based icons if requested
+  if (options.skipFillIcons && icon.defaultFill) {
+    return icon;
+  }
+  
+  return {
+    ...icon,
+    strokeWidth: String(options.strokeWidth),
+    content: normalizeStrokeInContent(icon.content, options.strokeWidth),
+  };
+}
+
+/**
+ * Normalize an array of icons with consistent stroke width.
+ */
+export function normalizeIcons<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill">>(
+  icons: T[],
+  options: NormalizationOptions
+): T[] {
+  return icons.map((icon) => normalizeIcon(icon, options));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Brand Icon Color Utilities
 // ─────────────────────────────────────────────────────────────────────────────
 

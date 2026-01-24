@@ -36,7 +36,9 @@ import {
   generateJsonBundle,
   generateRenderableSvg,
   generateV0Prompt,
+  normalizeIcons,
 } from "@/lib/icon-utils";
+import { analyzeBundleMixing } from "@/lib/bundle-utils";
 import type { IconData } from "@/types/icon";
 
 interface IconCartProps {
@@ -58,9 +60,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
   const [previewHeight, setPreviewHeight] = useState(192); // Default ~max-h-48
+  const [normalizeStrokes, setNormalizeStrokes] = useState(false);
+  const [targetStrokeWidth, setTargetStrokeWidth] = useState(2);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
+
+  // Analyze bundle for mixing issues
+  const mixingAnalysis = useMemo(() => analyzeBundleMixing(items), [items]);
 
   // Handle resize drag
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -102,15 +109,20 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const exportContent = useMemo(() => {
     if (items.length === 0) return "";
 
+    // Apply normalization if enabled
+    const iconsToExport = normalizeStrokes
+      ? normalizeIcons(items, { strokeWidth: targetStrokeWidth, skipFillIcons: true })
+      : items;
+
     switch (exportFormat) {
       case "react":
-        return generateReactFile(items);
+        return generateReactFile(iconsToExport);
       case "svg":
-        return generateSvgBundle(items);
+        return generateSvgBundle(iconsToExport);
       case "json":
-        return generateJsonBundle(items);
+        return generateJsonBundle(iconsToExport);
     }
-  }, [items, exportFormat]);
+  }, [items, exportFormat, normalizeStrokes, targetStrokeWidth]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -409,6 +421,34 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               JSON
             </button>
           </div>
+
+          {/* Stroke Normalization Option - show when mixing detected */}
+          {mixingAnalysis.hasInconsistency && exportFormat !== "json" && (
+            <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={normalizeStrokes}
+                  onChange={(e) => setNormalizeStrokes(e.target.checked)}
+                  className="w-4 h-4 rounded border-black/20 dark:border-white/20 bg-transparent text-black dark:text-white focus:ring-0 focus:ring-offset-0"
+                />
+                <span className="text-xs font-mono text-black/70 dark:text-white/70">
+                  Normalize strokes
+                </span>
+              </label>
+              {normalizeStrokes && (
+                <select
+                  value={targetStrokeWidth}
+                  onChange={(e) => setTargetStrokeWidth(Number(e.target.value))}
+                  className="text-xs font-mono px-2 py-1 rounded bg-black/10 dark:bg-white/10 border-0 text-black dark:text-white focus:ring-0"
+                >
+                  <option value={1.5}>1.5px</option>
+                  <option value={2}>2px</option>
+                  <option value={2.5}>2.5px</option>
+                </select>
+              )}
+            </div>
+          )}
 
           {/* Preview */}
           <div className="space-y-2">
