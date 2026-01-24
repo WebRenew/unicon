@@ -1,7 +1,7 @@
 {
   "name": "@webrenew/unicon-mcp-server",
   "version": "1.1.0",
-  "description": "MCP server for Unicon icon library - connects AI assistants to 14,700+ icons",
+  "description": "MCP server for Unicon icon library - connects AI assistants to 19,000+ icons",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

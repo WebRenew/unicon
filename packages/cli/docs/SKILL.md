@@ -1,11 +1,11 @@
 ---
 name: unicon
-description: Help users add icons to their projects using the Unicon icon library. Unicon provides 14,700+ icons from Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, and Simple Icons (brand logos). Use when adding icons to React, Vue, Svelte, or web projects; using the unicon CLI to search, get, or bundle icons; setting up .uniconrc.json config; generating tree-shakeable icon components; using the Unicon API; or converting between icon formats.
+description: Help users add icons to their projects using the Unicon icon library. Unicon provides 19,000+ icons from Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons (brand logos), and Iconoir. Use when adding icons to React, Vue, Svelte, or web projects; using the unicon CLI to search, get, or bundle icons; setting up .uniconrc.json config; generating tree-shakeable icon components; using the Unicon API; or converting between icon formats.
 ---
 
 # Unicon
 
-Unicon is a unified icon library providing 14,700+ icons from 8 popular libraries. Unlike traditional npm packages that bundle thousands of icons, Unicon generates only the icons you need.
+Unicon is a unified icon library providing 19,000+ icons from 9 popular libraries. Unlike traditional npm packages that bundle thousands of icons, Unicon generates only the icons you need.
 
 ## Quick Start
 
@@ -51,6 +51,7 @@ npx @webrenew/unicon search "dashboard"
 | `feather` | 287 | Simple and clean |
 | `remix` | 2,800+ | Multiple categories |
 | `simple-icons` | 3,300+ | Brand logos |
+| `iconoir` | 1,600+ | Modern outlined icons |
 
 ## Common Workflows
 

@@ -5,7 +5,7 @@ Complete guide to integrating Unicon's icon library with AI assistants via the M
 ## Overview
 
 The Unicon MCP Server allows AI assistants like Claude Desktop and Cursor to:
-- Search through 14,700+ icons from 8 libraries
+- Search through 19,000+ icons from 9 libraries
 - Generate icon components in React, Vue, Svelte, or SVG
 - Access icon metadata and library information
 - Build complete icon sets for projects
@@ -351,7 +351,7 @@ ArrowRight.displayName = 'ArrowRight';
 
 ### `unicon_search_icons`
 
-Search through 14,700+ icons using AI-powered semantic search.
+Search through 19,000+ icons using AI-powered semantic search.
 
 **Parameters:**
 

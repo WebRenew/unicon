@@ -1,6 +1,6 @@
 # Unicon CLI Documentation
 
-> 🦄 Command-line interface for browsing and exporting 14,700+ icons
+> 🦄 Command-line interface for browsing and exporting 19,000+ icons
 
 **Quick Install**: `npm install -g @webrenew/unicon` or use `npx @webrenew/unicon`
 
@@ -86,7 +86,7 @@ unicon search <query> [options]
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--source <id>` | Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons) | all |
+| `--source <id>` | Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons, iconoir) | all |
 | `--category <name>` | Filter by category | all |
 | `--limit <n>` | Max results | 20 |
 | `--json` | Output as JSON | false |
@@ -774,6 +774,7 @@ curl -X POST "https://unicon.webrenew.com/api/search" \
 | `feather` | 287 | MIT | Simple and clean |
 | `remix` | 2,800+ | Apache-2.0 | Multiple categories |
 | `simple-icons` | 3,300+ | CC0 | Brand logos |
+| `iconoir` | 1,600+ | MIT | Modern outlined icons |
 
 ---
 
@@ -897,7 +898,7 @@ unicon bundle --category Dashboards --format svelte --split -o ./src/icons
 - ✅ Zero bundle bloat
 - ✅ No external dependencies
 - ✅ One file per icon for perfect tree-shaking
-- ✅ 14,700+ icons from 8 libraries in one place
+- ✅ 19,000+ icons from 9 libraries in one place
 
 ### Tree-Shaking Benefits
 
