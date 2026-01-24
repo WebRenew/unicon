@@ -79,7 +79,8 @@ function generateReactComponent(
   icon: IconData,
   props?: { size?: number; strokeWidth?: number }
 ): string {
-  const componentName = toPascalCase(icon.name);
+  // Use normalizedName (kebab-case like "check-circle-2") for consistent PascalCase conversion
+  const componentName = toPascalCase(icon.normalizedName);
   const defaultSize = props?.size || 24;
   const defaultStrokeWidth = props?.strokeWidth || (icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2);
 
@@ -138,7 +139,8 @@ function generateVueComponent(
   icon: IconData,
   props?: { size?: number; strokeWidth?: number }
 ): string {
-  const componentName = toPascalCase(icon.name);
+  // Use normalizedName (kebab-case like "check-circle-2") for consistent PascalCase conversion
+  const componentName = toPascalCase(icon.normalizedName);
   const defaultSize = props?.size || 24;
   const defaultStrokeWidth = props?.strokeWidth || (icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2);
 
@@ -208,7 +210,8 @@ function generateSvelteComponent(
   icon: IconData,
   props?: { size?: number; strokeWidth?: number }
 ): string {
-  const componentName = toPascalCase(icon.name);
+  // Use normalizedName (kebab-case like "check-circle-2") for consistent PascalCase conversion
+  const componentName = toPascalCase(icon.normalizedName);
   const defaultSize = props?.size || 24;
   const defaultStrokeWidth = props?.strokeWidth || (icon.strokeWidth ? parseFloat(icon.strokeWidth) : 2);
 

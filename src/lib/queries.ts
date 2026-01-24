@@ -140,14 +140,16 @@ export async function getIconById(id: string): Promise<IconData | null> {
 /**
  * Get icons by their normalized names (for starter packs).
  * Returns icons matching any of the provided names.
+ * Prefers Lucide icons when the same name exists in multiple libraries.
  */
-export async function getIconsByNames(names: string[]): Promise<IconData[]> {
+export async function getIconsByNames(names: string[], preferredSource: string = "lucide"): Promise<IconData[]> {
   if (names.length === 0) return [];
 
   // Normalize names for matching
   const normalizedNames = names.map((n) => n.toLowerCase());
 
   // Use SQL IN clause for exact matching
+  // Order by source priority: preferred source comes LAST so it overwrites in Map
   const results = await db
     .select({
       id: icons.id,
@@ -165,7 +167,11 @@ export async function getIconsByNames(names: string[]): Promise<IconData[]> {
     })
     .from(icons)
     .where(sql`lower(${icons.normalizedName}) IN ${normalizedNames}`)
-    .orderBy(asc(icons.normalizedName));
+    .orderBy(
+      // Sort preferred source LAST so it wins in Map deduplication
+      sql`CASE WHEN ${icons.sourceId} = ${preferredSource} THEN 1 ELSE 0 END`,
+      asc(icons.normalizedName)
+    );
 
   return results.map((row) => ({
     id: row.id,
