@@ -2,7 +2,7 @@
 
 **Just the icons you need. Zero bloat.**
 
-Browse 17,786+ icons and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
+Browse 20,000+ icons and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
 
 [**Try it now at unicon.webrenew.com**](https://unicon.webrenew.com)
 
@@ -12,7 +12,7 @@ Browse 17,786+ icons and copy exactly what you need. Like [shadcn/ui](https://ui
 
 Most icon libraries force you to install thousands of icons just to use a handful. Unicon lets you browse everything in one place and copy only what you need.
 
-- **Browse once, use anywhere** — Search 8 icon libraries
+- **Browse once, use anywhere** — Search 9 icon libraries
 - **Copy exactly what you need** — React, SVG, or JSON
 - **Bundle multiple icons** — Export a set at once
 - **Zero dependencies** — Paste directly into your project
@@ -29,6 +29,16 @@ Most icon libraries force you to install thousands of icons just to use a handfu
 | [Feather](https://feathericons.com) | 280+ | Simple, elegant |
 | [Remix Icon](https://remixicon.com) | 2,800+ | Outlined & filled |
 | [Simple Icons](https://simpleicons.org) | 3,300+ | Brand logos |
+| [Iconoir](https://iconoir.com) | 1,600+ | Regular & solid |
+
+### Coming Soon
+
+| Library | Icons | License | Focus |
+|---------|-------|---------|-------|
+| [Carbon](https://carbondesignsystem.com/elements/icons/library/) | 2,000+ | Apache-2.0 | IBM's enterprise design system |
+| [Blueprint](https://blueprintjs.com/docs/#icons) | 300+ | Apache-2.0 | Palantir's data-focused icons |
+| [Devicons](https://devicon.dev) | 200+ | MIT | Programming languages & dev tools |
+| [Cryptocurrency Icons](https://github.com/spothq/cryptocurrency-icons) | 400+ | CC0 | Coins and tokens |
 
 ## How to Use
 
@@ -182,10 +192,11 @@ Want to run your own instance? See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup 
 
 MIT License — see [LICENSE](LICENSE) for details.
 
-Icons retain their original licenses:
-- MIT: Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather
-- Apache-2.0: Remix Icon
-- CC0: Simple Icons (logos are trademarks of their owners)
+Icons retain their original licenses. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for full attribution.
+
+- MIT: Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Iconoir, Devicons
+- Apache-2.0: Remix Icon, Carbon, Blueprint
+- CC0: Simple Icons, Cryptocurrency Icons (logos are trademarks of their owners)
 
 ---
 
