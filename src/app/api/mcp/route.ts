@@ -170,25 +170,26 @@ function createMcpServer() {
     "search_icons",
     {
       title: "Search Icons",
-      description: `Search through 19,000+ icons across 9 libraries using semantic search.
+      description: `Search icons across 9 libraries. Set includeCode=true to get ready-to-use components in one call.
 
 Args:
   - query (string): Search query (e.g., 'arrow', 'dashboard', 'user profile')
-  - source (string, optional): Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons, iconoir)
-  - category (string, optional): Filter by category
-  - limit (number, optional): Maximum results (1-100, default: 20)
-  - offset (number, optional): Skip results for pagination (default: 0)
-
-Returns:
-  Object with query, total count, has_more flag, and array of matching icons.
+  - includeCode (boolean, optional): Return icon code with results (default: false)
+  - format (string, optional): Code format when includeCode=true (default: react)
+  - source (string, optional): Filter by library
+  - limit (number, optional): Max results (1-100, default: 20)
 
 Examples:
-  - "search for arrow icons" -> query="arrow"
-  - "find dashboard icons from lucide" -> query="dashboard", source="lucide"
-  - "get next page of results" -> query="arrow", offset=20`,
+  - Search only: query="arrow"
+  - Search + code: query="arrow", includeCode=true, limit=5`,
       inputSchema: z
         .object({
           query: z.string().min(1).max(200).describe("Search query"),
+          includeCode: z
+            .boolean()
+            .default(false)
+            .describe("Include icon source code in results (returns bundle format)"),
+          format: formatSchema,
           source: sourceSchema,
           category: z.string().max(50).optional().describe("Filter by category"),
           limit: z
@@ -235,6 +236,8 @@ Examples:
     async (params) => {
       const limit = params.limit ?? 20;
       const offset = params.offset ?? 0;
+      const includeCode = params.includeCode ?? false;
+      const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
 
       // Build search params with proper typing for exactOptionalPropertyTypes
       const filterParams: {
@@ -265,6 +268,45 @@ Examples:
       // Calculate has_more from accurate total
       const hasMore = offset + dbResults.length < totalCount;
 
+      // If includeCode is true, return bundled code with results
+      if (includeCode && dbResults.length > 0) {
+        let bundleText: string;
+
+        if (format === "react") {
+          bundleText = generateReactBundle(dbResults);
+        } else if (format === "svg") {
+          bundleText = generateSvgBundle(dbResults);
+        } else if (format === "json") {
+          bundleText = generateJsonBundle(dbResults);
+        } else {
+          bundleText = `// Bundle mode not supported for ${format}. Use format="react".`;
+        }
+
+        const output = {
+          query: params.query,
+          total: totalCount,
+          offset,
+          limit,
+          has_more: hasMore,
+          format,
+          results: dbResults.map((icon) => ({
+            id: icon.id,
+            name: icon.name,
+            normalizedName: icon.normalizedName,
+            source: icon.sourceId,
+          })),
+          code: bundleText,
+        };
+
+        const text = truncateIfNeeded(bundleText);
+
+        return {
+          content: [{ type: "text", text }],
+          structuredContent: output,
+        };
+      }
+
+      // Standard search results (no code)
       const output = {
         query: params.query,
         total: totalCount,
