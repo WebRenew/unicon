@@ -471,7 +471,7 @@ Returns:
       title: "Get Starter Pack",
       description: `Get a curated starter pack of icons for common use cases.
 
-Popular packs: dashboard, ecommerce, social, navigation, developer, brand-ai
+Popular packs: shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai
 
 Use the unicon://starter_packs resource to see all ${VALID_PACK_IDS.length} available packs.
 
