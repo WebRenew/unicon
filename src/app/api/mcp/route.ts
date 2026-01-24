@@ -79,6 +79,7 @@ const sourceSchema = z
     "feather",
     "remix",
     "simple-icons",
+    "iconoir",
   ])
   .optional()
   .describe("Filter by icon library");
@@ -158,11 +159,11 @@ function createMcpServer() {
     "unicon_search_icons",
     {
       title: "Search Icons",
-      description: `Search through 14,700+ icons across 8 libraries using semantic search.
+      description: `Search through 19,000+ icons across 9 libraries using semantic search.
 
 Args:
   - query (string): Search query (e.g., 'arrow', 'dashboard', 'user profile')
-  - source (string, optional): Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons)
+  - source (string, optional): Filter by library (lucide, phosphor, hugeicons, heroicons, tabler, feather, remix, simple-icons, iconoir)
   - category (string, optional): Filter by category
   - limit (number, optional): Maximum results (1-100, default: 20)
   - offset (number, optional): Skip results for pagination (default: 0)

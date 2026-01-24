@@ -1,12 +1,12 @@
 # Unicon MCP Server
 
-Model Context Protocol (MCP) server for the Unicon icon library. Connects AI assistants like Claude and Cursor to 14,700+ icons from 8 popular libraries.
+Model Context Protocol (MCP) server for the Unicon icon library. Connects AI assistants like Claude and Cursor to 19,000+ icons from 9 popular libraries.
 
 ## Features
 
 - 🔍 **AI-Powered Search**: Semantic search across all icon libraries
 - 🎨 **Multiple Formats**: Get icons as React, Vue, Svelte, SVG, or JSON
-- 📦 **8 Icon Libraries**: Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons
+- 📦 **9 Icon Libraries**: Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons, Iconoir
 - ⚡ **Fast**: Hosted API with local MCP bridge for optimal performance
 
 ## Installation
@@ -86,7 +86,7 @@ Once installed, you can ask your AI assistant:
 
 ### `unicon_search_icons`
 
-Search through 14,700+ icons using semantic search.
+Search through 19,000+ icons using semantic search.
 
 **Parameters:**
 - `query` (required): Search query (e.g., "arrow", "dashboard")

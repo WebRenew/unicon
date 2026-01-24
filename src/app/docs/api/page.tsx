@@ -7,7 +7,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 
 const PAGE_MARKDOWN = `# Unicon API Reference
 
-REST API for programmatic access to 14,700+ icons across 8 libraries.
+REST API for programmatic access to 19,000+ icons across 9 libraries.
 
 Base URL: \`https://unicon.webrenew.com\`
 
@@ -153,7 +153,7 @@ Access-Control-Allow-Origin: *
 
 export const metadata: Metadata = {
   title: "API Reference | Unicon",
-  description: "REST API documentation for programmatic access to 14,700+ icons. Search, filter, and retrieve icon data in JSON format.",
+  description: "REST API documentation for programmatic access to 19,000+ icons. Search, filter, and retrieve icon data in JSON format.",
   keywords: [
     "icon api",
     "rest api",
@@ -167,7 +167,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Unicon API Reference",
-    description: "REST API for programmatic access to 14,700+ icons across 8 libraries.",
+    description: "REST API for programmatic access to 19,000+ icons across 9 libraries.",
     url: "https://unicon.webrenew.com/docs/api",
     type: "website",
   },
@@ -501,6 +501,7 @@ export default function APIDocsPage() {
                   { id: "feather", name: "Feather Icons", count: "287", license: "MIT" },
                   { id: "remix", name: "Remix Icon", count: "2,800+", license: "Apache-2.0" },
                   { id: "simple-icons", name: "Simple Icons", count: "3,300+", license: "CC0" },
+                  { id: "iconoir", name: "Iconoir", count: "1,600+", license: "MIT" },
                 ].map((source, i) => (
                   <tr key={i} className="border-b border-border/50">
                     <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">{source.id}</td>

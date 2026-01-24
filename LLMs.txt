@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Unicon** is an open-source icon library aggregator that provides 14,700+ icons from 8 popular libraries (Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Remix, Simple Icons) in one unified platform. It's like shadcn/ui but for icons.
+**Unicon** is an open-source icon library aggregator that provides 19,000+ icons from 9 popular libraries (Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Remix, Simple Icons, Iconoir) in one unified platform. It's like shadcn/ui but for icons.
 
 **Key Features:**
 - AI-powered semantic search using embeddings
@@ -92,7 +92,7 @@ mappings (cross-library equivalents)
 **GET /api/icons** - Paginated icon search
 Query Parameters:
 - `q` (string): Search query
-- `source` (string): Filter by library (lucide|phosphor|hugeicons|heroicons|tabler|feather|remix|simple-icons)
+- `source` (string): Filter by library (lucide|phosphor|hugeicons|heroicons|tabler|feather|remix|simple-icons|iconoir)
 - `limit` (number): Results per page (default: 100, max: 160)
 - `offset` (number): Pagination offset
 - `ai` (boolean): Enable AI search (default: true)
@@ -161,7 +161,8 @@ unicon/
 │   │   ├── tabler.py                 # Tabler extractor
 │   │   ├── feather.py                # Feather extractor
 │   │   ├── remix.py                  # Remix extractor
-│   │   └── simple_icons.py           # Simple Icons extractor
+│   │   ├── simple_icons.py           # Simple Icons extractor
+│   │   └── iconoir.py                # Iconoir extractor
 │   ├── main.py                       # Extraction entry point
 │   └── tmp_extract/                  # Temporary extraction files
 ├── packages/
@@ -661,6 +662,7 @@ See `.claude/sprites/` directory for detailed feature specifications:
 - [Feather Icons](https://feathericons.com) - MIT License
 - [Remix Icon](https://remixicon.com) - Apache-2.0 License
 - [Simple Icons](https://simpleicons.org) - CC0 1.0 Universal
+- [Iconoir](https://iconoir.com) - MIT License
 
 ## Contact & Support
 

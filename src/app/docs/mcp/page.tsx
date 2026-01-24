@@ -182,7 +182,7 @@ export default function MCPDocsPage() {
                 Model Context Protocol (MCP)
               </a>{" "}
               is an open protocol that enables AI assistants to connect to external tools and data sources.
-              The Unicon MCP Server lets AI assistants search through 14,700+ icons and generate
+              The Unicon MCP Server lets AI assistants search through 19,000+ icons and generate
               framework-specific components on demand.
             </p>
             <p className="text-white/70 leading-relaxed">
@@ -505,7 +505,7 @@ export default function MCPDocsPage() {
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="font-mono text-[var(--accent-aqua)] font-semibold mb-2">unicon_search_icons</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Search through 14,700+ icons using AI-powered semantic search.
+                Search through 19,000+ icons using AI-powered semantic search.
               </p>
               <div className="text-xs font-mono text-muted-foreground">
                 <div>Parameters:</div>
