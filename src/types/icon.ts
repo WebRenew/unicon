@@ -36,7 +36,8 @@ export type IconLibrary =
   | "tabler"
   | "feather"
   | "remix"
-  | "simple-icons";
+  | "simple-icons"
+  | "iconoir";
 
 export interface IconPreviewSettings {
   size: number;

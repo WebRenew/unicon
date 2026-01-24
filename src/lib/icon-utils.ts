@@ -12,7 +12,7 @@ import type { IconData } from "@/types/icon";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Icon source identifiers */
-export type IconSource = "lucide" | "phosphor" | "hugeicons";
+export type IconSource = "lucide" | "phosphor" | "hugeicons" | "heroicons" | "tabler" | "feather" | "remix" | "simple-icons" | "iconoir";
 
 /** Determines how the icon renders: fill-based or stroke-based */
 export type IconRenderMode = "fill" | "stroke";
