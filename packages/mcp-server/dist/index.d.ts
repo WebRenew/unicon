@@ -3,7 +3,7 @@
  * Unicon MCP Server
  *
  * Provides Model Context Protocol (MCP) interface for Unicon icon library.
- * Connects AI assistants (Claude, Cursor) to 14,700+ icons from 8 libraries.
+ * Connects AI assistants (Claude, Cursor) to 19,000+ icons from 9 libraries.
  *
  * This is a bridge that proxies MCP requests to the hosted Unicon API.
  *
