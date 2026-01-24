@@ -150,6 +150,7 @@ function createMcpServer() {
   const server = new McpServer({
     name: "unicon",
     version: "1.0.0",
+    description: `19,000+ icons from 9 libraries in React/Vue/Svelte/SVG. Quick start: unicon_get_starter_pack({ packId: "shadcn-ui" }) for shadcn/ui projects, or "dashboard" for admin UIs. Use unicon_search_icons to find specific icons.`,
   });
 
   // ============================================
