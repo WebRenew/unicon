@@ -22,7 +22,12 @@ import {
   getCategories,
   getTotalIconCount,
 } from "@/lib/queries";
-import { convertIconToFormat } from "@/lib/icon-converters";
+import {
+  convertIconToFormat,
+  generateReactBundle,
+  generateSvgBundle,
+  generateJsonBundle,
+} from "@/lib/icon-converters";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
 
@@ -68,6 +73,11 @@ const strokeWidthSchema = z
   .max(4)
   .default(2)
   .describe("Stroke width");
+
+const outputSchema = z
+  .enum(["individual", "bundle"])
+  .default("bundle")
+  .describe("Output mode: 'bundle' (single file, 70% smaller) or 'individual' (separate components)");
 
 const sourceSchema = z
   .enum([
@@ -367,12 +377,13 @@ Examples:
 
 Args:
   - iconIds (array): Array of icon IDs (e.g., ['lucide:arrow-right', 'lucide:home'])
-  - format (string, optional): Output format - svg, react, vue, svelte, json (default: react)
+  - output (string, optional): 'bundle' (default, single file) or 'individual' (separate components)
+  - format (string, optional): svg, react, vue, svelte, json (default: react)
   - size (number, optional): Icon size in pixels (default: 24)
   - strokeWidth (number, optional): Stroke width (default: 2)
 
 Returns:
-  Object with format and array of icons with their source code.`,
+  Single copy-pasteable file with all icons (bundle) or individual components.`,
       inputSchema: z
         .object({
           iconIds: z
@@ -380,6 +391,7 @@ Returns:
             .min(1)
             .max(50)
             .describe("Array of icon IDs to retrieve"),
+          output: outputSchema,
           format: formatSchema,
           size: sizeSchema,
           strokeWidth: strokeWidthSchema,
@@ -409,12 +421,53 @@ Returns:
     },
     async (params) => {
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const outputMode = params.output ?? "bundle";
 
       // Batch fetch all icons in a single query (eliminates N+1)
       const fetchedIcons = await getIconsByIds(params.iconIds);
       const iconsById = new Map(fetchedIcons.map((icon) => [icon.id, icon]));
 
-      // Process all icons and convert to requested format
+      // Get ordered list of found icons (preserving request order)
+      const orderedIcons = params.iconIds
+        .map((id) => iconsById.get(id))
+        .filter((icon): icon is NonNullable<typeof icon> => icon !== undefined);
+
+      // Bundle mode: single file output (70% smaller)
+      if (outputMode === "bundle") {
+        let bundleText: string;
+
+        if (format === "react") {
+          bundleText = generateReactBundle(orderedIcons, {
+            size: params.size,
+            strokeWidth: params.strokeWidth,
+          });
+        } else if (format === "svg") {
+          bundleText = generateSvgBundle(orderedIcons, {
+            size: params.size,
+            strokeWidth: params.strokeWidth,
+          });
+        } else if (format === "json") {
+          bundleText = generateJsonBundle(orderedIcons);
+        } else {
+          // Vue/Svelte don't support bundle mode well, fall back to individual
+          bundleText = `// Bundle mode not supported for ${format}. Use output="individual" or format="react".`;
+        }
+
+        const text = truncateIfNeeded(bundleText);
+
+        return {
+          content: [{ type: "text", text }],
+          structuredContent: {
+            format,
+            output: "bundle",
+            total: params.iconIds.length,
+            successful: orderedIcons.length,
+            code: bundleText,
+          },
+        };
+      }
+
+      // Individual mode: separate components (original behavior)
       const results = await Promise.all(
         params.iconIds.map(async (iconId) => {
           try {
@@ -447,6 +500,7 @@ Returns:
 
       const output = {
         format,
+        output: "individual",
         total: results.length,
         successful: results.filter((r) => !r.error).length,
         icons: results,
@@ -474,16 +528,15 @@ Returns:
 
 Popular packs: shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai
 
-Use the unicon://starter_packs resource to see all ${VALID_PACK_IDS.length} available packs.
-
 Args:
-  - packId (string): Starter pack ID (e.g., 'dashboard', 'ecommerce', 'brand-ai')
-  - format (string, optional): Output format (default: react)
+  - packId (string): Starter pack ID
+  - output (string, optional): 'bundle' (default, single file) or 'individual' (separate components)
+  - format (string, optional): svg, react, vue, svelte, json (default: react)
   - size (number, optional): Icon size (default: 24)
   - strokeWidth (number, optional): Stroke width (default: 2)
 
 Returns:
-  All icons in the pack with their source code.`,
+  Single copy-pasteable file with all icons (bundle) or individual components.`,
       inputSchema: z
         .object({
           packId: z
@@ -493,6 +546,7 @@ Returns:
             .describe(
               `Starter pack ID. Available: ${VALID_PACK_IDS.slice(0, 6).join(", ")}... Use unicon://starter_packs for full list.`
             ),
+          output: outputSchema,
           format: formatSchema,
           size: sizeSchema,
           strokeWidth: strokeWidthSchema,
@@ -537,6 +591,7 @@ Returns:
       }
 
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const outputMode = params.output ?? "bundle";
 
       // Batch fetch all icons (eliminates N+1)
       const fetchedIcons = await getIconsByNames(pack.iconNames);
@@ -544,7 +599,50 @@ Returns:
         fetchedIcons.map((icon) => [icon.normalizedName.toLowerCase(), icon])
       );
 
-      // Process all icons in parallel
+      // Get ordered list of found icons (preserving pack order)
+      const orderedIcons = pack.iconNames
+        .map((name) => iconsByName.get(name.toLowerCase()))
+        .filter((icon): icon is NonNullable<typeof icon> => icon !== undefined);
+
+      // Bundle mode: single file output (70% smaller)
+      if (outputMode === "bundle") {
+        let bundleText: string;
+
+        if (format === "react") {
+          bundleText = generateReactBundle(orderedIcons, {
+            size: params.size,
+            strokeWidth: params.strokeWidth,
+          });
+        } else if (format === "svg") {
+          bundleText = generateSvgBundle(orderedIcons, {
+            size: params.size,
+            strokeWidth: params.strokeWidth,
+          });
+        } else if (format === "json") {
+          bundleText = generateJsonBundle(orderedIcons);
+        } else {
+          // Vue/Svelte don't support bundle mode well, fall back to individual
+          bundleText = `// Bundle mode not supported for ${format}. Use output="individual" or format="react".`;
+        }
+
+        const text = truncateIfNeeded(bundleText);
+
+        return {
+          content: [{ type: "text", text }],
+          structuredContent: {
+            packId: pack.id,
+            packName: pack.name,
+            description: pack.description,
+            format,
+            output: "bundle",
+            totalIcons: pack.iconNames.length,
+            retrievedIcons: orderedIcons.length,
+            code: bundleText,
+          },
+        };
+      }
+
+      // Individual mode: separate components (original behavior)
       const results = await Promise.all(
         pack.iconNames.map(async (iconName) => {
           try {
@@ -574,6 +672,7 @@ Returns:
         packName: pack.name,
         description: pack.description,
         format,
+        output: "individual",
         totalIcons: pack.iconNames.length,
         retrievedIcons: results.filter((r) => !r.error).length,
         icons: results,
