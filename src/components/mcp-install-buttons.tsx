@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
+import { CursorIcon } from "@/components/icons/ui/cursor";
+import { ClaudeIcon } from "@/components/icons/ui/claude";
+import { AnthropicIcon } from "@/components/icons/ui/anthropic";
 
 const MCP_CONFIG = {
   command: "npx",
@@ -12,98 +15,6 @@ const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=
 
 const CLAUDE_CODE_COMMAND =
   "npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server";
-
-function CursorIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 2L2 7L12 12L22 7L12 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 17L12 22L22 17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 12L12 17L22 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ClaudeDesktopIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect
-        x="2"
-        y="3"
-        width="20"
-        height="14"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M8 21h8"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 17v4"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function TerminalIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M4 17L10 11L4 5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 19H20"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
@@ -189,7 +100,7 @@ export function MCPInstallButtons() {
             className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-lavender)]/50 transition-all group text-left"
           >
             <div className="p-2 rounded-lg bg-[var(--accent-lavender)]/10 group-hover:bg-[var(--accent-lavender)]/20 transition-colors">
-              <TerminalIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
+              <ClaudeIcon className="w-5 h-5 text-[var(--accent-lavender)]" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">Claude Code</div>
@@ -208,7 +119,7 @@ export function MCPInstallButtons() {
             className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-mint)]/50 transition-all group"
           >
             <div className="p-2 rounded-lg bg-[var(--accent-mint)]/10 group-hover:bg-[var(--accent-mint)]/20 transition-colors">
-              <ClaudeDesktopIcon className="w-5 h-5 text-[var(--accent-mint)]" />
+              <AnthropicIcon className="w-5 h-5 text-[var(--accent-mint)]" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">Claude Desktop</div>
@@ -248,14 +159,14 @@ export function MCPInstallButtons() {
           href="#claude-code"
           className="text-muted-foreground hover:text-[var(--accent-lavender)] transition-colors flex items-center gap-1.5"
         >
-          <TerminalIcon className="w-4 h-4" />
+          <ClaudeIcon className="w-4 h-4" />
           Claude Code
         </a>
         <a
           href="#claude-desktop"
           className="text-muted-foreground hover:text-[var(--accent-mint)] transition-colors flex items-center gap-1.5"
         >
-          <ClaudeDesktopIcon className="w-4 h-4" />
+          <AnthropicIcon className="w-4 h-4" />
           Claude Desktop
         </a>
       </div>
