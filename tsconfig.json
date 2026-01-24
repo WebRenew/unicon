@@ -32,5 +32,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "metallic-icon-component", "extractor"]
+  "exclude": ["node_modules", "metallic-icon-component", "extractor", "packages/cli"]
 }
