@@ -2,6 +2,7 @@ import { db } from "./db";
 import { icons, sources } from "./schema";
 import { eq, like, or, sql, asc } from "drizzle-orm";
 import type { IconData, SourceData } from "@/types/icon";
+import { expandSearchQuery } from "./icon-aliases";
 
 /**
  * Get all icon sources with their stats.
@@ -20,6 +21,7 @@ export async function getSources(): Promise<SourceData[]> {
 
 /**
  * Build search conditions for reuse between searchIcons and getSearchCount.
+ * Expands query with aliases (e.g., "checkmark" also searches for "check").
  */
 function buildSearchConditions(params: {
   query?: string;
@@ -38,14 +40,25 @@ function buildSearchConditions(params: {
   }
 
   if (query && query.trim()) {
-    const searchTerm = `%${query.toLowerCase()}%`;
-    conditions.push(
-      or(
+    // Expand query with aliases (e.g., "checkmark" -> ["checkmark", "check", "check-circle"])
+    const expandedTerms = expandSearchQuery(query);
+
+    // Build OR conditions for all expanded terms
+    const termConditions = expandedTerms.map((term) => {
+      const searchTerm = `%${term.toLowerCase()}%`;
+      return or(
         like(sql`lower(${icons.normalizedName})`, searchTerm),
         like(sql`lower(${icons.name})`, searchTerm),
         like(sql`lower(${icons.tags})`, searchTerm)
-      )
-    );
+      );
+    });
+
+    // Combine all term conditions with OR
+    if (termConditions.length === 1) {
+      conditions.push(termConditions[0]);
+    } else if (termConditions.length > 1) {
+      conditions.push(or(...termConditions));
+    }
   }
 
   return conditions;
