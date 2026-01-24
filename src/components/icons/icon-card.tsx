@@ -28,6 +28,19 @@ const libraryColors: Record<string, string> = {
   iconoir: "bg-teal-500/10 text-teal-600 hover:bg-teal-500/20",
 };
 
+// Hex colors for gradient border effect on hover
+const libraryGradientColors: Record<string, string> = {
+  lucide: "#f97316",      // orange-500
+  phosphor: "#10b981",    // emerald-500
+  hugeicons: "#8b5cf6",   // violet-500
+  heroicons: "#3b82f6",   // blue-500
+  tabler: "#06b6d4",      // cyan-500
+  feather: "#ec4899",     // pink-500
+  remix: "#ef4444",       // red-500
+  "simple-icons": "#6b7280", // gray-500
+  iconoir: "#14b8a6",     // teal-500
+};
+
 // Tooltip library colors - optimized for inverted tooltip backgrounds
 // Light mode: dark tooltip bg needs lighter text (400)
 // Dark mode: light tooltip bg needs darker text (600)
@@ -93,6 +106,20 @@ export const IconCard = memo(function IconCard({ icon, isSelected, onClick }: Ic
         isSelected && "border-foreground/30 bg-muted shadow-sm"
       )}
     >
+      {/* Gradient corner accent on hover */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(circle at 0 0, ${libraryGradientColors[icon.sourceId] || "#6b7280"} 0%, transparent 50px)`,
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          maskComposite: 'exclude',
+          padding: '1px',
+        }}
+      />
+
       {/* Icon */}
       <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center">
         <IconRenderer {...iconRendererProps} />
