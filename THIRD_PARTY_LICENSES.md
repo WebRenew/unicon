@@ -46,6 +46,11 @@ The following icon libraries are licensed under the MIT License:
 - **License:** https://github.com/devicons/devicon/blob/master/LICENSE
 - **Copyright:** Copyright (c) 2015 konpa
 
+### Octicons (Coming Soon)
+- **Source:** https://primer.style/foundations/icons
+- **License:** https://github.com/primer/octicons/blob/main/LICENSE
+- **Copyright:** Copyright (c) GitHub Inc.
+
 ---
 
 ## Apache License 2.0

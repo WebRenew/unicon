@@ -38,6 +38,7 @@ Most icon libraries force you to install thousands of icons just to use a handfu
 | [Carbon](https://carbondesignsystem.com/elements/icons/library/) | 2,000+ | Apache-2.0 | IBM's enterprise design system |
 | [Blueprint](https://blueprintjs.com/docs/#icons) | 300+ | Apache-2.0 | Palantir's data-focused icons |
 | [Devicons](https://devicon.dev) | 200+ | MIT | Programming languages & dev tools |
+| [Octicons](https://primer.style/foundations/icons) | 600+ | MIT | GitHub's icon set |
 | [Cryptocurrency Icons](https://github.com/spothq/cryptocurrency-icons) | 400+ | CC0 | Coins and tokens |
 
 ## How to Use
@@ -194,7 +195,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 Icons retain their original licenses. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for full attribution.
 
-- MIT: Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Iconoir, Devicons
+- MIT: Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Iconoir, Devicons, Octicons
 - Apache-2.0: Remix Icon, Carbon, Blueprint
 - CC0: Simple Icons, Cryptocurrency Icons (logos are trademarks of their owners)
 
