@@ -349,12 +349,12 @@ export function normalizeStrokeInContent(
  * Create a normalized copy of an icon with adjusted stroke width.
  * Returns a new object, does not mutate the original.
  */
-export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill">>(
+export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill" | "defaultStroke">>(
   icon: T,
   options: NormalizationOptions
 ): T {
-  // Skip fill-based icons if requested
-  if (options.skipFillIcons && icon.defaultFill) {
+  // Skip fill-based icons if requested (icons that are fill-only, not stroke-based)
+  if (options.skipFillIcons && icon.defaultFill && !icon.defaultStroke) {
     return icon;
   }
   
@@ -368,7 +368,7 @@ export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth"
 /**
  * Normalize an array of icons with consistent stroke width.
  */
-export function normalizeIcons<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill">>(
+export function normalizeIcons<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill" | "defaultStroke">>(
   icons: T[],
   options: NormalizationOptions
 ): T[] {

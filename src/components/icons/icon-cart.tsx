@@ -39,8 +39,33 @@ import {
   generateV0Prompt,
   normalizeIcons,
 } from "@/lib/icon-utils";
-import { analyzeBundleMixing, getBundleLibrarySummary } from "@/lib/bundle-utils";
+import { getBundleLibrarySummary } from "@/lib/bundle-utils";
 import type { IconData } from "@/types/icon";
+
+/**
+ * Check if an icon is fill-based (not stroke-based).
+ * Fill-based icons have defaultFill but no defaultStroke.
+ */
+function isFillIcon(icon: IconData): boolean {
+  return icon.defaultFill && !icon.defaultStroke;
+}
+
+/**
+ * Badge indicator for fill-based icons in the bundle grid.
+ * Shows when stroke normalization is enabled to indicate stroke width doesn't apply.
+ */
+function FillIconBadge() {
+  return (
+    <div
+      role="img"
+      aria-label="Fill-based icon - stroke width doesn't apply"
+      className="absolute -bottom-1 -left-1 w-4 h-4 bg-black/60 dark:bg-white/60 rounded-full flex items-center justify-center"
+      title="Fill-based icon - stroke width doesn't apply"
+    >
+      <div className="w-1.5 h-1.5 bg-white dark:bg-black rounded-full" />
+    </div>
+  );
+}
 
 interface IconCartProps {
   items: IconData[];
@@ -90,8 +115,19 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
 
-  // Analyze bundle for mixing issues
-  const mixingAnalysis = useMemo(() => analyzeBundleMixing(items), [items]);
+  // Analyze bundle composition for stroke/fill icons
+  const bundleComposition = useMemo(() => {
+    let strokeCount = 0;
+    let fillCount = 0;
+    for (const icon of items) {
+      if (isFillIcon(icon)) {
+        fillCount++;
+      } else {
+        strokeCount++;
+      }
+    }
+    return { strokeCount, fillCount, hasStrokeIcons: strokeCount > 0 };
+  }, [items]);
 
   // Group icons by library for grouped view
   const librarySummary = useMemo(() => getBundleLibrarySummary(items), [items]);
@@ -364,6 +400,42 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                 </button>
               )}
 
+              {/* Stroke Normalization Control - always visible when bundle has items */}
+              <div className={`flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5 ${
+                !bundleComposition.hasStrokeIcons ? "opacity-50" : ""
+              }`}>
+                <label htmlFor="normalize-strokes" className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    id="normalize-strokes"
+                    type="checkbox"
+                    checked={normalizeStrokes}
+                    onChange={(e) => setNormalizeStrokes(e.target.checked)}
+                    disabled={!bundleComposition.hasStrokeIcons}
+                    className="w-4 h-4 rounded border-black/20 dark:border-white/20 bg-transparent text-black dark:text-white focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
+                  />
+                  <span className="text-xs font-mono text-black/70 dark:text-white/70">
+                    Normalize strokes
+                  </span>
+                  {bundleComposition.fillCount > 0 && (
+                    <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
+                      ({bundleComposition.strokeCount} of {items.length})
+                    </span>
+                  )}
+                </label>
+                {normalizeStrokes && bundleComposition.hasStrokeIcons && (
+                  <select
+                    aria-label="Target stroke width"
+                    value={targetStrokeWidth}
+                    onChange={(e) => setTargetStrokeWidth(Number(e.target.value))}
+                    className="text-xs font-mono px-2 py-1 rounded bg-black/10 dark:bg-white/10 border-0 text-black dark:text-white focus:ring-0"
+                  >
+                    <option value={1.5}>1.5px</option>
+                    <option value={2}>2px</option>
+                    <option value={2.5}>2.5px</option>
+                  </select>
+                )}
+              </div>
+
               {groupByLibrary && librarySummary.length > 1 ? (
                 // Grouped view
                 <div className="space-y-4">
@@ -390,7 +462,10 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                               className="w-5 h-5 text-black/70 dark:text-white/70"
                               // SVG content is from trusted icon library data, not user input
                               dangerouslySetInnerHTML={{
-                                __html: generateRenderableSvg(icon, { size: 20 }),
+                                __html: generateRenderableSvg(icon, {
+                                  size: 20,
+                                  ...(normalizeStrokes && !isFillIcon(icon) && { strokeWidth: targetStrokeWidth }),
+                                }),
                               }}
                             />
                             <button
@@ -400,6 +475,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                             >
                               <XIcon className="w-3 h-3 text-white" />
                             </button>
+                            {normalizeStrokes && isFillIcon(icon) && <FillIconBadge />}
                           </div>
                         ))}
                       </div>
@@ -417,7 +493,10 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                       <div
                         className="w-5 h-5 text-black/70 dark:text-white/70"
                         dangerouslySetInnerHTML={{
-                          __html: generateRenderableSvg(icon, { size: 20 }),
+                          __html: generateRenderableSvg(icon, {
+                            size: 20,
+                            ...(normalizeStrokes && !isFillIcon(icon) && { strokeWidth: targetStrokeWidth }),
+                          }),
                         }}
                       />
                       <button
@@ -427,6 +506,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                       >
                         <XIcon className="w-3 h-3 text-white" />
                       </button>
+                      {normalizeStrokes && isFillIcon(icon) && <FillIconBadge />}
                     </div>
                   ))}
                 </div>
@@ -538,34 +618,6 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               JSON
             </button>
           </div>
-
-          {/* Stroke Normalization Option - show when mixing detected */}
-          {mixingAnalysis.hasInconsistency && exportFormat !== "json" && (
-            <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={normalizeStrokes}
-                  onChange={(e) => setNormalizeStrokes(e.target.checked)}
-                  className="w-4 h-4 rounded border-black/20 dark:border-white/20 bg-transparent text-black dark:text-white focus:ring-0 focus:ring-offset-0"
-                />
-                <span className="text-xs font-mono text-black/70 dark:text-white/70">
-                  Normalize strokes
-                </span>
-              </label>
-              {normalizeStrokes && (
-                <select
-                  value={targetStrokeWidth}
-                  onChange={(e) => setTargetStrokeWidth(Number(e.target.value))}
-                  className="text-xs font-mono px-2 py-1 rounded bg-black/10 dark:bg-white/10 border-0 text-black dark:text-white focus:ring-0"
-                >
-                  <option value={1.5}>1.5px</option>
-                  <option value={2}>2px</option>
-                  <option value={2.5}>2.5px</option>
-                </select>
-              )}
-            </div>
-          )}
 
           {/* Preview */}
           <div className="space-y-2">
