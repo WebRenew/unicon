@@ -56,6 +56,9 @@ Search through 19,000+ icons with optional filters.
 - `source` (optional)
 - `category` (optional)
 - `limit` (optional)
+- `includeCode` (optional): Return code with results
+- `strokeWidth` (optional): Stroke width when includeCode=true
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons
 
 ### get_icon
 
@@ -66,6 +69,7 @@ Return code for a single icon in a requested format.
 - `format` (optional: svg, react, vue, svelte, json)
 - `size` (optional)
 - `strokeWidth` (optional)
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons
 
 ### get_multiple_icons
 
@@ -76,6 +80,18 @@ Fetch up to 50 icons at once in a shared format.
 - `format` (optional)
 - `size` (optional)
 - `strokeWidth` (optional)
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons
+
+### get_starter_pack
+
+Get curated icon packs for common use cases.
+
+**Parameters**
+- `packId` (required)
+- `format` (optional)
+- `size` (optional)
+- `strokeWidth` (optional)
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons
 
 ## Resources
 

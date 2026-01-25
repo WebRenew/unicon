@@ -60,6 +60,9 @@ Parameters:
 - \`query\` (required) - Search terms
 - \`library\` - Filter by source (lucide, phosphor, etc.)
 - \`limit\` - Max results (default: 20)
+- \`includeCode\` - Return code with results (default: false)
+- \`strokeWidth\` - Stroke width when includeCode=true
+- \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
 ### get_icon
 Get a specific icon by ID.
@@ -67,6 +70,8 @@ Get a specific icon by ID.
 Parameters:
 - \`id\` (required) - Icon ID from search
 - \`format\` - react, vue, svelte, svg, json (default: react)
+- \`strokeWidth\` - Stroke width
+- \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
 ### get_multiple_icons
 Get multiple icons at once.
@@ -74,6 +79,17 @@ Get multiple icons at once.
 Parameters:
 - \`ids\` (required) - Array of icon IDs
 - \`format\` - Output format (default: react)
+- \`strokeWidth\` - Stroke width for all icons
+- \`normalizeStrokes\` - Skip fill icons when normalizing strokes
+
+### get_starter_pack
+Get a curated starter pack of icons.
+
+Parameters:
+- \`packId\` (required) - Pack ID
+- \`format\` - Output format (default: react)
+- \`strokeWidth\` - Stroke width for all icons
+- \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
 ### list_libraries
 List all available icon libraries.
@@ -515,6 +531,9 @@ export default function MCPDocsPage() {
                   <div>• category (optional) - Filter by category</div>
                   <div>• limit (optional) - Max results (default: 20)</div>
                   <div>• offset (optional) - Skip results for pagination</div>
+                  <div>• includeCode (optional) - Return code with results</div>
+                  <div>• strokeWidth (optional) - Stroke width when includeCode=true</div>
+                  <div>• normalizeStrokes (optional) - Skip fill icons when normalizing strokes</div>
                 </div>
               </div>
             </div>
@@ -531,6 +550,7 @@ export default function MCPDocsPage() {
                   <div>• format (optional) - svg, react, vue, svelte, json</div>
                   <div>• size (optional) - Icon size in pixels</div>
                   <div>• strokeWidth (optional) - Stroke width</div>
+                  <div>• normalizeStrokes (optional) - Skip fill icons when normalizing strokes</div>
                 </div>
               </div>
             </div>
@@ -547,6 +567,7 @@ export default function MCPDocsPage() {
                   <div>• format (optional) - Output format for all icons</div>
                   <div>• size (optional) - Size for all icons</div>
                   <div>• strokeWidth (optional) - Stroke width for all icons</div>
+                  <div>• normalizeStrokes (optional) - Skip fill icons when normalizing strokes</div>
                 </div>
               </div>
             </div>
@@ -563,6 +584,7 @@ export default function MCPDocsPage() {
                   <div>• format (optional) - Output format for all icons</div>
                   <div>• size (optional) - Size for all icons</div>
                   <div>• strokeWidth (optional) - Stroke width for all icons</div>
+                  <div>• normalizeStrokes (optional) - Skip fill icons when normalizing strokes</div>
                 </div>
               </div>
             </div>

@@ -94,6 +94,9 @@ Search through 19,000+ icons using semantic search.
 - `category` (optional): Filter by category
 - `limit` (optional): Max results (default: 20, max: 100)
 - `offset` (optional): Skip results for pagination (default: 0)
+- `includeCode` (optional): Return code with results (default: false)
+- `strokeWidth` (optional): Stroke width when includeCode=true (default: 2)
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons (default: false)
 
 ### `get_icon`
 
@@ -104,6 +107,7 @@ Retrieve source code for a specific icon.
 - `format` (optional): Output format (svg, react, vue, svelte, json) - default: react
 - `size` (optional): Icon size in pixels - default: 24
 - `strokeWidth` (optional): Stroke width for outline icons - default: 2
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons (default: false)
 
 ### `get_multiple_icons`
 
@@ -114,6 +118,7 @@ Retrieve multiple icons at once (max 50).
 - `format` (optional): Output format - default: react
 - `size` (optional): Icon size - default: 24
 - `strokeWidth` (optional): Stroke width - default: 2
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons (default: false)
 
 ### `get_starter_pack`
 
@@ -124,6 +129,7 @@ Get a curated starter pack of icons for common use cases.
 - `format` (optional): Output format - default: react
 - `size` (optional): Icon size - default: 24
 - `strokeWidth` (optional): Stroke width - default: 2
+- `normalizeStrokes` (optional): Normalize stroke widths, skipping fill icons (default: false)
 
 ## Available Resources
 

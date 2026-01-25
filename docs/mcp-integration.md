@@ -361,6 +361,9 @@ Search through 19,000+ icons using AI-powered semantic search.
 | `source` | string | ❌ | Filter by library (lucide, phosphor, etc.) |
 | `category` | string | ❌ | Filter by category |
 | `limit` | number | ❌ | Max results (default: 20, max: 100) |
+| `includeCode` | boolean | ❌ | Return code with results (default: false) |
+| `strokeWidth` | number | ❌ | Stroke width when includeCode=true (default: 2) |
+| `normalizeStrokes` | boolean | ❌ | Normalize stroke widths, skipping fill icons (default: false) |
 
 **Example:**
 ```typescript
@@ -383,6 +386,7 @@ Retrieve source code for a specific icon in any format.
 | `format` | string | ❌ | Output format (svg, react, vue, svelte, json) |
 | `size` | number | ❌ | Icon size in pixels (default: 24) |
 | `strokeWidth` | number | ❌ | Stroke width (default: 2) |
+| `normalizeStrokes` | boolean | ❌ | Normalize stroke widths, skipping fill icons (default: false) |
 
 **Example:**
 ```typescript
@@ -406,6 +410,7 @@ Retrieve multiple icons in one request (max 50).
 | `format` | string | ❌ | Output format for all icons |
 | `size` | number | ❌ | Icon size for all icons |
 | `strokeWidth` | number | ❌ | Stroke width for all icons |
+| `normalizeStrokes` | boolean | ❌ | Normalize stroke widths, skipping fill icons (default: false) |
 
 **Example:**
 ```typescript
@@ -432,6 +437,7 @@ Get a curated starter pack of icons for common use cases.
 | `format` | string | ❌ | Output format for all icons |
 | `size` | number | ❌ | Icon size for all icons |
 | `strokeWidth` | number | ❌ | Stroke width for all icons |
+| `normalizeStrokes` | boolean | ❌ | Normalize stroke widths, skipping fill icons (default: false) |
 
 **Available Packs:**
 - `dashboard` - Admin dashboard icons (home, settings, users, charts)

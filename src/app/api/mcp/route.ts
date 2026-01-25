@@ -28,6 +28,7 @@ import {
   generateSvgBundle,
   generateJsonBundle,
 } from "@/lib/icon-converters";
+import { normalizeIcons, normalizeIcon } from "@/lib/icon-utils";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
 
@@ -73,6 +74,11 @@ const strokeWidthSchema = z
   .max(4)
   .default(2)
   .describe("Stroke width");
+
+const normalizeStrokesSchema = z
+  .boolean()
+  .default(false)
+  .describe("Normalize stroke widths across icons (skips fill-based icons automatically)");
 
 const outputSchema = z
   .enum(["individual", "bundle"])
@@ -176,12 +182,14 @@ Args:
   - query (string): Search query (e.g., 'arrow', 'dashboard', 'user profile')
   - includeCode (boolean, optional): Return icon code with results (default: false)
   - format (string, optional): Code format when includeCode=true (default: react)
+  - normalizeStrokes (boolean, optional): Normalize stroke widths, skipping fill icons (default: false)
   - source (string, optional): Filter by library
   - limit (number, optional): Max results (1-100, default: 20)
 
 Examples:
   - Search only: query="arrow"
-  - Search + code: query="arrow", includeCode=true, limit=5`,
+  - Search + code: query="arrow", includeCode=true, limit=5
+  - Normalized: query="arrow", includeCode=true, normalizeStrokes=true, strokeWidth=2`,
       inputSchema: z
         .object({
           query: z.string().min(1).max(200).describe("Search query"),
@@ -190,6 +198,8 @@ Examples:
             .default(false)
             .describe("Include icon source code in results (returns bundle format)"),
           format: formatSchema,
+          strokeWidth: strokeWidthSchema,
+          normalizeStrokes: normalizeStrokesSchema,
           source: sourceSchema,
           category: z.string().max(50).optional().describe("Filter by category"),
           limit: z
@@ -238,6 +248,8 @@ Examples:
       const offset = params.offset ?? 0;
       const includeCode = params.includeCode ?? false;
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
+      const normalizeStrokes = params.normalizeStrokes ?? false;
+      const strokeWidth = params.strokeWidth ?? 2;
 
       // Build search params with proper typing for exactOptionalPropertyTypes
       const filterParams: {
@@ -283,13 +295,18 @@ Examples:
           };
         }
 
+        // Apply stroke normalization if requested (skips fill-based icons)
+        const iconsToBundle = normalizeStrokes
+          ? normalizeIcons(dbResults, { strokeWidth, skipFillIcons: true })
+          : dbResults;
+
         let bundleText: string;
         if (format === "react") {
-          bundleText = generateReactBundle(dbResults);
+          bundleText = generateReactBundle(iconsToBundle, { strokeWidth });
         } else if (format === "svg") {
-          bundleText = generateSvgBundle(dbResults);
+          bundleText = generateSvgBundle(iconsToBundle, { strokeWidth });
         } else {
-          bundleText = generateJsonBundle(dbResults);
+          bundleText = generateJsonBundle(iconsToBundle);
         }
 
         const output = {
@@ -356,6 +373,7 @@ Args:
   - format (string, optional): Output format - svg, react, vue, svelte, json (default: react)
   - size (number, optional): Icon size in pixels (default: 24)
   - strokeWidth (number, optional): Stroke width for line icons (default: 2)
+  - normalizeStrokes (boolean, optional): Normalize stroke widths, skipping fill icons (default: false)
 
 Returns:
   Object with iconId, format, and code.
@@ -369,6 +387,7 @@ Examples:
           format: formatSchema,
           size: sizeSchema,
           strokeWidth: strokeWidthSchema,
+          normalizeStrokes: normalizeStrokesSchema,
         })
         .strict(),
       outputSchema: z
@@ -400,9 +419,17 @@ Examples:
       }
 
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
-      const code = await convertIconToFormat(icon, format, {
+      const normalizeStrokes = params.normalizeStrokes ?? false;
+      const strokeWidth = params.strokeWidth ?? 2;
+
+      // Apply stroke normalization if requested (skips fill-based icons)
+      const iconToConvert = normalizeStrokes
+        ? normalizeIcon(icon, { strokeWidth, skipFillIcons: true })
+        : icon;
+
+      const code = await convertIconToFormat(iconToConvert, format, {
         size: params.size,
-        strokeWidth: params.strokeWidth,
+        strokeWidth,
       });
 
       const output = {
@@ -433,6 +460,7 @@ Args:
   - format (string, optional): svg, react, vue, svelte, json (default: react)
   - size (number, optional): Icon size in pixels (default: 24)
   - strokeWidth (number, optional): Stroke width (default: 2)
+  - normalizeStrokes (boolean, optional): Normalize stroke widths, skipping fill icons (default: false)
 
 Returns:
   Single copy-pasteable file with all icons (bundle) or individual components.`,
@@ -447,6 +475,7 @@ Returns:
           format: formatSchema,
           size: sizeSchema,
           strokeWidth: strokeWidthSchema,
+          normalizeStrokes: normalizeStrokesSchema,
         })
         .strict(),
       outputSchema: z
@@ -474,6 +503,8 @@ Returns:
     async (params) => {
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
       const outputMode = params.output ?? "bundle";
+      const normalizeStrokes = params.normalizeStrokes ?? false;
+      const strokeWidth = params.strokeWidth ?? 2;
 
       // Batch fetch all icons in a single query (eliminates N+1)
       const fetchedIcons = await getIconsByIds(params.iconIds);
@@ -499,19 +530,24 @@ Returns:
           };
         }
 
+        // Apply stroke normalization if requested (skips fill-based icons)
+        const iconsToBundle = normalizeStrokes
+          ? normalizeIcons(orderedIcons, { strokeWidth, skipFillIcons: true })
+          : orderedIcons;
+
         let bundleText: string;
         if (format === "react") {
-          bundleText = generateReactBundle(orderedIcons, {
+          bundleText = generateReactBundle(iconsToBundle, {
             size: params.size,
-            strokeWidth: params.strokeWidth,
+            strokeWidth,
           });
         } else if (format === "svg") {
-          bundleText = generateSvgBundle(orderedIcons, {
+          bundleText = generateSvgBundle(iconsToBundle, {
             size: params.size,
-            strokeWidth: params.strokeWidth,
+            strokeWidth,
           });
         } else {
-          bundleText = generateJsonBundle(orderedIcons);
+          bundleText = generateJsonBundle(iconsToBundle);
         }
 
         const text = truncateIfNeeded(bundleText);
@@ -542,9 +578,14 @@ Returns:
               };
             }
 
-            const code = await convertIconToFormat(icon, format, {
+            // Apply stroke normalization if requested (skips fill-based icons)
+            const iconToConvert = normalizeStrokes
+              ? normalizeIcon(icon, { strokeWidth, skipFillIcons: true })
+              : icon;
+
+            const code = await convertIconToFormat(iconToConvert, format, {
               size: params.size,
-              strokeWidth: params.strokeWidth,
+              strokeWidth,
             });
 
             return { id: icon.id, name: icon.name, code };
@@ -595,6 +636,7 @@ Args:
   - format (string, optional): svg, react, vue, svelte, json (default: react)
   - size (number, optional): Icon size (default: 24)
   - strokeWidth (number, optional): Stroke width (default: 2)
+  - normalizeStrokes (boolean, optional): Normalize stroke widths, skipping fill icons (default: false)
 
 Returns:
   Single copy-pasteable file with all icons (bundle) or individual components.`,
@@ -611,6 +653,7 @@ Returns:
           format: formatSchema,
           size: sizeSchema,
           strokeWidth: strokeWidthSchema,
+          normalizeStrokes: normalizeStrokesSchema,
         })
         .strict(),
       outputSchema: z
@@ -653,6 +696,8 @@ Returns:
 
       const format = params.format as "svg" | "react" | "vue" | "svelte" | "json";
       const outputMode = params.output ?? "bundle";
+      const normalizeStrokes = params.normalizeStrokes ?? false;
+      const strokeWidth = params.strokeWidth ?? 2;
 
       // Batch fetch all icons (eliminates N+1)
       const fetchedIcons = await getIconsByNames(pack.iconNames);
@@ -680,19 +725,24 @@ Returns:
           };
         }
 
+        // Apply stroke normalization if requested (skips fill-based icons)
+        const iconsToBundle = normalizeStrokes
+          ? normalizeIcons(orderedIcons, { strokeWidth, skipFillIcons: true })
+          : orderedIcons;
+
         let bundleText: string;
         if (format === "react") {
-          bundleText = generateReactBundle(orderedIcons, {
+          bundleText = generateReactBundle(iconsToBundle, {
             size: params.size,
-            strokeWidth: params.strokeWidth,
+            strokeWidth,
           });
         } else if (format === "svg") {
-          bundleText = generateSvgBundle(orderedIcons, {
+          bundleText = generateSvgBundle(iconsToBundle, {
             size: params.size,
-            strokeWidth: params.strokeWidth,
+            strokeWidth,
           });
         } else {
-          bundleText = generateJsonBundle(orderedIcons);
+          bundleText = generateJsonBundle(iconsToBundle);
         }
 
         const text = truncateIfNeeded(bundleText);
@@ -721,9 +771,14 @@ Returns:
               return { name: iconName, code: "", error: "Icon not found in database" };
             }
 
-            const code = await convertIconToFormat(icon, format, {
+            // Apply stroke normalization if requested (skips fill-based icons)
+            const iconToConvert = normalizeStrokes
+              ? normalizeIcon(icon, { strokeWidth, skipFillIcons: true })
+              : icon;
+
+            const code = await convertIconToFormat(iconToConvert, format, {
               size: params.size,
-              strokeWidth: params.strokeWidth,
+              strokeWidth,
             });
 
             return { name: icon.normalizedName, code };
