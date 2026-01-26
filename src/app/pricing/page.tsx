@@ -4,7 +4,6 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { CheckIcon } from "@/components/icons/ui/check";
-import { CrownIcon } from "@/components/icons/ui/crown";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { GlobeIcon } from "@/components/icons/ui/globe";
 import { ZapIcon } from "@/components/icons/ui/zap";
@@ -127,14 +126,14 @@ function PricingContent() {
             </div>
 
             {/* Pro Plan */}
-            <div className="flex flex-col rounded-2xl border-2 border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-transparent p-6 relative">
-              <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-medium">
+            <div className="flex flex-col rounded-2xl border-2 border-[var(--accent-lavender)]/30 bg-gradient-to-b from-[var(--accent-lavender)]/5 to-transparent p-6 relative">
+              <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-[var(--accent-lavender)] text-white text-xs font-medium">
                 Most Popular
               </div>
 
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <CrownIcon className="w-5 h-5 text-amber-500" />
+                  <span className="text-lg" aria-hidden="true">🦄</span>
                   <h2 className="text-xl font-semibold text-foreground">Pro</h2>
                 </div>
                 <div className="flex items-baseline gap-1">
@@ -149,7 +148,7 @@ function PricingContent() {
               <ul className="space-y-3 mb-6 flex-1">
                 {PRO_FEATURES.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <CheckIcon className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-[var(--accent-lavender)] mt-0.5 shrink-0" />
                     <span className="text-sm text-foreground">{feature}</span>
                   </li>
                 ))}
@@ -158,14 +157,14 @@ function PricingContent() {
               {isAuthLoading ? (
                 <button
                   disabled
-                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white font-medium opacity-50"
+                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] text-white font-medium opacity-50"
                 >
                   <Loader2Icon className="w-5 h-5 animate-spin mx-auto" />
                 </button>
               ) : isPro ? (
                 <button
                   disabled
-                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white font-medium opacity-50 cursor-default"
+                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] text-white font-medium opacity-50 cursor-default"
                 >
                   You&apos;re on Pro!
                 </button>
@@ -173,7 +172,7 @@ function PricingContent() {
                 <button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/90 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <>
@@ -202,7 +201,7 @@ function PricingContent() {
                   <tr className="border-b border-black/10 dark:border-white/10">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Feature</th>
                     <th className="text-center py-3 px-4 font-medium text-muted-foreground">Free</th>
-                    <th className="text-center py-3 px-4 font-medium text-amber-500">Pro</th>
+                    <th className="text-center py-3 px-4 font-medium text-[var(--accent-lavender)]">Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -224,7 +223,7 @@ function PricingContent() {
                   <tr>
                     <td className="py-3 px-4 text-foreground">Saved cloud bundles</td>
                     <td className="py-3 px-4 text-center text-muted-foreground">3</td>
-                    <td className="py-3 px-4 text-center text-amber-500 font-medium">Unlimited</td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] font-medium">Unlimited</td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground flex items-center gap-2">
@@ -242,12 +241,12 @@ function PricingContent() {
                   <tr>
                     <td className="py-3 px-4 text-foreground">Brand kit</td>
                     <td className="py-3 px-4 text-center text-muted-foreground">-</td>
-                    <td className="py-3 px-4 text-center text-amber-500 text-xs">Coming soon</td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Custom uploads</td>
                     <td className="py-3 px-4 text-center text-muted-foreground">-</td>
-                    <td className="py-3 px-4 text-center text-amber-500 text-xs">Coming soon</td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                 </tbody>
               </table>
