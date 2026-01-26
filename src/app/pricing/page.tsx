@@ -270,18 +270,18 @@ function PricingContent() {
                 <button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 transition-all duration-200 hover:scale-[1.03] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.17),0_4px_20px_rgba(255,255,255,0.03),0_0_30px_rgba(255,255,255,0.02)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
+                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 transition-all duration-700 ease-in-out hover:scale-[1.03] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.17),0_4px_20px_rgba(255,255,255,0.03),0_0_30px_rgba(255,255,255,0.02)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
                 >
                   {/* Dark background overlay on hover */}
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-700 ease-in-out group-hover:opacity-100"
                     style={{ background: "hsl(0, 0%, 1%)" }}
                   />
                   {/* Blur highlight overlay */}
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-all duration-300 group-hover:opacity-100"
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-all duration-700 ease-in-out group-hover:opacity-100"
                     style={{
                       background: "radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 50%), radial-gradient(circle at 70% 100%, rgba(255, 255, 255, 0.015) 0%, transparent 40%)",
                     }}
