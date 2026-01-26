@@ -44,6 +44,8 @@ export interface BundleIcon {
   normalizedName: string;
   sourceId: string;
   svg: string;
+  viewBox: string;
+  strokeWidth?: string | null;
   defaultFill?: boolean;
   defaultStroke?: boolean;
 }

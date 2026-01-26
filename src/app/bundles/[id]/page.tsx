@@ -1,26 +1,27 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { PackageIcon } from "@/components/icons/ui/package";
+import { ArrowLeftIcon } from "@/components/icons/ui/arrow-left";
 import { GlobeIcon } from "@/components/icons/ui/globe";
 import { generateRenderableSvg } from "@/lib/icon-utils";
+import { getUser } from "@/lib/auth/actions";
 import type { Bundle, BundleIcon } from "@/types/database";
 import type { Metadata } from "next";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: bundle } = await supabase
     .from("bundles")
     .select("name, description, icon_count")
-    .eq("share_slug", slug)
-    .eq("is_public", true)
+    .eq("id", id)
     .single();
 
   if (!bundle) {
@@ -36,8 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 /**
  * Renders an icon preview safely.
  * SECURITY: SVG content originates from curated icon libraries (Lucide, Phosphor, Huge Icons)
- * and is stored by authenticated users. This is not arbitrary user input - the content
- * is pre-validated icon data from trusted sources.
+ * and is stored by authenticated users. This is not arbitrary user input.
  */
 function IconPreview({
   icon,
@@ -83,15 +83,21 @@ function IconPreview({
   );
 }
 
-export default async function PublicBundlePage({ params }: PageProps) {
-  const { slug } = await params;
+export default async function BundleDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/?login=required");
+  }
+
   const supabase = await createClient();
 
   const { data: bundle, error } = await supabase
     .from("bundles")
     .select("*")
-    .eq("share_slug", slug)
-    .eq("is_public", true)
+    .eq("id", id)
+    .eq("user_id", user.profile.id)
     .single();
 
   if (error || !bundle) {
@@ -106,15 +112,26 @@ export default async function PublicBundlePage({ params }: PageProps) {
       <SiteHeader />
       <main className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Back link */}
+          <Link
+            href="/bundles"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back to bundles
+          </Link>
+
           {/* Header */}
           <div className="flex items-start gap-4 mb-8">
-            <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
-              <PackageIcon className="w-7 h-7 text-[var(--accent-aqua)]" />
+            <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-[var(--accent-mint)]/10 border border-[var(--accent-mint)]/20">
+              <PackageIcon className="w-7 h-7 text-[var(--accent-mint)]" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-semibold text-foreground">{typedBundle.name}</h1>
-                <GlobeIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+                {typedBundle.is_public && (
+                  <GlobeIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+                )}
               </div>
               {typedBundle.description && (
                 <p className="text-muted-foreground">{typedBundle.description}</p>
@@ -151,13 +168,21 @@ export default async function PublicBundlePage({ params }: PageProps) {
             ))}
           </div>
 
-          {/* Footer */}
-          <div className="mt-12 pt-8 border-t border-black/5 dark:border-white/5 text-center">
+          {/* Footer info */}
+          <div className="mt-12 pt-8 border-t border-black/5 dark:border-white/5">
             <p className="text-sm text-muted-foreground">
-              Shared via{" "}
-              <Link href="/" className="text-[var(--accent-aqua)] hover:underline">
-                Unicon
-              </Link>
+              Created {new Date(typedBundle.created_at).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+              {typedBundle.updated_at !== typedBundle.created_at && (
+                <> · Last updated {new Date(typedBundle.updated_at).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}</>
+              )}
             </p>
           </div>
         </div>

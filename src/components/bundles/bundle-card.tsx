@@ -25,8 +25,10 @@ export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCa
   const [isTogglingPublic, setIsTogglingPublic] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const previewIcons = (bundle.icons as BundleIcon[]).slice(0, 6);
-  const remainingCount = bundle.icon_count - 6;
+  // Safely parse icons array from bundle
+  const icons = Array.isArray(bundle.icons) ? bundle.icons : [];
+  const previewIcons = (icons as BundleIcon[]).slice(0, 6);
+  const remainingCount = Math.max(0, bundle.icon_count - 6);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this bundle?")) return;
@@ -86,13 +88,32 @@ export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCa
 
   // Render icon preview - SVG content is from trusted icon library data stored in database
   const renderIconPreview = (icon: BundleIcon) => {
+    // Handle both old format (content) and new format (svg) for backwards compatibility
+    const svgContent = icon.svg || (icon as unknown as { content?: string }).content;
+    
+    // Handle missing or empty SVG content
+    if (!svgContent) {
+      return { __html: "" };
+    }
+
     // SECURITY NOTE: SVG content originates from curated icon libraries (Lucide, Phosphor, etc.)
     // and is stored in the database by authenticated users. This is not arbitrary user input.
     const svgHtml = generateRenderableSvg(
-      icon as unknown as Parameters<typeof generateRenderableSvg>[0],
+      {
+        viewBox: icon.viewBox ?? "0 0 24 24",
+        content: svgContent,
+        defaultStroke: icon.defaultStroke ?? true,
+        defaultFill: icon.defaultFill ?? false,
+        strokeWidth: icon.strokeWidth ?? "2",
+      },
       { size: 20 }
     );
     return { __html: svgHtml };
+  };
+
+  // Check if icon has valid SVG content (supports both old and new format)
+  const hasValidSvg = (icon: BundleIcon) => {
+    return !!(icon.svg || (icon as unknown as { content?: string }).content);
   };
 
   return (
@@ -105,10 +126,15 @@ export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCa
               key={i}
               className="flex items-center justify-center w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5"
             >
-              <div
-                className="w-5 h-5 text-black/70 dark:text-white/70"
-                dangerouslySetInnerHTML={renderIconPreview(icon)}
-              />
+              {hasValidSvg(icon) ? (
+                <div
+                  className="w-5 h-5 text-black/70 dark:text-white/70 [&>svg]:w-full [&>svg]:h-full"
+                  // SVG content is from trusted icon libraries, not user input
+                  dangerouslySetInnerHTML={renderIconPreview(icon)}
+                />
+              ) : (
+                <PackageIcon className="w-4 h-4 text-black/20 dark:text-white/20" />
+              )}
             </div>
           ))}
           {remainingCount > 0 && (

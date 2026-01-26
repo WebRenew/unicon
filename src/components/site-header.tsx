@@ -5,9 +5,13 @@ import Link from "next/link";
 import { GithubIcon } from "@/components/icons/ui/github";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
+import { UserIcon } from "@/components/icons/ui/user";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
+import { LoginDialog } from "@/components/auth/login-dialog";
+import { UserMenu } from "@/components/auth/user-menu";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 interface SiteHeaderProps {
@@ -16,6 +20,8 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const { user, profile, isPro, isLoading } = useAuth();
 
   return (
     <>
@@ -64,6 +70,22 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
+
+            {/* Auth: Login button or User menu */}
+            {!isLoading && (
+              user && profile ? (
+                <UserMenu profile={profile} isPro={isPro} />
+              ) : (
+                <button
+                  onClick={() => setLoginDialogOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign in</span>
+                </button>
+              )
+            )}
+
             <a
               href="https://github.com/WebRenew/unicon"
               target="_blank"
@@ -78,6 +100,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
       </header>
 
       <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
     </>
   );
 }

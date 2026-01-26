@@ -57,6 +57,8 @@ export function SaveBundleDialog({
             normalizedName: icon.normalizedName,
             sourceId: icon.sourceId,
             svg: icon.content,
+            viewBox: icon.viewBox,
+            strokeWidth: icon.strokeWidth,
             defaultFill: icon.defaultFill,
             defaultStroke: icon.defaultStroke,
           })),
