@@ -126,8 +126,8 @@ function PricingContent() {
             </div>
 
             {/* Pro Plan */}
-            <div className="flex flex-col rounded-2xl border-2 border-[var(--accent-lavender)]/30 bg-gradient-to-b from-[var(--accent-lavender)]/5 to-transparent p-6 relative">
-              <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-[var(--accent-lavender)] text-white text-xs font-medium">
+            <div className="flex flex-col rounded-2xl border border-accent-500/50 bg-gradient-to-b from-accent-500/15 via-accent-600/10 to-accent-950/20 p-6 relative shadow-[0_0_40px_-10px_var(--accent-500)] dark:shadow-[0_0_50px_-10px_var(--accent-500)]">
+              <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-gradient-to-r from-accent-400 to-accent-600 text-white text-xs font-semibold shadow-lg">
                 Most Popular
               </div>
 
@@ -137,10 +137,10 @@ function PricingContent() {
                   <h2 className="text-xl font-semibold text-foreground">Pro</h2>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-foreground">$29</span>
+                  <span className="text-4xl font-bold bg-gradient-to-r from-accent-300 to-accent-500 bg-clip-text text-transparent">$29</span>
                   <span className="text-muted-foreground">/year</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-foreground/70 mt-2">
                   For teams and power users who need more.
                 </p>
               </div>
@@ -148,7 +148,7 @@ function PricingContent() {
               <ul className="space-y-3 mb-6 flex-1">
                 {PRO_FEATURES.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <CheckIcon className="w-4 h-4 text-[var(--accent-lavender)] mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-accent-400 mt-0.5 shrink-0" />
                     <span className="text-sm text-foreground">{feature}</span>
                   </li>
                 ))}
@@ -157,14 +157,14 @@ function PricingContent() {
               {isAuthLoading ? (
                 <button
                   disabled
-                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] text-white font-medium opacity-50"
+                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-accent-400 to-accent-600 text-white font-medium opacity-50"
                 >
                   <Loader2Icon className="w-5 h-5 animate-spin mx-auto" />
                 </button>
               ) : isPro ? (
                 <button
                   disabled
-                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] text-white font-medium opacity-50 cursor-default"
+                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-accent-400 to-accent-600 text-white font-medium opacity-50 cursor-default"
                 >
                   You&apos;re on Pro!
                 </button>
@@ -172,7 +172,7 @@ function PricingContent() {
                 <button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-lg bg-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/90 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-accent-400 to-accent-600 hover:from-accent-500 hover:to-accent-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-accent-500/25"
                 >
                   {isLoading ? (
                     <>
