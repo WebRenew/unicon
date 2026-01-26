@@ -5,7 +5,6 @@ import { XIcon } from "@/components/icons/ui/x";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyIcon } from "@/components/icons/ui/copy";
 import { CheckIcon } from "@/components/icons/ui/check";
-import { Trash2Icon } from "@/components/icons/ui/trash-2";
 import { FileCodeIcon } from "@/components/icons/ui/file-code";
 import { FileJsonIcon } from "@/components/icons/ui/file-json";
 import { PackageIcon } from "@/components/icons/ui/package";
@@ -15,6 +14,7 @@ import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { V0Icon } from "@/components/icons/ui/v0";
 import { LayersIcon } from "@/components/icons/ui/layers";
 import { CloudIcon } from "@/components/icons/ui/cloud";
+import { PlusIcon } from "@/components/icons/ui/plus";
 import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 import { BundleMixingWarning } from "./bundle-mixing-warning";
 import { SaveBundleDialog } from "./save-bundle-dialog";
@@ -301,19 +301,20 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           {items.length > 0 && activeTab === "bundle" && (
             <>
               <button
+                onClick={onClear}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--accent-lavender)]/10 text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/20 transition-colors"
+                title="Start a new bundle"
+              >
+                <PlusIcon className="w-3.5 h-3.5" />
+                New
+              </button>
+              <button
                 onClick={handleSaveBundle}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--accent-aqua)]/10 text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/20 transition-colors"
                 title="Save bundle to cloud"
               >
                 <CloudIcon className="w-3.5 h-3.5" />
                 Save
-              </button>
-              <button
-                onClick={onClear}
-                className="p-2 text-black/40 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                aria-label="Clear all icons from bundle"
-              >
-                <Trash2Icon className="w-4 h-4" />
               </button>
             </>
           )}

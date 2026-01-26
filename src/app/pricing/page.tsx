@@ -8,6 +8,9 @@ import { PackageIcon } from "@/components/icons/ui/package";
 import { GlobeIcon } from "@/components/icons/ui/globe";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { ChevronDownIcon } from "@/components/icons/ui/chevron-down";
+import { ScanSearchIcon } from "@/components/icons/ui/scan-search";
+import { WorkflowIcon } from "@/components/icons/ui/workflow";
+import { AiIcon } from "@/components/icons/ui/ai";
 import { LoginDialog } from "@/components/auth/login-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -337,21 +340,27 @@ function PricingContent() {
             </p>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
-                <div className="text-2xl mb-3">🎯</div>
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-lavender)]/10 flex items-center justify-center mb-3">
+                  <ScanSearchIcon className="w-4 h-4 text-[var(--accent-lavender)]" />
+                </div>
                 <h4 className="font-medium text-foreground mb-2">One search, all icons</h4>
                 <p className="text-sm text-muted-foreground">
                   Lucide, Heroicons, Phosphor, Tabler, and 50+ more libraries. Search once, find exactly what you need.
                 </p>
               </div>
               <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
-                <div className="text-2xl mb-3">⚡</div>
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-aqua)]/10 flex items-center justify-center mb-3">
+                  <WorkflowIcon className="w-4 h-4 text-[var(--accent-aqua)]" />
+                </div>
                 <h4 className="font-medium text-foreground mb-2">Copy-paste to production</h4>
                 <p className="text-sm text-muted-foreground">
                   Get React components, Vue, SVG, or JSX with one click. No conversion tools needed.
                 </p>
               </div>
               <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
-                <div className="text-2xl mb-3">🤖</div>
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-mint)]/10 flex items-center justify-center mb-3">
+                  <AiIcon className="w-4 h-4 text-[var(--accent-mint)]" />
+                </div>
                 <h4 className="font-medium text-foreground mb-2">AI-native workflows</h4>
                 <p className="text-sm text-muted-foreground">
                   MCP server lets Claude and other AI tools add icons directly. CLI integrates with your build process.
