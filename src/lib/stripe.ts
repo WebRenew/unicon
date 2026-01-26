@@ -66,17 +66,20 @@ export async function createOrRetrieveCustomer(
     return existingCustomer.id;
   }
 
-  // Create new customer
+  // Create new customer with idempotency key to prevent duplicates
+  // from concurrent requests for the same user
   const customerParams: Stripe.CustomerCreateParams = {
     email,
     metadata: { userId },
   };
-  
+
   if (name) {
     customerParams.name = name;
   }
 
-  const customer = await client.customers.create(customerParams);
+  const customer = await client.customers.create(customerParams, {
+    idempotencyKey: `create-customer-${userId}`,
+  });
 
   return customer.id;
 }

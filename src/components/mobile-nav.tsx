@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { HotPriceIcon } from "@/components/icons/ui/hot-price";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { XIcon } from "@/components/icons/ui/x";
 
@@ -34,6 +35,13 @@ const navItems = [
     icon: MCPIcon,
     color: "text-[var(--accent-lavender)]",
     hoverBg: "hover:bg-[var(--accent-lavender)]/10",
+  },
+  {
+    href: "/pricing",
+    label: "Pricing",
+    icon: HotPriceIcon,
+    color: "text-[var(--accent-mint)]",
+    hoverBg: "hover:bg-[var(--accent-mint)]/10",
   },
 ];
 

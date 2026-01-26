@@ -75,24 +75,53 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     updates.icon_count = body.icons.length;
   }
 
-  // Generate share slug when making public
-  if (body.is_public === true) {
-    const { data: slugData } = await supabase.rpc("generate_share_slug");
-    updates.share_slug = slugData;
-  }
-
   // Remove share slug when making private
   if (body.is_public === false) {
     updates.share_slug = null;
   }
 
-  const { data: bundle, error } = await supabase
-    .from("bundles")
-    .update(updates)
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .select()
-    .single();
+  // Helper to perform the update
+  const performUpdate = async () => {
+    const { data: bundle, error } = await supabase
+      .from("bundles")
+      .update(updates)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+    return { bundle, error };
+  };
+
+  // When making public, generate share slug with retry for rare collisions
+  if (body.is_public === true) {
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const { data: slugData } = await supabase.rpc("generate_share_slug");
+      updates.share_slug = slugData;
+
+      const { bundle, error } = await performUpdate();
+
+      if (error) {
+        // Retry on unique constraint violation for share_slug (code 23505)
+        const isSlugCollision = error.code === "23505" && error.message?.includes("share_slug");
+        if (isSlugCollision && attempt < maxRetries - 1) {
+          continue;
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      if (!bundle) {
+        return NextResponse.json({ error: "Bundle not found or unauthorized" }, { status: 404 });
+      }
+
+      return NextResponse.json({ bundle });
+    }
+
+    return NextResponse.json({ error: "Failed to generate unique share link" }, { status: 500 });
+  }
+
+  // Standard update (not making public)
+  const { bundle, error } = await performUpdate();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

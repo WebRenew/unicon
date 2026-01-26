@@ -7,28 +7,88 @@ import { CheckIcon } from "@/components/icons/ui/check";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { GlobeIcon } from "@/components/icons/ui/globe";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
+import { ChevronDownIcon } from "@/components/icons/ui/chevron-down";
 import { LoginDialog } from "@/components/auth/login-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const FREE_FEATURES = [
-  "Browse 10,000+ icons",
-  "Copy React components & SVGs",
-  "Download icon bundles",
+  "Browse 10,000+ icons from 50+ libraries",
+  "Copy React components & SVGs instantly",
+  "Download custom icon bundles",
   "3 saved cloud bundles",
-  "CLI access",
-  "MCP server integration",
+  "Full CLI access",
+  "MCP server for AI workflows",
 ];
 
 const PRO_FEATURES = [
   { text: "Everything in Free", comingSoon: false },
   { text: "Unlimited saved bundles", comingSoon: false },
-  { text: "Public bundle sharing links", comingSoon: false },
-  { text: "API access for automation", comingSoon: false },
-  { text: "Brand kit", comingSoon: true },
+  { text: "Share bundles with your team", comingSoon: false },
+  { text: "API access for CI/CD automation", comingSoon: false },
+  { text: "Brand kit for consistent icons", comingSoon: true },
   { text: "Custom icon uploads", comingSoon: true },
   { text: "Priority support", comingSoon: false },
 ];
+
+const FAQ_ITEMS = [
+  {
+    question: "Do I need Pro to use Unicon?",
+    answer: "No. The Free plan gives you full access to browse, copy, and download icons. Pro is for teams and power users who need unlimited cloud bundles, sharing, and API access.",
+  },
+  {
+    question: "What counts as a 'saved bundle'?",
+    answer: "A saved bundle is a collection of icons you save to the cloud for easy access across devices. Free users get 3 bundles, Pro users get unlimited. Local downloads don't count toward this limit.",
+  },
+  {
+    question: "Can I share bundles with my team?",
+    answer: "Yes! Pro users can generate public sharing links for any bundle. Share a single URL and your team can copy the exact icons you curated—no account required to view.",
+  },
+  {
+    question: "What's included in API access?",
+    answer: "Pro includes full API access to programmatically search icons, fetch SVGs, and generate bundles. Perfect for CI/CD pipelines, design systems, and automation workflows.",
+  },
+  {
+    question: "Is there a refund policy?",
+    answer: "Yes. If you're not satisfied within the first 14 days, email us and we'll refund your subscription—no questions asked.",
+  },
+  {
+    question: "Can I cancel anytime?",
+    answer: "Absolutely. Cancel your subscription anytime from your account settings. You'll keep Pro access until the end of your billing period.",
+  },
+];
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-black/5 dark:border-white/5 last:border-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full py-4 flex items-center justify-between text-left hover:text-foreground transition-colors"
+      >
+        <span className="text-sm font-medium text-foreground pr-4">{question}</span>
+        <ChevronDownIcon
+          className={cn(
+            "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
+        />
+      </button>
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-in-out",
+          isOpen ? "grid-rows-[1fr] opacity-100 pb-4" : "grid-rows-[0fr] opacity-0"
+        )}
+      >
+        <div className="overflow-hidden">
+          <p className="text-sm text-muted-foreground leading-relaxed">{answer}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PricingContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -76,11 +136,12 @@ function PricingContent() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-3xl font-semibold text-foreground mb-3">
-              Simple, transparent pricing
+            <p className="text-sm font-medium text-[var(--accent-mint)] mb-3">Pricing</p>
+            <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
+              One library. Every icon you need.
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Everything you need to build with icons. Start free, upgrade when you need more.
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Stop hunting across dozens of icon sites. Unicon brings 10,000+ icons from 50+ libraries into one searchable interface—with CLI, MCP, and API access built in.
             </p>
             {wasCanceled && (
               <p className="mt-4 text-amber-600 dark:text-amber-400 text-sm">
@@ -266,10 +327,58 @@ function PricingContent() {
             </div>
           </div>
 
-          {/* FAQ */}
+          {/* Why Unicon */}
+          <div className="mt-20">
+            <h3 className="text-xl font-semibold text-foreground text-center mb-3">
+              Why teams choose Unicon
+            </h3>
+            <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
+              Built by developers who got tired of copy-pasting SVGs from five different tabs.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
+                <div className="text-2xl mb-3">🎯</div>
+                <h4 className="font-medium text-foreground mb-2">One search, all icons</h4>
+                <p className="text-sm text-muted-foreground">
+                  Lucide, Heroicons, Phosphor, Tabler, and 50+ more libraries. Search once, find exactly what you need.
+                </p>
+              </div>
+              <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
+                <div className="text-2xl mb-3">⚡</div>
+                <h4 className="font-medium text-foreground mb-2">Copy-paste to production</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get React components, Vue, SVG, or JSX with one click. No conversion tools needed.
+                </p>
+              </div>
+              <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
+                <div className="text-2xl mb-3">🤖</div>
+                <h4 className="font-medium text-foreground mb-2">AI-native workflows</h4>
+                <p className="text-sm text-muted-foreground">
+                  MCP server lets Claude and other AI tools add icons directly. CLI integrates with your build process.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="mt-20">
+            <h3 className="text-xl font-semibold text-foreground text-center mb-3">
+              Frequently asked questions
+            </h3>
+            <p className="text-center text-muted-foreground mb-8">
+              Everything you need to know about Unicon.
+            </p>
+            <div className="max-w-2xl mx-auto rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02] px-6">
+              {FAQ_ITEMS.map((item, index) => (
+                <FAQItem key={index} question={item.question} answer={item.answer} />
+              ))}
+            </div>
+          </div>
+
+          {/* Contact */}
           <div className="mt-16 text-center">
             <p className="text-sm text-muted-foreground">
-              Questions? Email us at{" "}
+              Still have questions? Email us at{" "}
               <a href="mailto:contact@webrenew.io" className="text-[var(--accent-aqua)] hover:underline">
                 contact@webrenew.io
               </a>

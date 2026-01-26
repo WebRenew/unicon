@@ -7,6 +7,7 @@ import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { UserIcon } from "@/components/icons/ui/user";
+import { HotPriceIcon } from "@/components/icons/ui/hot-price";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
@@ -104,6 +105,13 @@ export function HomeHeader() {
               >
                 <MCPIcon className="w-3.5 h-3.5" size={14} />
                 MCP
+              </Link>
+              <Link
+                href="/pricing"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/5 transition-colors"
+              >
+                <HotPriceIcon className="w-3.5 h-3.5" />
+                Pricing
               </Link>
             </nav>
           </div>
