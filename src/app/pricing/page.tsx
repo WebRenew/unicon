@@ -206,11 +206,11 @@ function PricingContent() {
             >
               {/* Mouse-following aqua glow */}
               <div
-                className="absolute w-[300px] h-[300px] pointer-events-none transition-opacity duration-300"
+                className="absolute w-[500px] h-[500px] pointer-events-none transition-opacity duration-300"
                 style={{
-                  background: 'radial-gradient(circle, rgba(127, 211, 230, 0.15) 0%, transparent 70%)',
-                  left: mousePos.x - 150,
-                  top: mousePos.y - 150,
+                  background: 'radial-gradient(circle, rgba(127, 211, 230, 0.25) 0%, transparent 70%)',
+                  left: mousePos.x - 250,
+                  top: mousePos.y - 250,
                   opacity: isHovering ? 1 : 0,
                 }}
               />
@@ -271,14 +271,14 @@ function PricingContent() {
                 <button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#9ee8f5_0%,#7fd3e6_8%,#5bc4db_100%)] text-[#0a3d4a] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.4)] border-t border-white/40 transition-all duration-150 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
+                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white/80 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 transition-all duration-150 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
                 >
-                  {/* Gradient corner accent on hover */}
+                  {/* Gradient corner accent on hover - aqua accent like icon library colors */}
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                     style={{
-                      background: "radial-gradient(circle at 0% 0%, rgba(255,255,255,0.5) 0%, transparent 50%)",
+                      background: "radial-gradient(circle at 0% 0%, rgba(127,211,230,0.4) 0%, transparent 50%)",
                     }}
                   />
                   <span className="relative z-10 flex items-center justify-center gap-2">
