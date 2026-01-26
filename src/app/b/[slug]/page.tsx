@@ -50,7 +50,7 @@ function IconPreview({
 }) {
   // Handle both old format (content) and new format (svg) for backwards compatibility
   const svgContent = icon.svg || (icon as unknown as { content?: string }).content;
-  
+
   // Handle missing or empty SVG content
   if (!svgContent) {
     return (
@@ -60,9 +60,12 @@ function IconPreview({
     );
   }
 
+  // Determine correct viewBox based on icon source (Phosphor uses 256x256, all others use 24x24)
+  const defaultViewBox = icon.sourceId === "phosphor" ? "0 0 256 256" : "0 0 24 24";
+
   const svgHtml = generateRenderableSvg(
     {
-      viewBox: icon.viewBox ?? "0 0 24 24",
+      viewBox: icon.viewBox ?? defaultViewBox,
       content: svgContent,
       defaultStroke: icon.defaultStroke ?? true,
       defaultFill: icon.defaultFill ?? false,

@@ -170,9 +170,12 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     const svgContent = icon.svg;
     if (!svgContent) return null;
 
+    // Determine correct viewBox based on icon source (Phosphor uses 256x256, all others use 24x24)
+    const defaultViewBox = icon.sourceId === "phosphor" ? "0 0 256 256" : "0 0 24 24";
+
     const svgHtml = generateRenderableSvg(
       {
-        viewBox: icon.viewBox ?? "0 0 24 24",
+        viewBox: icon.viewBox ?? defaultViewBox,
         content: svgContent,
         defaultStroke: icon.defaultStroke ?? true,
         defaultFill: icon.defaultFill ?? false,

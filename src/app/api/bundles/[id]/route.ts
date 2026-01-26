@@ -76,10 +76,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     }
 
-    // Update icon_count when icons array changes
-    if (Array.isArray(body.icons)) {
-      updates.icon_count = body.icons.length;
-    }
+    // Note: icon_count is a generated column (jsonb_array_length(icons))
+    // so we don't need to update it manually - Postgres handles it
 
     // Remove share slug when making private
     if (body.is_public === false) {
