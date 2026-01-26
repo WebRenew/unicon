@@ -26,34 +26,22 @@ export function Footer() {
             >
               CLI
             </Link>
-            <Link
-              href="/privacy.txt"
+            <a
+              href="https://www.webrenew.com/privacy"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy
-            </Link>
-            <Link
-              href="/terms.txt"
+            </a>
+            <a
+              href="https://www.webrenew.com/terms"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Terms
-            </Link>
-            <Link
-              href="/disclaimer.txt"
-              target="_blank"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Disclaimer
-            </Link>
-            <Link
-              href="/license.txt"
-              target="_blank"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              License
-            </Link>
+            </a>
           </nav>
 
           {/* Social */}

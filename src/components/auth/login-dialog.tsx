@@ -81,7 +81,7 @@ export function LoginDialog({ open, onOpenChange, message }: LoginDialogProps) {
         <p className="text-xs text-center text-muted-foreground mt-4">
           By signing in, you agree to our{" "}
           <a
-            href="https://webrenew.io/terms"
+            href="https://www.webrenew.com/terms"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-foreground"
@@ -90,7 +90,7 @@ export function LoginDialog({ open, onOpenChange, message }: LoginDialogProps) {
           </a>{" "}
           and{" "}
           <a
-            href="https://webrenew.io/privacy"
+            href="https://www.webrenew.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-foreground"
