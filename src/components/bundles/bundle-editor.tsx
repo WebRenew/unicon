@@ -7,7 +7,8 @@ import { SearchIcon } from "@/components/icons/ui/search";
 import { CheckIcon } from "@/components/icons/ui/check";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { PackageIcon } from "@/components/icons/ui/package";
-import { generateRenderableSvg } from "@/lib/icon-utils";
+import { generateRenderableSvg, normalizeViewBoxInContent, STANDARD_VIEWBOX } from "@/lib/icon-utils";
+import { analyzeViewBoxMixing } from "@/lib/bundle-utils";
 import { toast } from "sonner";
 import type { Bundle, BundleIcon } from "@/types/database";
 import type { IconData } from "@/types/icon";
@@ -23,6 +24,9 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
   );
   const [normalizeStrokes, setNormalizeStrokes] = useState(bundle.normalize_strokes);
   const [targetStrokeWidth, setTargetStrokeWidth] = useState(bundle.target_stroke_width ?? 2);
+  const [normalizeViewbox, setNormalizeViewbox] = useState(bundle.normalize_viewbox ?? false);
+  // Always normalize to standard 24x24 viewBox
+  const targetViewbox = STANDARD_VIEWBOX;
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -130,6 +134,11 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     setHasChanges(true);
   }, []);
 
+  const handleNormalizeViewboxChange = useCallback((checked: boolean) => {
+    setNormalizeViewbox(checked);
+    setHasChanges(true);
+  }, []);
+
   const handleSave = useCallback(async () => {
     setIsSaving(true);
     try {
@@ -150,6 +159,8 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
           })),
           normalize_strokes: normalizeStrokes,
           target_stroke_width: normalizeStrokes ? targetStrokeWidth : null,
+          normalize_viewbox: normalizeViewbox,
+          target_viewbox: normalizeViewbox ? targetViewbox : null,
         }),
       });
 
@@ -164,7 +175,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [bundle.id, icons, normalizeStrokes, targetStrokeWidth, onUpdate]);
+  }, [bundle.id, icons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, onUpdate]);
 
   const renderIcon = useCallback((icon: BundleIcon) => {
     const svgContent = icon.svg;
@@ -172,11 +183,20 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
 
     // Determine correct viewBox based on icon source (Phosphor uses 256x256, all others use 24x24)
     const defaultViewBox = icon.sourceId === "phosphor" ? "0 0 256 256" : "0 0 24 24";
+    const iconViewBox = icon.viewBox ?? defaultViewBox;
+    
+    // Apply viewBox normalization if enabled and viewBox differs from target
+    let content = svgContent;
+    let viewBox = iconViewBox;
+    if (normalizeViewbox && iconViewBox !== targetViewbox) {
+      content = normalizeViewBoxInContent(svgContent, iconViewBox, targetViewbox);
+      viewBox = targetViewbox;
+    }
 
     const svgHtml = generateRenderableSvg(
       {
-        viewBox: icon.viewBox ?? defaultViewBox,
-        content: svgContent,
+        viewBox,
+        content,
         defaultStroke: icon.defaultStroke ?? true,
         defaultFill: icon.defaultFill ?? false,
         strokeWidth: icon.strokeWidth ?? "2",
@@ -194,7 +214,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
         dangerouslySetInnerHTML={{ __html: svgHtml }}
       />
     );
-  }, [normalizeStrokes, targetStrokeWidth]);
+  }, [normalizeStrokes, targetStrokeWidth, normalizeViewbox]);
 
   const renderSearchIcon = useCallback((icon: IconData) => {
     const svgHtml = generateRenderableSvg(
@@ -219,6 +239,10 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
 
   // Check if icon is stroke-based
   const hasStrokeIcons = icons.some((i) => i.defaultStroke !== false || !i.defaultFill);
+  
+  // Check if bundle has mixed viewBox sizes
+  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(icons.map(i => ({ viewBox: i.viewBox ?? "0 0 24 24" }))), [icons]);
+  const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
 
   return (
     <div className="space-y-6">
@@ -255,6 +279,19 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
               <option value={2}>2px</option>
               <option value={2.5}>2.5px</option>
             </select>
+          )}
+
+          {/* Normalize viewBox toggle - show when mixed viewBoxes detected */}
+          {hasMixedViewBox && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={normalizeViewbox}
+                onChange={(e) => handleNormalizeViewboxChange(e.target.checked)}
+                className="w-4 h-4 rounded border-black/20 dark:border-white/20 bg-transparent text-black dark:text-white focus:ring-0 focus:ring-offset-0"
+              />
+              <span className="text-sm text-muted-foreground">Normalize viewBox</span>
+            </label>
           )}
         </div>
 

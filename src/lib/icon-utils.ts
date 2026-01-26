@@ -317,9 +317,72 @@ ${components.join("\n\n---\n\n")}`;
 
 export interface NormalizationOptions {
   /** Target stroke width for all icons */
-  strokeWidth: number;
+  strokeWidth?: number;
   /** Only normalize stroke-based icons (skip fill-based) */
   skipFillIcons?: boolean;
+  /** Target viewBox (e.g., "0 0 24 24") */
+  viewBox?: string;
+}
+
+/** Standard viewBox for most icon libraries */
+export const STANDARD_VIEWBOX = "0 0 24 24";
+
+/**
+ * Parse viewBox string into numeric values.
+ */
+export function parseViewBox(viewBox: string): { minX: number; minY: number; width: number; height: number } | null {
+  const parts = viewBox.trim().split(/\s+/).map(Number);
+  if (parts.length !== 4 || parts.some(isNaN)) return null;
+  const [minX, minY, width, height] = parts as [number, number, number, number];
+  return { minX, minY, width, height };
+}
+
+/**
+ * Scale numeric values in SVG path data and attributes.
+ * Handles d="..." path commands, cx, cy, r, x, y, width, height, etc.
+ */
+function scaleNumericValue(value: string, scale: number): string {
+  // Handle numeric values (including decimals and negatives)
+  return value.replace(/-?\d+\.?\d*/g, (match) => {
+    const num = parseFloat(match);
+    if (isNaN(num)) return match;
+    // Round to 2 decimal places for cleaner output
+    const scaled = Math.round(num * scale * 100) / 100;
+    // Remove trailing zeros and unnecessary decimal points
+    return scaled.toString();
+  });
+}
+
+/**
+ * Normalize viewBox in SVG content by scaling all coordinates.
+ * Transforms icons from any viewBox (e.g., 256x256) to target (e.g., 24x24).
+ */
+export function normalizeViewBoxInContent(
+  content: string,
+  sourceViewBox: string,
+  targetViewBox: string
+): string {
+  const source = parseViewBox(sourceViewBox);
+  const target = parseViewBox(targetViewBox);
+  
+  if (!source || !target) return content;
+  if (source.width === target.width && source.height === target.height) return content;
+  
+  // Calculate scale factor (assuming square icons, use width)
+  const scale = target.width / source.width;
+  
+  // Scale all numeric attributes in SVG elements
+  // This handles: d="M...", cx="...", cy="...", r="...", x="...", y="...", 
+  // width="...", height="...", x1="...", y1="...", x2="...", y2="...", etc.
+  const attrPattern = /(\b(?:d|cx|cy|r|x|y|x1|y1|x2|y2|width|height|rx|ry|points|stroke-width)=")([^"]*)(")/gi;
+  
+  return content.replace(attrPattern, (match, prefix, value, suffix) => {
+    // For stroke-width, don't scale (handled separately by stroke normalization)
+    if (prefix.toLowerCase().includes('stroke-width')) {
+      return match;
+    }
+    return prefix + scaleNumericValue(value, scale) + suffix;
+  });
 }
 
 /**
@@ -346,29 +409,44 @@ export function normalizeStrokeInContent(
 }
 
 /**
- * Create a normalized copy of an icon with adjusted stroke width.
+ * Create a normalized copy of an icon with adjusted stroke width and/or viewBox.
  * Returns a new object, does not mutate the original.
  */
-export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill" | "defaultStroke">>(
+export function normalizeIcon<T extends Pick<IconData, "content" | "strokeWidth" | "viewBox" | "defaultFill" | "defaultStroke">>(
   icon: T,
   options: NormalizationOptions
 ): T {
-  // Skip fill-based icons if requested (icons that are fill-only, not stroke-based)
-  if (options.skipFillIcons && icon.defaultFill && !icon.defaultStroke) {
-    return icon;
+  // Skip fill-based icons for stroke normalization if requested
+  const skipStroke = options.skipFillIcons && icon.defaultFill && !icon.defaultStroke;
+  
+  let content = icon.content;
+  let viewBox = icon.viewBox;
+  let strokeWidth = icon.strokeWidth;
+  
+  // Apply viewBox normalization first (scales coordinates)
+  if (options.viewBox && icon.viewBox !== options.viewBox) {
+    content = normalizeViewBoxInContent(content, icon.viewBox, options.viewBox);
+    viewBox = options.viewBox;
+  }
+  
+  // Apply stroke normalization
+  if (options.strokeWidth !== undefined && !skipStroke) {
+    content = normalizeStrokeInContent(content, options.strokeWidth);
+    strokeWidth = String(options.strokeWidth);
   }
   
   return {
     ...icon,
-    strokeWidth: String(options.strokeWidth),
-    content: normalizeStrokeInContent(icon.content, options.strokeWidth),
+    content,
+    viewBox,
+    strokeWidth,
   };
 }
 
 /**
- * Normalize an array of icons with consistent stroke width.
+ * Normalize an array of icons with consistent stroke width and/or viewBox.
  */
-export function normalizeIcons<T extends Pick<IconData, "content" | "strokeWidth" | "defaultFill" | "defaultStroke">>(
+export function normalizeIcons<T extends Pick<IconData, "content" | "strokeWidth" | "viewBox" | "defaultFill" | "defaultStroke">>(
   icons: T[],
   options: NormalizationOptions
 ): T[] {

@@ -23,6 +23,56 @@ export interface MixingAnalysis {
   brandIconCount: number;
 }
 
+export interface ViewBoxAnalysis {
+  /** Whether the bundle has mixed viewBox sizes */
+  hasInconsistency: boolean;
+  /** Map of viewBox -> count of icons */
+  viewBoxGroups: Map<string, number>;
+  /** The most common viewBox (recommended target) */
+  dominantViewBox: string;
+  /** Human-readable recommendation, null if no issues */
+  recommendation: string | null;
+}
+
+/**
+ * Analyze a bundle for viewBox inconsistencies
+ */
+export function analyzeViewBoxMixing(icons: Pick<IconData, "viewBox">[]): ViewBoxAnalysis {
+  const viewBoxGroups = new Map<string, number>();
+  
+  for (const icon of icons) {
+    const count = viewBoxGroups.get(icon.viewBox) ?? 0;
+    viewBoxGroups.set(icon.viewBox, count + 1);
+  }
+  
+  // Find the most common viewBox
+  let dominantViewBox = "0 0 24 24";
+  let maxCount = 0;
+  for (const [viewBox, count] of viewBoxGroups.entries()) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantViewBox = viewBox;
+    }
+  }
+  
+  const hasInconsistency = viewBoxGroups.size > 1;
+  
+  let recommendation: string | null = null;
+  if (hasInconsistency) {
+    const viewBoxList = Array.from(viewBoxGroups.entries())
+      .map(([vb, count]) => `${vb} (${count} icons)`)
+      .join(", ");
+    recommendation = `Your bundle mixes icons with different viewBox sizes: ${viewBoxList}. Consider normalizing to ${dominantViewBox} for consistent sizing.`;
+  }
+  
+  return {
+    hasInconsistency,
+    viewBoxGroups,
+    dominantViewBox,
+    recommendation,
+  };
+}
+
 /**
  * Analyze a bundle of icons for mixing inconsistencies
  */

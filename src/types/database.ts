@@ -32,6 +32,8 @@ export interface Bundle {
   stroke_preset: string | null;
   normalize_strokes: boolean;
   target_stroke_width: number | null;
+  normalize_viewbox: boolean;
+  target_viewbox: string | null;
   icons: BundleIcon[];
   icon_count: number;
   created_at: string;

@@ -68,6 +68,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       "stroke_preset",
       "normalize_strokes",
       "target_stroke_width",
+      "normalize_viewbox",
+      "target_viewbox",
     ];
 
     for (const field of allowedFields) {

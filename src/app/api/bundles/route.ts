@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { name, description, icons, stroke_preset, normalize_strokes, target_stroke_width } = body;
+  const { name, description, icons, stroke_preset, normalize_strokes, target_stroke_width, normalize_viewbox, target_viewbox } = body;
 
   if (!name || !icons || !Array.isArray(icons)) {
     return NextResponse.json({ error: "Name and icons are required" }, { status: 400 });
@@ -55,6 +55,8 @@ export async function POST(request: Request) {
     p_stroke_preset: stroke_preset ?? null,
     p_normalize_strokes: normalize_strokes ?? false,
     p_target_stroke_width: target_stroke_width ?? null,
+    p_normalize_viewbox: normalize_viewbox ?? false,
+    p_target_viewbox: target_viewbox ?? "0 0 24 24",
   });
 
   if (error) {
