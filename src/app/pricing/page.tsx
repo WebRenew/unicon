@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import React, { Suspense, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { CheckIcon } from "@/components/icons/ui/check";
@@ -29,7 +29,7 @@ const PRO_FEATURES = [
   { text: "Everything in Free", comingSoon: false },
   { text: "Unlimited saved bundles", comingSoon: false },
   { text: "Share bundles with your team", comingSoon: false },
-  { text: "API access for CI/CD automation", comingSoon: false },
+  { text: "Authenticated MCP", comingSoon: true },
   { text: "Brand kit for consistent icons", comingSoon: true },
   { text: "Custom icon uploads", comingSoon: true },
   { text: "Priority support", comingSoon: false },
@@ -38,7 +38,7 @@ const PRO_FEATURES = [
 const FAQ_ITEMS = [
   {
     question: "Do I need Pro to use Unicon?",
-    answer: "No. The Free plan gives you full access to browse, copy, and download icons. Pro is for teams and power users who need unlimited cloud bundles, sharing, and API access.",
+    answer: "No. The Free plan gives you full access to browse, copy, and download icons. Pro is for teams and power users who need unlimited cloud bundles and sharing.",
   },
   {
     question: "What counts as a 'saved bundle'?",
@@ -47,10 +47,6 @@ const FAQ_ITEMS = [
   {
     question: "Can I share bundles with my team?",
     answer: "Yes! Pro users can generate public sharing links for any bundle. Share a single URL and your team can copy the exact icons you curated—no account required to view.",
-  },
-  {
-    question: "What's included in API access?",
-    answer: "Pro includes full API access to programmatically search icons, fetch SVGs, and generate bundles. Perfect for CI/CD pipelines, design systems, and automation workflows.",
   },
   {
     question: "Is there a refund policy?",
@@ -98,8 +94,20 @@ function PricingContent() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { user, isPro, isLoading: isAuthLoading } = useAuth();
   const searchParams = useSearchParams();
+  const proCardRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
 
   const wasCanceled = searchParams.get("canceled") === "true";
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!proCardRef.current) return;
+    const rect = proCardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -144,7 +152,7 @@ function PricingContent() {
               One library. Every icon you need.
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Stop hunting across dozens of icon sites. Unicon brings 10,000+ icons from 50+ libraries into one searchable interface—with CLI, MCP, and API access built in.
+              Stop hunting across dozens of icon sites. Unicon brings 10,000+ icons from 50+ libraries into one searchable interface—with CLI and MCP built in.
             </p>
             {wasCanceled && (
               <p className="mt-4 text-amber-600 dark:text-amber-400 text-sm">
@@ -189,15 +197,26 @@ function PricingContent() {
             </div>
 
             {/* Pro Plan */}
-            <div className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#141414] p-7 relative overflow-hidden">
+            <div
+              ref={proCardRef}
+              onMouseMove={handleMouseMove}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#141414] p-7 relative overflow-hidden"
+            >
+              {/* Mouse-following aqua glow */}
+              <div
+                className="absolute w-[300px] h-[300px] pointer-events-none transition-opacity duration-300"
+                style={{
+                  background: 'radial-gradient(circle, rgba(127, 211, 230, 0.15) 0%, transparent 70%)',
+                  left: mousePos.x - 150,
+                  top: mousePos.y - 150,
+                  opacity: isHovering ? 1 : 0,
+                }}
+              />
+
               {/* Top gradient line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--accent-aqua)] to-transparent" />
-              
-              {/* Subtle glow */}
-              <div 
-                className="absolute -top-24 left-1/2 -translate-x-1/2 w-[300px] h-[200px] pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse, rgba(110, 231, 183, 0.06) 0%, transparent 70%)' }}
-              />
 
               {/* Badge */}
               <div className="relative inline-flex self-start items-center gap-1.5 px-3 py-1.5 border border-[var(--accent-aqua)] rounded-full text-[0.7rem] font-semibold text-[var(--accent-aqua)] uppercase tracking-wide mb-5">
@@ -237,14 +256,14 @@ function PricingContent() {
               {isAuthLoading ? (
                 <button
                   disabled
-                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#333_8%,#222_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30"
+                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30"
                 >
                   <Loader2Icon className="w-5 h-5 animate-spin mx-auto" />
                 </button>
               ) : isPro ? (
                 <button
                   disabled
-                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#333_8%,#222_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 cursor-default"
+                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 cursor-default"
                 >
                   You&apos;re on Pro!
                 </button>
@@ -321,9 +340,9 @@ function PricingContent() {
                     <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr>
-                    <td className="py-3 px-4 text-foreground">API access</td>
+                    <td className="py-3 px-4 text-foreground">Authenticated MCP</td>
                     <td className="py-3 px-4 text-center text-muted-foreground">-</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Brand kit</td>
