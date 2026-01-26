@@ -104,7 +104,7 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
             <Link
               href="/pricing"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-500/5 rounded-md transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 rounded-md transition-colors"
             >
               <CrownIcon className="w-4 h-4" />
               Upgrade to Pro
@@ -125,7 +125,7 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
           <button
             onClick={handleSignOut}
             disabled={isSigningOut}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-500/5 rounded-md transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors disabled:opacity-50"
           >
             {isSigningOut ? (
               <Loader2Icon className="w-4 h-4 animate-spin" />
