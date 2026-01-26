@@ -257,8 +257,8 @@ function PricingContent() {
           <div className="mt-16 text-center">
             <p className="text-sm text-muted-foreground">
               Questions? Email us at{" "}
-              <a href="mailto:hello@webrenew.com" className="text-[var(--accent-aqua)] hover:underline">
-                hello@webrenew.com
+              <a href="mailto:contact@webrenew.io" className="text-[var(--accent-aqua)] hover:underline">
+                contact@webrenew.io
               </a>
             </p>
           </div>

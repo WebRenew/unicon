@@ -79,7 +79,25 @@ export function LoginDialog({ open, onOpenChange, message }: LoginDialogProps) {
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-4">
-          By signing in, you agree to our Terms of Service and Privacy Policy.
+          By signing in, you agree to our{" "}
+          <a
+            href="https://webrenew.io/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://webrenew.io/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Privacy Policy
+          </a>
+          .
         </p>
       </DialogContent>
     </Dialog>
