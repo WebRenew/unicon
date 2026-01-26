@@ -17,7 +17,7 @@ interface BundleCardProps {
   bundle: Bundle;
   isPro: boolean;
   onDelete: (id: string) => void;
-  onTogglePublic: (id: string, isPublic: boolean) => void;
+  onTogglePublic: (id: string, isPublic: boolean, updatedBundle?: Bundle) => void;
 }
 
 export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCardProps) {
@@ -60,7 +60,10 @@ export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCa
         body: JSON.stringify({ is_public: !bundle.is_public }),
       });
       if (!response.ok) throw new Error("Failed to update");
-      onTogglePublic(bundle.id, !bundle.is_public);
+      
+      // Get the updated bundle from API response to avoid race conditions
+      const data = await response.json();
+      onTogglePublic(bundle.id, !bundle.is_public, data.bundle);
       toast.success(bundle.is_public ? "Bundle is now private" : "Bundle is now public");
     } catch {
       toast.error("Failed to update bundle");

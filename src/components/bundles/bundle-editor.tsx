@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { XIcon } from "@/components/icons/ui/x";
 import { PlusIcon } from "@/components/icons/ui/plus";
 import { SearchIcon } from "@/components/icons/ui/search";
@@ -32,6 +32,9 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [searchResults, setSearchResults] = useState<IconData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  
+  // AbortController ref to cancel in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const iconIds = useMemo(() => new Set(icons.map((i) => i.id)), [icons]);
 
@@ -49,21 +52,46 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
       setSearchResults([]);
       return;
     }
+
+    // Cancel any in-flight request to prevent stale results
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const doSearch = async () => {
       setIsSearching(true);
       try {
         const params = new URLSearchParams({ q: debouncedQuery, limit: "50" });
-        const res = await fetch(`/api/icons?${params}`);
+        const res = await fetch(`/api/icons?${params}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
-        setSearchResults(data.icons || []);
-      } catch {
+        // Only update if this request wasn't aborted
+        if (!controller.signal.aborted) {
+          setSearchResults(data.icons || []);
+        }
+      } catch (err) {
+        // Ignore abort errors, they're expected when a new search starts
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
         toast.error("Search failed");
       } finally {
-        setIsSearching(false);
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
       }
     };
     doSearch();
+
+    // Cleanup: abort request if component unmounts or query changes
+    return () => {
+      controller.abort();
+    };
   }, [debouncedQuery]);
 
   const handleRemoveIcon = useCallback((id: string) => {

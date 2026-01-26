@@ -39,15 +39,19 @@ export function BundlesList({ isPro }: BundlesListProps) {
     setBundles((prev) => prev.filter((b) => b.id !== id));
   };
 
-  const handleTogglePublic = (id: string, isPublic: boolean) => {
+  // Use response data from PATCH instead of refetching to avoid race conditions
+  // The bundle-card component passes the updated bundle data from the API response
+  const handleTogglePublic = useCallback((id: string, isPublic: boolean, updatedBundle?: Bundle) => {
     setBundles((prev) =>
-      prev.map((b) =>
-        b.id === id ? { ...b, is_public: isPublic, share_slug: isPublic ? b.share_slug : null } : b
-      )
+      prev.map((b) => {
+        if (b.id !== id) return b;
+        // If we have the full updated bundle from API response, use it
+        if (updatedBundle) return updatedBundle;
+        // Fallback to optimistic update
+        return { ...b, is_public: isPublic, share_slug: isPublic ? b.share_slug : null };
+      })
     );
-    // Refetch to get the new share_slug
-    fetchBundles();
-  };
+  }, []);
 
   if (isLoading) {
     return (
