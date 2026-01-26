@@ -187,12 +187,21 @@ function PricingContent() {
                 ))}
               </ul>
 
-              <button
-                disabled
-                className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
-              >
-                Current Plan
-              </button>
+              {user ? (
+                <button
+                  disabled
+                  className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
+                >
+                  Current Plan
+                </button>
+              ) : (
+                <button
+                  onClick={() => setLoginDialogOpen(true)}
+                  className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-foreground font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  Get Started
+                </button>
+              )}
             </div>
 
             {/* Pro Plan */}
