@@ -237,14 +237,14 @@ function PricingContent() {
               {isAuthLoading ? (
                 <button
                   disabled
-                  className="relative w-full py-3.5 px-6 rounded-[10px] bg-[#7fd3e6] text-[#141414] font-semibold opacity-50"
+                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#333_8%,#222_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30"
                 >
                   <Loader2Icon className="w-5 h-5 animate-spin mx-auto" />
                 </button>
               ) : isPro ? (
                 <button
                   disabled
-                  className="relative w-full py-3.5 px-6 rounded-[10px] bg-[#7fd3e6] text-[#141414] font-semibold opacity-50 cursor-default"
+                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#333_8%,#222_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 cursor-default"
                 >
                   You&apos;re on Pro!
                 </button>
@@ -252,16 +252,26 @@ function PricingContent() {
                 <button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="relative w-full py-3.5 px-6 rounded-[10px] bg-[#7fd3e6] text-[#141414] font-semibold transition-all hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#9ee8f5_0%,#7fd3e6_8%,#5bc4db_100%)] text-[#0a3d4a] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.4)] border-t border-white/40 transition-all duration-150 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2Icon className="w-5 h-5 animate-spin" />
-                      Redirecting to checkout...
-                    </>
-                  ) : (
-                    "Upgrade to Pro"
-                  )}
+                  {/* Gradient corner accent on hover */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    style={{
+                      background: "radial-gradient(circle at 0% 0%, rgba(255,255,255,0.5) 0%, transparent 50%)",
+                    }}
+                  />
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <Loader2Icon className="w-5 h-5 animate-spin" />
+                        Redirecting to checkout...
+                      </>
+                    ) : (
+                      "Upgrade to Pro"
+                    )}
+                  </span>
                 </button>
               )}
             </div>
