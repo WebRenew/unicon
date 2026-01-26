@@ -16,6 +16,7 @@ import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { PlusIcon } from "@/components/icons/ui/plus";
 import { MinusIcon } from "@/components/icons/ui/minus";
 import { Maximize2Icon } from "@/components/icons/ui/maximize-2";
+import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import {
   toPascalCase,
   getSvgAttributesJsx,
@@ -181,6 +182,45 @@ export const StyledIcon = memo(function StyledIcon({
   const handleCopySvg = useCallback(() => handleCopy(generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth }), "svg"), [icon, effectiveStrokeWidth, handleCopy]);
   const handleCopyComponent = useCallback(() => handleCopy(getReactComponent(), "component"), [getReactComponent, handleCopy]);
   const handleCopyUsage = useCallback(() => handleCopy(generateUsageExample(icon.normalizedName), "usage"), [icon.normalizedName, handleCopy]);
+  
+  const handleCopyPrompt = useCallback(() => {
+    const prompt = `Add this icon to my project as a React component.
+
+Icon: ${componentName} (from ${icon.sourceId})
+
+IMPORTANT: Do NOT install any icon library. The purpose of this component is to avoid bundle bloat from icon packages. Just create the standalone component file.
+
+SVG:
+${generateRawSvg(icon, { strokeWidth: effectiveStrokeWidth })}
+
+Create the component at: src/components/icons/${icon.normalizedName}.tsx
+
+Follow this pattern:
+\`\`\`tsx
+import { SVGProps } from "react";
+
+export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="${icon.viewBox}"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={${effectiveStrokeWidth}}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+      {...props}
+    >
+      ${icon.content}
+    </svg>
+  );
+}
+\`\`\``;
+    handleCopy(prompt, "prompt");
+  }, [icon, effectiveStrokeWidth, componentName, handleCopy]);
 
   const handleOpenInV0 = useCallback(() => {
     const prompt = encodeURIComponent(
@@ -306,6 +346,15 @@ export const StyledIcon = memo(function StyledIcon({
               Copy brand color
             </ContextMenuItem>
           )}
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleCopyPrompt}>
+            {copied === "prompt" ? (
+              <CheckIcon className="mr-2 h-4 w-4" />
+            ) : (
+              <SparklesIcon className="mr-2 h-4 w-4" />
+            )}
+            Copy prompt
+          </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleOpenInV0}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
