@@ -14,8 +14,12 @@ import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { V0Icon } from "@/components/icons/ui/v0";
 import { LayersIcon } from "@/components/icons/ui/layers";
+import { CloudIcon } from "@/components/icons/ui/cloud";
 import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 import { BundleMixingWarning } from "./bundle-mixing-warning";
+import { SaveBundleDialog } from "./save-bundle-dialog";
+import { LoginDialog } from "@/components/auth/login-dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
@@ -86,6 +90,9 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
   const [activeTab, setActiveTab] = useState<TabType>("bundle");
   const [previewHeight, setPreviewHeight] = useState(192); // Default ~max-h-48
+  const [saveBundleOpen, setSaveBundleOpen] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const { user } = useAuth();
   const [normalizeStrokes, setNormalizeStrokes] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -272,6 +279,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     setTimeout(() => setCopiedPackId(null), 2000);
   };
 
+  const handleSaveBundle = () => {
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+    setSaveBundleOpen(true);
+  };
+
   return (
     <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-[hsl(0,0%,6%)] border-l border-black/10 dark:border-white/10 shadow-2xl z-50 flex flex-col">
       {/* Header */}
@@ -284,13 +299,23 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
         </div>
         <div className="flex items-center gap-2">
           {items.length > 0 && activeTab === "bundle" && (
-            <button
-              onClick={onClear}
-              className="p-2 text-black/40 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-              aria-label="Clear all icons from bundle"
-            >
-              <Trash2Icon className="w-4 h-4" />
-            </button>
+            <>
+              <button
+                onClick={handleSaveBundle}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--accent-aqua)]/10 text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/20 transition-colors"
+                title="Save bundle to cloud"
+              >
+                <CloudIcon className="w-3.5 h-3.5" />
+                Save
+              </button>
+              <button
+                onClick={onClear}
+                className="p-2 text-black/40 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                aria-label="Clear all icons from bundle"
+              >
+                <Trash2Icon className="w-4 h-4" />
+              </button>
+            </>
           )}
           <button
             onClick={onClose}
@@ -675,6 +700,20 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           </div>
         </div>
       )}
+
+      {/* Dialogs */}
+      <SaveBundleDialog
+        open={saveBundleOpen}
+        onOpenChange={setSaveBundleOpen}
+        icons={items}
+        normalizeStrokes={normalizeStrokes}
+        targetStrokeWidth={targetStrokeWidth}
+      />
+      <LoginDialog
+        open={loginDialogOpen}
+        onOpenChange={setLoginDialogOpen}
+        message="Sign in to save your icon bundles to the cloud."
+      />
     </div>
   );
 }

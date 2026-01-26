@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useSyncExternalStore } from "react";
 import { GithubIcon } from "@/components/icons/ui/github";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { PackageIcon } from "@/components/icons/ui/package";
+import { UserIcon } from "@/components/icons/ui/user";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
-import { useState, useSyncExternalStore } from "react";
+import { LoginDialog } from "@/components/auth/login-dialog";
+import { UserMenu } from "@/components/auth/user-menu";
+import { useAuth } from "@/hooks/use-auth";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 
@@ -54,6 +58,8 @@ export function HomeHeader() {
     getServerCartCount
   );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const { user, profile, subscription, isPro, isLoading } = useAuth();
 
   const handleBundleClick = () => {
     // Dispatch event to open cart in MetallicIconBrowser
@@ -116,6 +122,22 @@ export function HomeHeader() {
               )}
             </button>
             <ThemeToggle />
+
+            {/* Auth: Login button or User menu */}
+            {!isLoading && (
+              user && profile ? (
+                <UserMenu profile={profile} isPro={isPro} />
+              ) : (
+                <button
+                  onClick={() => setLoginDialogOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign in</span>
+                </button>
+              )
+            )}
+
             <a
               href="https://github.com/WebRenew/unicon"
               target="_blank"
@@ -130,6 +152,7 @@ export function HomeHeader() {
       </header>
 
       <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
     </>
   );
 }
