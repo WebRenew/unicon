@@ -42,8 +42,9 @@ import {
   generateRenderableSvg,
   generateV0Prompt,
   normalizeIcons,
+  STANDARD_VIEWBOX,
 } from "@/lib/icon-utils";
-import { getBundleLibrarySummary } from "@/lib/bundle-utils";
+import { getBundleLibrarySummary, analyzeViewBoxMixing } from "@/lib/bundle-utils";
 import type { IconData } from "@/types/icon";
 
 /**
@@ -56,15 +57,18 @@ function isFillIcon(icon: IconData): boolean {
 
 /**
  * Badge indicator for fill-based icons in the bundle grid.
- * Shows when stroke normalization is enabled to indicate stroke width doesn't apply.
+ * Shows when normalization is enabled to indicate these icons can't be normalized.
  */
-function FillIconBadge() {
+function FillIconBadge({ isBrandIcon }: { isBrandIcon?: boolean }) {
+  const tooltip = isBrandIcon
+    ? "Brand icon – can't be normalized"
+    : "Fill-based icon – stroke normalization doesn't apply";
   return (
     <div
       role="img"
-      aria-label="Fill-based icon - stroke width doesn't apply"
-      className="absolute -bottom-1 -left-1 w-4 h-4 bg-black/60 dark:bg-white/60 rounded-full flex items-center justify-center"
-      title="Fill-based icon - stroke width doesn't apply"
+      aria-label={tooltip}
+      className="absolute -bottom-1 -left-1 w-4 h-4 bg-black/60 dark:bg-white/60 rounded-full flex items-center justify-center cursor-help"
+      title={tooltip}
     >
       <div className="w-1.5 h-1.5 bg-white dark:bg-black rounded-full" />
     </div>
@@ -118,6 +122,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       return false;
     }
   });
+  const [normalizeViewbox, setNormalizeViewbox] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("unicon-normalize-viewbox") === "true";
+    } catch {
+      return false;
+    }
+  });
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
@@ -148,6 +160,10 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
     return map;
   }, [items]);
 
+  // Check for mixed viewBox sizes (e.g., Phosphor 256x256 with Lucide 24x24)
+  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(items.map(i => ({ viewBox: i.viewBox }))), [items]);
+  const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
+
   // Persist normalization preferences to localStorage
   useEffect(() => {
     try {
@@ -166,6 +182,12 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       localStorage.setItem("unicon-group-by-library", String(groupByLibrary));
     } catch {}
   }, [groupByLibrary]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("unicon-normalize-viewbox", String(normalizeViewbox));
+    } catch {}
+  }, [normalizeViewbox]);
 
   // Handle resize drag
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -207,9 +229,19 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const exportContent = useMemo(() => {
     if (items.length === 0) return "";
 
-    // Apply normalization if enabled
-    const iconsToExport = normalizeStrokes
-      ? normalizeIcons(items, { strokeWidth: targetStrokeWidth, skipFillIcons: true })
+    // Build normalization options
+    const normalizationOptions: { strokeWidth?: number; skipFillIcons?: boolean; viewBox?: string } = {};
+    if (normalizeStrokes) {
+      normalizationOptions.strokeWidth = targetStrokeWidth;
+      normalizationOptions.skipFillIcons = true;
+    }
+    if (normalizeViewbox) {
+      normalizationOptions.viewBox = STANDARD_VIEWBOX;
+    }
+
+    // Apply normalization if any options are set
+    const iconsToExport = (normalizeStrokes || normalizeViewbox)
+      ? normalizeIcons(items, normalizationOptions)
       : items;
 
     switch (exportFormat) {
@@ -220,7 +252,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
       case "json":
         return generateJsonBundle(iconsToExport);
     }
-  }, [items, exportFormat, normalizeStrokes, targetStrokeWidth]);
+  }, [items, exportFormat, normalizeStrokes, targetStrokeWidth, normalizeViewbox]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -462,6 +494,27 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                 )}
               </div>
 
+              {/* ViewBox Normalization Control - only visible when mixed viewBox detected */}
+              {hasMixedViewBox && (
+                <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5">
+                  <label htmlFor="normalize-viewbox" className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      id="normalize-viewbox"
+                      type="checkbox"
+                      checked={normalizeViewbox}
+                      onChange={(e) => setNormalizeViewbox(e.target.checked)}
+                      className="w-4 h-4 rounded border-black/20 dark:border-white/20 bg-transparent text-black dark:text-white focus:ring-0 focus:ring-offset-0"
+                    />
+                    <span className="text-xs font-mono text-black/70 dark:text-white/70">
+                      Normalize viewBox
+                    </span>
+                    <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
+                      → 24×24
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {groupByLibrary && librarySummary.length > 1 ? (
                 // Grouped view
                 <div className="space-y-4">
@@ -501,7 +554,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                             >
                               <XIcon className="w-3 h-3 text-white" />
                             </button>
-                            {normalizeStrokes && isFillIcon(icon) && <FillIconBadge />}
+                            {normalizeStrokes && isFillIcon(icon) && <FillIconBadge isBrandIcon={icon.sourceId === "simple-icons"} />}
                           </div>
                         ))}
                       </div>
@@ -532,7 +585,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                       >
                         <XIcon className="w-3 h-3 text-white" />
                       </button>
-                      {normalizeStrokes && isFillIcon(icon) && <FillIconBadge />}
+                      {normalizeStrokes && isFillIcon(icon) && <FillIconBadge isBrandIcon={icon.sourceId === "simple-icons"} />}
                     </div>
                   ))}
                 </div>
