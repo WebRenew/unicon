@@ -86,15 +86,18 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
               )
             )}
 
-            <a
-              href="https://github.com/WebRenew/unicon"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="View source on GitHub"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <GithubIcon className="w-5 h-5" />
-            </a>
+            {/* GitHub link - hide when logged in to save header space */}
+            {!user && (
+              <a
+                href="https://github.com/WebRenew/unicon"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View source on GitHub"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <GithubIcon className="w-5 h-5" />
+              </a>
+            )}
           </div>
         </div>
       </header>

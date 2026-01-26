@@ -44,7 +44,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const updates: Record<string, unknown> = {};
 
   // Only allow updating specific fields
@@ -62,6 +68,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (field in body) {
       updates[field] = body[field];
     }
+  }
+
+  // Update icon_count when icons array changes
+  if (Array.isArray(body.icons)) {
+    updates.icon_count = body.icons.length;
   }
 
   // Generate share slug when making public

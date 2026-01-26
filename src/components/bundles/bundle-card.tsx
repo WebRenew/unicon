@@ -106,7 +106,10 @@ export function BundleCard({ bundle, isPro, onDelete, onTogglePublic }: BundleCa
         defaultFill: icon.defaultFill ?? false,
         strokeWidth: icon.strokeWidth ?? "2",
       },
-      { size: 20 }
+      {
+        size: 20,
+        ...(bundle.normalize_strokes && { strokeWidth: bundle.target_stroke_width ?? 2 }),
+      }
     );
     return { __html: svgHtml };
   };

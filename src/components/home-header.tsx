@@ -59,7 +59,7 @@ export function HomeHeader() {
   );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const { user, profile, subscription, isPro, isLoading } = useAuth();
+  const { user, profile, isPro, isLoading } = useAuth();
 
   const handleBundleClick = () => {
     // Dispatch event to open cart in MetallicIconBrowser
@@ -138,15 +138,18 @@ export function HomeHeader() {
               )
             )}
 
-            <a
-              href="https://github.com/WebRenew/unicon"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="View source on GitHub"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <GithubIcon className="w-5 h-5" />
-            </a>
+            {/* GitHub link - hide when logged in to save header space */}
+            {!user && (
+              <a
+                href="https://github.com/WebRenew/unicon"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View source on GitHub"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <GithubIcon className="w-5 h-5" />
+              </a>
+            )}
           </div>
         </div>
       </header>
