@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { XIcon } from "@/components/icons/ui/x";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyIcon } from "@/components/icons/ui/copy";
@@ -43,6 +44,7 @@ import {
   generateV0Prompt,
   normalizeIcons,
   STANDARD_VIEWBOX,
+  getBrandIconColor,
 } from "@/lib/icon-utils";
 import { getBundleLibrarySummary, analyzeViewBoxMixing } from "@/lib/bundle-utils";
 import type { IconData } from "@/types/icon";
@@ -97,6 +99,8 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
   const [saveBundleOpen, setSaveBundleOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const [normalizeStrokes, setNormalizeStrokes] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -544,6 +548,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                                 __html: generateRenderableSvg(icon, {
                                   size: 20,
                                   ...(normalizeStrokes && !isFillIcon(icon) && { strokeWidth: targetStrokeWidth }),
+                                  ...(icon.brandColor ? { color: getBrandIconColor(icon.brandColor, isDarkMode) ?? icon.brandColor } : {}),
                                 }),
                               }}
                             />
@@ -575,6 +580,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                           __html: generateRenderableSvg(icon, {
                             size: 20,
                             ...(normalizeStrokes && !isFillIcon(icon) && { strokeWidth: targetStrokeWidth }),
+                            ...(icon.brandColor ? { color: getBrandIconColor(icon.brandColor, isDarkMode) ?? icon.brandColor } : {}),
                           }),
                         }}
                       />
