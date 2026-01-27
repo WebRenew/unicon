@@ -141,6 +141,17 @@
     overflow-x: hidden;
   }
 
+  /* Selection styling - aqua bg with inverted foreground */
+  ::selection {
+    background-color: var(--accent-aqua);
+    color: hsl(0 0% 98%); /* white text in light mode */
+  }
+
+  .dark ::selection {
+    background-color: var(--accent-aqua);
+    color: hsl(0 0% 10%); /* dark text in dark mode */
+  }
+
   /* Custom Scrollbar - Metallic Style */
   ::-webkit-scrollbar {
     width: 10px;
