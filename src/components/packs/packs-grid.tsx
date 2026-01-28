@@ -188,7 +188,7 @@ export function PacksGrid() {
 
       {/* Grid - Edge-to-edge style matching checkout cart */}
       {filteredPacks.length > 0 ? (
-        <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden">
+        <div className="border border-black/10 dark:border-white/10 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {filteredPacks.map((pack, index) => {
               const iconSample = pack.iconNames.slice(0, 5).join(" ");
