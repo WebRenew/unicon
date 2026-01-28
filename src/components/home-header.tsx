@@ -107,6 +107,13 @@ export function HomeHeader() {
                 MCP
               </Link>
               <Link
+                href="/packs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-peach)] hover:bg-[var(--accent-peach)]/5 transition-colors"
+              >
+                <PackageIcon className="w-3.5 h-3.5" />
+                Packs
+              </Link>
+              <Link
                 href="/pricing"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/5 transition-colors"
               >
