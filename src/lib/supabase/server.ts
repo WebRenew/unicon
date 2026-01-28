@@ -18,8 +18,9 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing sessions.
+            // Cookie setting fails in Server Component render context.
+            // This is expected - session refresh will succeed on the next
+            // Route Handler or Server Action call where cookies can be set.
           }
         },
       },
