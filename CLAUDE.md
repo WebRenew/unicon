@@ -1,5 +1,14 @@
 # Unicon Project Rules
 
+## Reminders
+
+**Team Bundle Sharing (added 2025-01-25):**
+Implement rate limiting + bundle-specific MCP for Pro team sharing. Two tasks:
+1. Add Upstash rate limiting for `/b/*` and `/api/bundles/*` endpoints
+2. Create `/api/mcp/b/[share_slug]` - scoped MCP that only exposes bundle icons
+
+Context: Pro users share bundles via public link. Teams using AI tools (Claude, Cursor) need an MCP config they can copy that scopes to their curated bundle. Rate limit to prevent abuse.
+
 ## Icons
 
 **NEVER use emojis in the UI.** Always use icon components from `@/components/icons/ui/`.
