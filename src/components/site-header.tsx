@@ -7,6 +7,7 @@ import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { UserIcon } from "@/components/icons/ui/user";
 import { HotPriceIcon } from "@/components/icons/ui/hot-price";
+import { PackageIcon } from "@/components/icons/ui/package";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
@@ -65,6 +66,13 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
               >
                 <MCPIcon className="w-3.5 h-3.5" size={14} />
                 MCP
+              </Link>
+              <Link
+                href="/packs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-peach)] hover:bg-[var(--accent-peach)]/5 transition-colors"
+              >
+                <PackageIcon className="w-3.5 h-3.5" />
+                Packs
               </Link>
               <Link
                 href="/pricing"

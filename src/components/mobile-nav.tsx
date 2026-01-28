@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { HotPriceIcon } from "@/components/icons/ui/hot-price";
+import { PackageIcon } from "@/components/icons/ui/package";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { XIcon } from "@/components/icons/ui/x";
 
@@ -35,6 +36,13 @@ const navItems = [
     icon: MCPIcon,
     color: "text-[var(--accent-lavender)]",
     hoverBg: "hover:bg-[var(--accent-lavender)]/10",
+  },
+  {
+    href: "/packs",
+    label: "Packs",
+    icon: PackageIcon,
+    color: "text-[var(--accent-peach)]",
+    hoverBg: "hover:bg-[var(--accent-peach)]/10",
   },
   {
     href: "/pricing",
