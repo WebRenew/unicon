@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { XIcon } from "@/components/icons/ui/x";
-import { PackCard } from "./pack-card";
+import { CheckIcon } from "@/components/icons/ui/check";
+import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { STARTER_PACKS, type StarterPack } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
 
@@ -16,6 +18,7 @@ export function PacksGrid() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("all");
+  const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
 
   // Filter packs based on search and category
   const filteredPacks = useMemo(() => {
@@ -107,6 +110,15 @@ export function PacksGrid() {
 
   const clearSearch = () => setSearch("");
 
+  const handleCopyPackCommand = async (pack: StarterPack, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const iconSample = pack.iconNames.slice(0, 5).join(" ");
+    const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length}`;
+    await navigator.clipboard.writeText(command);
+    setCopiedPackId(pack.id);
+    setTimeout(() => setCopiedPackId(null), 2000);
+  };
+
   return (
     <div className="space-y-8">
       {/* Search and Filters */}
@@ -174,12 +186,65 @@ export function PacksGrid() {
         </p>
       )}
 
-      {/* Grid */}
+      {/* Grid - Edge-to-edge style matching checkout cart */}
       {filteredPacks.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPacks.map((pack) => (
-            <PackCard key={pack.id} pack={pack} onAddPack={handleAddPack} />
-          ))}
+        <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {filteredPacks.map((pack, index) => {
+              const iconSample = pack.iconNames.slice(0, 5).join(" ");
+              const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length}`;
+              const isEven = index % 2 === 0;
+              const isLastRow = index >= filteredPacks.length - 2;
+              const isLastOddItem = filteredPacks.length % 2 === 1 && index === filteredPacks.length - 1;
+
+              return (
+                <div
+                  key={pack.id}
+                  className={`group bg-transparent hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all
+                    ${isEven && !isLastOddItem ? "md:border-r border-black/10 dark:border-white/10" : ""}
+                    ${!isLastRow && !isLastOddItem ? "border-b border-black/10 dark:border-white/10" : ""}
+                    ${isLastOddItem ? "md:col-span-2 md:border-r-0" : ""}
+                  `}
+                >
+                  <button
+                    onClick={() => handleAddPack(pack)}
+                    className="w-full p-4 pb-2 text-left"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-sm font-medium text-black dark:text-white">
+                        {pack.name}
+                      </span>
+                      <ArrowRightIcon className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-2">
+                      {pack.description}
+                    </p>
+                    <span className="text-[10px] font-mono text-black/40 dark:text-white/40">
+                      {pack.iconNames.length} icons
+                    </span>
+                  </button>
+
+                  {/* CLI Command */}
+                  <div className="px-4 pb-3">
+                    <button
+                      onClick={(e) => handleCopyPackCommand(pack, e)}
+                      className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors group/cmd"
+                      title="Copy CLI command"
+                    >
+                      {copiedPackId === pack.id ? (
+                        <CheckIcon className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
+                      ) : (
+                        <TerminalIcon className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
+                      )}
+                      <span className="text-[9px] font-mono text-black/50 dark:text-white/50 truncate">
+                        {command}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
