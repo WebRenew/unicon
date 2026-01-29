@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://unicon.webrenew.com/sitemap.xml",
+    sitemap: "https://unicon.sh/sitemap.xml",
   };
 }

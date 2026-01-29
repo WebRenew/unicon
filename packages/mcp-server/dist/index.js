@@ -23,7 +23,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
-const API_BASE_URL = process.env.UNICON_API_URL || "https://unicon.webrenew.com/api/mcp";
+const API_BASE_URL = process.env.UNICON_API_URL || "https://unicon.sh/api/mcp";
 const MCP_PROTOCOL_VERSION = "2024-11-05";
 let requestId = 0;
 let isInitialized = false;

@@ -28,7 +28,7 @@ unicon get home --format react -o ./Home.tsx
 unicon bundle --category Dashboards -o ./icons
 ```
 
-**Web UI**: Browse all icons at [unicon.webrenew.com](https://unicon.webrenew.com)
+**Web UI**: Browse all icons at [unicon.sh](https://unicon.sh)
 
 ---
 
@@ -225,7 +225,7 @@ For detailed information, see:
 
 - **API Reference**: `references/api-reference.md` - REST API endpoints, parameters, response schemas
 - **Full CLI docs**: Run `unicon --help` or `unicon <command> --help`
-- **Web UI**: [unicon.webrenew.com](https://unicon.webrenew.com) - Browse, search, copy icons
+- **Web UI**: [unicon.sh](https://unicon.sh) - Browse, search, copy icons
 
 ---
 
@@ -264,7 +264,7 @@ git diff --exit-code ./src/icons
 
 ```javascript
 const response = await fetch(
-  'https://unicon.webrenew.com/api/icons?q=dashboard&source=lucide'
+  'https://unicon.sh/api/icons?q=dashboard&source=lucide'
 );
 const { icons } = await response.json();
 ```

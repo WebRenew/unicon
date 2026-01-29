@@ -79,4 +79,4 @@ Icons are cached locally at `~/.unicon/cache` for 24 hours to reduce API calls a
 
 ## Documentation
 
-Full docs at: https://unicon.webrenew.com/cli
+Full docs at: https://unicon.sh/cli

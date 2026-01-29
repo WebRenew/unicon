@@ -16,6 +16,7 @@ import { V0Icon } from "@/components/icons/ui/v0";
 import { LayersIcon } from "@/components/icons/ui/layers";
 import { CloudIcon } from "@/components/icons/ui/cloud";
 import { PlusIcon } from "@/components/icons/ui/plus";
+import { Trash2Icon } from "@/components/icons/ui/trash-2";
 import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 import { BundleMixingWarning } from "./bundle-mixing-warning";
 import { SaveBundleDialog } from "./save-bundle-dialog";
@@ -351,6 +352,14 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               >
                 <CloudIcon className="w-3.5 h-3.5" />
                 Save
+              </button>
+              <button
+                onClick={onClear}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-rose-400/10 text-rose-400 hover:bg-rose-400/20 transition-colors"
+                title="Clear all icons from bundle"
+              >
+                <Trash2Icon className="w-3.5 h-3.5" />
+                Clear
               </button>
             </>
           )}

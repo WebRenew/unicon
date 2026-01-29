@@ -123,7 +123,7 @@ Unlike `npm install lucide-react` which downloads thousands of icons:
 
 ## Web Interface
 
-Browse and copy icons at: https://unicon.webrenew.com
+Browse and copy icons at: https://unicon.sh
 
 - Visual search with AI
 - One-click copy (SVG, React, Vue, Svelte)

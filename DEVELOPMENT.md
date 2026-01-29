@@ -166,7 +166,7 @@ Fetch paginated icons with optional filters and semantic search.
 
 **Example**:
 ```bash
-curl 'https://unicon.webrenew.com/api/icons?q=happy%20face&limit=5'
+curl 'https://unicon.sh/api/icons?q=happy%20face&limit=5'
 ```
 
 ### `POST /api/search`

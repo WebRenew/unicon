@@ -29,7 +29,7 @@ Add to your Claude config file:
   "mcpServers": {
     "unicon": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-remote@latest", "https://unicon.webrenew.com/api/mcp"]
+      "args": ["-y", "@anthropic-ai/mcp-remote@latest", "https://unicon.sh/api/mcp"]
     }
   }
 }
@@ -45,7 +45,7 @@ Add to \`.cursor/mcp.json\` in your project:
 {
   "mcpServers": {
     "unicon": {
-      "url": "https://unicon.webrenew.com/api/mcp"
+      "url": "https://unicon.sh/api/mcp"
     }
   }
 }
@@ -119,7 +119,7 @@ You should see the Unicon tools listed.
 3. Verify network connectivity
 
 ### Slow responses
-The MCP server is hosted at unicon.webrenew.com. First requests may be slower due to cold starts.
+The MCP server is hosted at unicon.sh. First requests may be slower due to cold starts.
 
 ### Icon not found
 Use \`search_icons\` first to find the correct icon ID, then \`get_icon\` with that ID.
@@ -151,7 +151,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon MCP Integration — Use Icons with AI Assistants",
     description: "Connect Unicon to Claude, Cursor, and other AI assistants. Search and generate icon components using natural language.",
-    url: "https://unicon.webrenew.com/docs/mcp",
+    url: "https://unicon.sh/docs/mcp",
     type: "website",
   },
 };
@@ -220,7 +220,7 @@ export default function MCPDocsPage() {
                 <div className="text-center">↓ stdio</div>
                 <div>Local Bridge (npx)</div>
                 <div className="text-center">↓ HTTPS</div>
-                <div>unicon.webrenew.com/api/mcp</div>
+                <div>unicon.sh/api/mcp</div>
               </div>
             </div>
             <div className="p-4 rounded-xl border border-border bg-card">
@@ -228,7 +228,7 @@ export default function MCPDocsPage() {
               <div className="font-mono text-xs space-y-1 text-muted-foreground">
                 <div>v0 / Bolt / Lovable</div>
                 <div className="text-center">↓ Streamable HTTP</div>
-                <div>unicon.webrenew.com/api/mcp</div>
+                <div>unicon.sh/api/mcp</div>
                 <div className="text-center text-[var(--accent-mint)]">✓ Direct connection</div>
               </div>
             </div>
@@ -409,7 +409,7 @@ export default function MCPDocsPage() {
               <p className="text-muted-foreground leading-relaxed mb-4">
                 For cloud-based environments that support URL-based MCP connections, use the Streamable HTTP endpoint directly — no local installation required.
               </p>
-              <CodeBlock title="MCP Endpoint URL">{`https://unicon.webrenew.com/api/mcp`}</CodeBlock>
+              <CodeBlock title="MCP Endpoint URL">{`https://unicon.sh/api/mcp`}</CodeBlock>
             </div>
 
             <div>
@@ -647,8 +647,8 @@ export default function MCPDocsPage() {
                 <p>1. Verify icon ID format: <code className="text-[var(--accent-aqua)]">source:icon-name</code> (all lowercase)</p>
                 <p>2. Use <code className="text-[var(--accent-aqua)]">search_icons</code> tool first to find the exact ID</p>
                 <p>3. Check icon exists at{" "}
-                  <a href="https://unicon.webrenew.com" className="text-[var(--accent-lavender)] hover:underline">
-                    unicon.webrenew.com
+                  <a href="https://unicon.sh" className="text-[var(--accent-lavender)] hover:underline">
+                    unicon.sh
                   </a>
                 </p>
               </div>

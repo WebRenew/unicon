@@ -4,7 +4,7 @@
 
 Browse 20,000+ icons and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
 
-[**Try it now at unicon.webrenew.com**](https://unicon.webrenew.com)
+[**Try it now at unicon.sh**](https://unicon.sh)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -176,7 +176,7 @@ For deeper integration, use the [MCP](https://modelcontextprotocol.io/) server.
 **Cloud IDEs (v0, Bolt, Lovable):**
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 **Tools:** `search_icons`, `get_icon`, `get_multiple_icons`, `get_starter_pack`
@@ -203,4 +203,4 @@ Icons retain their original licenses. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_
 
 Built by [WebRenew](https://webrenew.com)
 
-[Live Demo](https://unicon.webrenew.com) · [Issues](https://github.com/WebRenew/unicon/issues)
+[unicon.sh](https://unicon.sh) · [Issues](https://github.com/WebRenew/unicon/issues)

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://unicon.webrenew.com";
+const siteUrl = "https://unicon.sh";
 
 export const metadata: Metadata = {
   title: {

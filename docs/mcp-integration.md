@@ -31,8 +31,8 @@ For **Claude Desktop**, **Cursor**, and other desktop applications that use stdi
            │ HTTPS
            │
 ┌──────────▼──────────────────┐
-│ unicon.webrenew.com/api/mcp │  (hosted API)
-└─────────────────────────────┘
+│   unicon.sh/api/mcp        │  (hosted API)
+└────────────────────────────┘
 ```
 
 ### Option 2: Direct URL (Cloud IDEs & Agents)
@@ -46,13 +46,13 @@ For **v0**, **Bolt**, **Lovable**, **cloud IDEs**, and other URL-based MCP clien
            │ MCP Protocol (Streamable HTTP)
            │
 ┌──────────▼──────────────────┐
-│ unicon.webrenew.com/api/mcp │  (direct connection)
-└─────────────────────────────┘
+│   unicon.sh/api/mcp        │  (direct connection)
+└────────────────────────────┘
 ```
 
 **MCP Endpoint URL:**
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 **Why two options?**
@@ -151,7 +151,7 @@ For cloud-based environments that can't run local processes, use the **Streamabl
 Add Unicon as an MCP server in v0:
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 ### Bolt, Lovable, and Similar Tools
@@ -159,14 +159,14 @@ https://unicon.webrenew.com/api/mcp
 Configure the MCP endpoint URL:
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 ### Generic HTTP MCP Client
 
 For any MCP client that supports Streamable HTTP transport:
 
-**Endpoint:** `https://unicon.webrenew.com/api/mcp`
+**Endpoint:** `https://unicon.sh/api/mcp`
 
 **Supported Methods:**
 - `POST` - Send MCP requests (initialize, tools/call, etc.)
@@ -181,7 +181,7 @@ Accept: application/json, text/event-stream
 
 **Example - Initialize:**
 ```bash
-curl -X POST https://unicon.webrenew.com/api/mcp \
+curl -X POST https://unicon.sh/api/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{
@@ -198,7 +198,7 @@ curl -X POST https://unicon.webrenew.com/api/mcp \
 
 **Example - List Tools:**
 ```bash
-curl -X POST https://unicon.webrenew.com/api/mcp \
+curl -X POST https://unicon.sh/api/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}'
@@ -206,7 +206,7 @@ curl -X POST https://unicon.webrenew.com/api/mcp \
 
 **Example - Call Tool:**
 ```bash
-curl -X POST https://unicon.webrenew.com/api/mcp \
+curl -X POST https://unicon.sh/api/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{
@@ -541,7 +541,7 @@ All icons use the format: `source:icon-name`
 
 **Finding icon IDs:**
 1. Use `search_icons` tool to find icons
-2. Browse https://unicon.webrenew.com
+2. Browse https://unicon.sh
 3. Check the CLI: `unicon search "query"`
 
 ## Supported Formats
@@ -672,7 +672,7 @@ node dist/index.js
 
 **Solutions:**
 1. Check internet connection
-2. Verify API is reachable: `curl https://unicon.webrenew.com/api/mcp`
+2. Verify API is reachable: `curl https://unicon.sh/api/mcp`
 3. Check for firewall/proxy blocking the request
 4. Try setting custom API URL in config
 
@@ -683,7 +683,7 @@ node dist/index.js
 **Solutions:**
 1. Verify icon ID format: `source:icon-name` (all lowercase)
 2. Use `search_icons` to find the exact ID
-3. Check icon exists: browse https://unicon.webrenew.com
+3. Check icon exists: browse https://unicon.sh
 4. Some icons may have variants (e.g., `phosphor:heart:fill`)
 
 ### Slow responses
@@ -692,7 +692,7 @@ node dist/index.js
 
 **Solutions:**
 1. First request may be slower (cold start)
-2. Check API status: https://unicon.webrenew.com/api/mcp
+2. Check API status: https://unicon.sh/api/mcp
 3. Report persistent issues on GitHub
 
 ## Best Practices
@@ -751,7 +751,7 @@ Need higher limits? Contact us for API key access.
 
 ## Support
 
-- **Documentation:** https://unicon.webrenew.com/docs
+- **Documentation:** https://unicon.sh/docs
 - **GitHub Issues:** https://github.com/webrenew/unicon/issues
 - **Discussions:** https://github.com/webrenew/unicon/discussions
 - **Email:** contact@webrenew.io
@@ -759,7 +759,7 @@ Need higher limits? Contact us for API key access.
 ## What's Next?
 
 - [x] ~~Icon packs (curated collections)~~ - **Available now!** Use `get_starter_pack`
-- [x] ~~Direct URL access for cloud IDEs~~ - **Available now!** Use `https://unicon.webrenew.com/api/mcp`
+- [x] ~~Direct URL access for cloud IDEs~~ - **Available now!** Use `https://unicon.sh/api/mcp`
 - [ ] Custom icon uploads
 - [ ] Team workspaces
 - [ ] Icon variants (phosphor weights)

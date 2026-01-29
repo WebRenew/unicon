@@ -41,8 +41,8 @@ const navItems = [
     href: "/packs",
     label: "Packs",
     icon: PackageIcon,
-    color: "text-[var(--accent-peach)]",
-    hoverBg: "hover:bg-[var(--accent-peach)]/10",
+    color: "text-[var(--accent-mint)]",
+    hoverBg: "hover:bg-[var(--accent-mint)]/10",
   },
   {
     href: "/pricing",

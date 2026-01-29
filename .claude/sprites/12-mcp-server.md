@@ -530,7 +530,7 @@ await redis.setex(`icon:${iconId}`, 86400, JSON.stringify(icon)); // 24h TTL
 {
   "mcpServers": {
     "unicon": {
-      "url": "https://unicon.webrenew.com/api/mcp",
+      "url": "https://unicon.sh/api/mcp",
       "transport": "sse"
     }
   }
@@ -785,7 +785,7 @@ User's Machine                  Cloud
 ### Testing Checklist
 
 Before deploying:
-- [ ] Test API endpoint: `curl https://unicon.webrenew.com/api/mcp`
+- [ ] Test API endpoint: `curl https://unicon.sh/api/mcp`
 - [ ] Test local server: `cd packages/mcp-server && node dist/index.js`
 - [ ] Test with Claude Desktop using local build
 - [ ] Verify all tools work (search, get, get_multiple)
@@ -796,7 +796,7 @@ Before deploying:
 ### Publishing Checklist
 
 - [ ] Deploy Next.js app to Vercel (includes API endpoint)
-- [ ] Test deployed API: `curl https://unicon.webrenew.com/api/mcp`
+- [ ] Test deployed API: `curl https://unicon.sh/api/mcp`
 - [ ] Publish NPM package: `cd packages/mcp-server && npm publish`
 - [ ] Test published package: `npx @webrenew/unicon-mcp-server`
 - [ ] Update main README with MCP section

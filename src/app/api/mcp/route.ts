@@ -4,7 +4,7 @@
  * This endpoint exposes the MCP server via Streamable HTTP transport for
  * integrations like v0, Bolt, Vercel AI, and other URL-based MCP clients.
  *
- * URL: https://unicon.webrenew.com/api/mcp
+ * URL: https://unicon.sh/api/mcp
  *
  * CORS: Open access enabled for cloud IDE integrations (v0, Bolt, Lovable, etc.)
  */
@@ -411,7 +411,7 @@ Examples:
           content: [
             {
               type: "text",
-              text: `Error: Icon not found: "${params.iconId}". Use search_icons to find valid icon IDs, or browse https://unicon.webrenew.com`,
+              text: `Error: Icon not found: "${params.iconId}". Use search_icons to find valid icon IDs, or browse https://unicon.sh`,
             },
           ],
           isError: true,

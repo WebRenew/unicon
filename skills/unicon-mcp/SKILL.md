@@ -6,7 +6,7 @@ compatibility: Requires MCP-compatible client (Claude Desktop, Cursor, or simila
 metadata:
   author: webrenew
   version: "1.0.0"
-  website: https://unicon.webrenew.com
+  website: https://unicon.sh
   repository: https://github.com/WebRenew/unicon
 ---
 

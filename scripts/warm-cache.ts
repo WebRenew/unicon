@@ -6,7 +6,7 @@
  *
  * Usage:
  *   tsx scripts/warm-cache.ts
- *   tsx scripts/warm-cache.ts --url https://unicon.webrenew.com
+ *   tsx scripts/warm-cache.ts --url https://unicon.sh
  */
 
 const POPULAR_QUERIES = [

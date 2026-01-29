@@ -50,7 +50,7 @@ Add to your Cursor MCP settings:
 For v0, Bolt, Lovable, and other URL-based MCP clients, connect directly via Streamable HTTP:
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 No installation required — just add this URL as an MCP server in your tool's settings.
@@ -214,7 +214,7 @@ node dist/index.js
 
 ### Connection errors
 
-The server requires internet access to connect to the Unicon API at `https://unicon.webrenew.com`.
+The server requires internet access to connect to the Unicon API at `https://unicon.sh`.
 
 ### Icons not found
 

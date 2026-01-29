@@ -171,7 +171,7 @@ Complete documentation for users:
    git commit -m "Add MCP server implementation"
    git push
    ```
-   API will be live at: `https://unicon.webrenew.com/api/mcp`
+   API will be live at: `https://unicon.sh/api/mcp`
 
 2. **Publish NPM Package**
    ```bash
@@ -318,7 +318,7 @@ Returns all three components ready to copy into project.
 - **Package Docs:** packages/mcp-server/README.md
 - **Implementation Plan:** .claude/sprites/12-mcp-server.md
 - **GitHub:** https://github.com/webrenew/unicon
-- **Website:** https://unicon.webrenew.com
+- **Website:** https://unicon.sh
 
 ## Success Metrics (3-Month Targets)
 

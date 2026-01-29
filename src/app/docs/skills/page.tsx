@@ -73,14 +73,14 @@ Help users add icons to React, Vue, Svelte, or web projects using the Unicon CLI
 
 Tags: icons, cli, ai-assistants, api
 
-Download: https://unicon.webrenew.com/skills/unicon.md
+Download: https://unicon.sh/skills/unicon.md
 
 ### Unicon MCP
 Guide setup and usage of the Unicon MCP server in Claude, Cursor, and other MCP clients.
 
 Tags: mcp, ai-assistants, icons, setup
 
-Download: https://unicon.webrenew.com/skills/unicon-mcp.md
+Download: https://unicon.sh/skills/unicon-mcp.md
 
 ## Supported IDEs
 
@@ -97,9 +97,9 @@ Download: https://unicon.webrenew.com/skills/unicon-mcp.md
 
 ## Direct Downloads
 
-- Registry JSON: https://unicon.webrenew.com/skills/index.json
-- Unicon Skill: https://unicon.webrenew.com/skills/unicon.md
-- MCP Skill: https://unicon.webrenew.com/skills/unicon-mcp.md
+- Registry JSON: https://unicon.sh/skills/index.json
+- Unicon Skill: https://unicon.sh/skills/unicon.md
+- MCP Skill: https://unicon.sh/skills/unicon-mcp.md
 `;
 
 export const metadata: Metadata = {
@@ -118,7 +118,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon Skills Registry",
     description: "Download Unicon skills for AI assistants and add icon workflows to your tools.",
-    url: "https://unicon.webrenew.com/docs/skills",
+    url: "https://unicon.sh/docs/skills",
     type: "website",
   },
 };
@@ -263,7 +263,7 @@ unicon skill --ide claude -f     # Force overwrite existing`}</CodeBlock>
               <span className="text-sm font-normal text-muted-foreground">— Registry Download</span>
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Lists and downloads skills from the public registry at unicon.webrenew.com.
+              Lists and downloads skills from the public registry at unicon.sh.
             </p>
             
             <div className="overflow-x-auto mb-4">

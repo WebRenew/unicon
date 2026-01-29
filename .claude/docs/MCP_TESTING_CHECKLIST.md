@@ -248,28 +248,28 @@ After deploying to Vercel:
 
 ### 🚀 Production API Testing
 
-- [ ] **GET https://unicon.webrenew.com/api/mcp**
+- [ ] **GET https://unicon.sh/api/mcp**
   ```bash
-  curl https://unicon.webrenew.com/api/mcp | jq
+  curl https://unicon.sh/api/mcp | jq
   ```
 
 - [ ] **Test search_icons on production**
   ```bash
-  curl -X POST https://unicon.webrenew.com/api/mcp \
+  curl -X POST https://unicon.sh/api/mcp \
     -H "Content-Type: application/json" \
     -d '{"action": "call_tool", "params": {"name": "search_icons", "arguments": {"query": "arrow", "limit": 5}}}' | jq
   ```
 
 - [ ] **Test get_icon on production**
   ```bash
-  curl -X POST https://unicon.webrenew.com/api/mcp \
+  curl -X POST https://unicon.sh/api/mcp \
     -H "Content-Type: application/json" \
     -d '{"action": "call_tool", "params": {"name": "get_icon", "arguments": {"iconId": "lucide:home", "format": "react"}}}' | jq
   ```
 
 - [ ] **Verify CORS headers**
   ```bash
-  curl -I https://unicon.webrenew.com/api/mcp
+  curl -I https://unicon.sh/api/mcp
   ```
   Should include: Access-Control-Allow-Origin: *
 

@@ -4,7 +4,7 @@ Last Updated: January 20, 2026
 
 GENERAL DISCLAIMER
 
-The information provided by Unicon by WebRenew ("we," "us," or "our") on unicon.webrenew.com (the "Service") is for general informational purposes only.
+The information provided by Unicon by WebRenew ("we," "us," or "our") on unicon.sh (the "Service") is for general informational purposes only.
 
 NO WARRANTIES
 

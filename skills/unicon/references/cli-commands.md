@@ -417,7 +417,7 @@ Available on all commands:
 
 | Variable | Description |
 |----------|-------------|
-| `UNICON_API_URL` | Custom API base URL (default: https://unicon.webrenew.com) |
+| `UNICON_API_URL` | Custom API base URL (default: https://unicon.sh) |
 | `UNICON_CACHE_DIR` | Custom cache directory |
 | `UNICON_NO_CACHE` | Disable caching |
 

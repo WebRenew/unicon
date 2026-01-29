@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Unicon Starter Packs",
     description:
       "Curated icon collections for common use cases. Add entire packs to your bundle with one click.",
-    url: "https://unicon.webrenew.com/packs",
+    url: "https://unicon.sh/packs",
     type: "website",
   },
 };

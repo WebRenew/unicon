@@ -9,7 +9,7 @@ Get started with Unicon's AI-powered icon library in 5 minutes.
 For cloud-based environments, use the direct URL:
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 Just add this URL as an MCP server in your tool's settings. No installation needed!
@@ -202,7 +202,7 @@ Specify size, stroke width, and format:
 
 1. Use exact icon ID format: `source:icon-name`
 2. Search first to find the right ID
-3. Check https://unicon.webrenew.com
+3. Check https://unicon.sh
 
 ### Slow responses?
 
@@ -211,7 +211,7 @@ First request may be slow (cold start). Subsequent requests are fast!
 ## Next Steps
 
 - Read the [full MCP integration guide](./mcp-integration.md)
-- Browse icons at https://unicon.webrenew.com
+- Browse icons at https://unicon.sh
 - Join discussions at https://github.com/webrenew/unicon/discussions
 
 ## Need Help?

@@ -426,7 +426,7 @@ unicon skills --json
 
 ### Available Skills
 
-Skills are hosted at `https://unicon.webrenew.com/skills/` and include:
+Skills are hosted at `https://unicon.sh/skills/` and include:
 
 - **unicon** - Core CLI usage skill for AI assistants
 - **unicon-mcp** - MCP server setup guide

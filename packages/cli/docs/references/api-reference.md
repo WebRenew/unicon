@@ -2,7 +2,7 @@
 
 REST API for programmatic access to Unicon icons.
 
-**Base URL**: `https://unicon.webrenew.com/api`
+**Base URL**: `https://unicon.sh/api`
 
 ---
 
@@ -60,19 +60,19 @@ Fetch icons with optional filters. Supports AI-powered semantic search.
 
 ```bash
 # Search with AI
-curl "https://unicon.webrenew.com/api/icons?q=dashboard"
+curl "https://unicon.sh/api/icons?q=dashboard"
 
 # Filter by source
-curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide"
+curl "https://unicon.sh/api/icons?q=arrow&source=lucide"
 
 # Get specific icons by name
-curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"
+curl "https://unicon.sh/api/icons?names=home,settings,user"
 
 # Browse by category
-curl "https://unicon.webrenew.com/api/icons?category=Social&limit=50"
+curl "https://unicon.sh/api/icons?category=Social&limit=50"
 
 # Disable AI search
-curl "https://unicon.webrenew.com/api/icons?q=home&ai=false"
+curl "https://unicon.sh/api/icons?q=home&ai=false"
 ```
 
 ---
@@ -128,17 +128,17 @@ Results include a `score` (0-1) combining:
 
 ```bash
 # Basic search
-curl -X POST "https://unicon.webrenew.com/api/search" \
+curl -X POST "https://unicon.sh/api/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "dashboard"}'
 
 # Filter by source
-curl -X POST "https://unicon.webrenew.com/api/search" \
+curl -X POST "https://unicon.sh/api/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "arrow", "sourceId": "phosphor", "limit": 20}'
 
 # Enable AI expansion
-curl -X POST "https://unicon.webrenew.com/api/search" \
+curl -X POST "https://unicon.sh/api/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "celebration", "useAI": true}'
 ```
@@ -196,7 +196,7 @@ interface IconData {
 ```typescript
 async function searchIcons(query: string) {
   const response = await fetch(
-    `https://unicon.webrenew.com/api/icons?q=${encodeURIComponent(query)}`
+    `https://unicon.sh/api/icons?q=${encodeURIComponent(query)}`
   );
   const { icons } = await response.json();
   return icons;
@@ -205,7 +205,7 @@ async function searchIcons(query: string) {
 // Get specific icons
 async function getIcons(names: string[]) {
   const response = await fetch(
-    `https://unicon.webrenew.com/api/icons?names=${names.join(",")}`
+    `https://unicon.sh/api/icons?names=${names.join(",")}`
   );
   const { icons } = await response.json();
   return icons;

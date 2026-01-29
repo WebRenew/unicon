@@ -226,7 +226,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon CLI — Icon Bundler for Command Line",
     description: "Search and bundle icons from the command line. Generate tree-shakeable components for React, Vue, and Svelte.",
-    url: "https://unicon.webrenew.com/cli",
+    url: "https://unicon.sh/cli",
     type: "website",
   },
   twitter: {

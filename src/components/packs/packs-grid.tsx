@@ -158,18 +158,20 @@ export function PacksGrid() {
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search Input */}
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search packs..."
-            className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-[var(--accent-mint)]/50 transition-colors"
-          />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
+          <div className="search-gradient-border rounded-lg p-[1px]">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search packs..."
+              className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-10 py-2.5 text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
+            />
+          </div>
           {search && (
             <button
               onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors z-10"
               aria-label="Clear search"
             >
               <XIcon className="w-4 h-4" />

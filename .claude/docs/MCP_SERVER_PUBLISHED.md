@@ -39,7 +39,7 @@ Then restart Claude Desktop completely.
 
 - ✅ Package installs via `npx`
 - ✅ Server starts and runs correctly
-- ✅ Connects to hosted API at `https://unicon.webrenew.com/api/mcp`
+- ✅ Connects to hosted API at `https://unicon.sh/api/mcp`
 - ✅ Provides stdio transport for MCP clients
 - ✅ All dependencies included
 - ✅ TypeScript definitions included
@@ -82,8 +82,8 @@ Once users add it to Claude:
 
 - **NPM Package:** https://www.npmjs.com/package/@webrenew/unicon-mcp-server
 - **GitHub Repo:** https://github.com/webrenew/unicon
-- **Web App:** https://unicon.webrenew.com
-- **API Endpoint:** https://unicon.webrenew.com/api/mcp
+- **Web App:** https://unicon.sh
+- **API Endpoint:** https://unicon.sh/api/mcp
 
 ## 📝 Documentation
 
@@ -138,7 +138,7 @@ See [MCP Integration Guide](docs/mcp-integration.md) for details.
 > 
 > Install: `npx @webrenew/unicon-mcp-server`
 > 
-> Docs: https://unicon.webrenew.com/docs/mcp
+> Docs: https://unicon.sh/docs/mcp
 >
 > #MCP #ClaudeAI #Icons #React
 

@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: webrenew
   version: "0.2.0"
-  website: https://unicon.webrenew.com
+  website: https://unicon.sh
   repository: https://github.com/WebRenew/unicon
 ---
 
@@ -180,7 +180,7 @@ Unlike `npm install lucide-react` which downloads thousands of icons:
 
 ## Web Interface
 
-Browse and copy icons at: https://unicon.webrenew.com
+Browse and copy icons at: https://unicon.sh
 
 - Visual search with AI
 - One-click copy (SVG, React, Vue, Svelte)

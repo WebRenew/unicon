@@ -39,7 +39,7 @@ Your App ←→ Local Process (npx) ←→ Unicon API
 Direct HTTP connection to our hosted endpoint. Nothing runs locally.
 
 \`\`\`
-Your App ←→ unicon.webrenew.com/api/mcp
+Your App ←→ unicon.sh/api/mcp
 \`\`\`
 
 **Requires:** Network access only
@@ -67,7 +67,7 @@ If your app supports both, stdio is marginally faster but SSE is simpler to set 
 ## SSE Endpoint URL
 
 \`\`\`
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 \`\`\`
 
 This is a Streamable HTTP endpoint that supports both SSE and standard HTTP responses.
@@ -81,7 +81,7 @@ This is a Streamable HTTP endpoint that supports both SSE and standard HTTP resp
            │ MCP Protocol (Streamable HTTP)
            │
 ┌──────────▼──────────────────┐
-│ unicon.webrenew.com/api/mcp │
+│ unicon.sh/api/mcp │
 └─────────────────────────────┘
 \`\`\`
 
@@ -94,7 +94,7 @@ The endpoint handles MCP protocol messages directly over HTTP. No local installa
 Add Unicon as an MCP server in v0's settings:
 
 \`\`\`
-URL: https://unicon.webrenew.com/api/mcp
+URL: https://unicon.sh/api/mcp
 \`\`\`
 
 ### Bolt
@@ -105,7 +105,7 @@ Configure in project settings:
 {
   "mcpServers": {
     "unicon": {
-      "url": "https://unicon.webrenew.com/api/mcp"
+      "url": "https://unicon.sh/api/mcp"
     }
   }
 }
@@ -120,7 +120,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const transport = new StreamableHTTPClientTransport(
-  new URL("https://unicon.webrenew.com/api/mcp")
+  new URL("https://unicon.sh/api/mcp")
 );
 
 const client = new Client({
@@ -172,7 +172,7 @@ Access-Control-Allow-Headers: Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol
 ## Troubleshooting
 
 ### Connection Issues
-1. Verify the URL is exactly \`https://unicon.webrenew.com/api/mcp\`
+1. Verify the URL is exactly \`https://unicon.sh/api/mcp\`
 2. Check that your client supports Streamable HTTP transport
 3. Ensure network allows outbound HTTPS connections
 
@@ -201,7 +201,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon MCP SSE Transport",
     description: "Use Unicon with cloud IDEs and URL-based MCP clients via SSE transport.",
-    url: "https://unicon.webrenew.com/docs/mcp/sse",
+    url: "https://unicon.sh/docs/mcp/sse",
     type: "website",
   },
 };
@@ -310,7 +310,7 @@ export default function MCPSSEDocsPage() {
                 Direct HTTP connection to our hosted endpoint. Nothing runs locally.
               </p>
               <div className="p-3 rounded bg-black/20 font-mono text-xs text-muted-foreground">
-                Your App ←→ unicon.webrenew.com/api/mcp
+                Your App ←→ unicon.sh/api/mcp
               </div>
               <p className="text-xs text-muted-foreground mt-3">
                 <strong>Requires:</strong> Network access only
@@ -392,7 +392,7 @@ export default function MCPSSEDocsPage() {
         {/* SSE Endpoint URL */}
         <section>
           <h2 className="text-2xl font-bold mb-4">SSE Endpoint URL</h2>
-          <CodeBlock title="MCP Endpoint">{`https://unicon.webrenew.com/api/mcp`}</CodeBlock>
+          <CodeBlock title="MCP Endpoint">{`https://unicon.sh/api/mcp`}</CodeBlock>
           <p className="text-sm text-muted-foreground mt-3">
             This is a Streamable HTTP endpoint that supports both SSE and standard HTTP responses.
           </p>
@@ -409,7 +409,7 @@ export default function MCPSSEDocsPage() {
            │ MCP Protocol (Streamable HTTP)
            │
 ┌──────────▼──────────────────┐
-│ unicon.webrenew.com/api/mcp │
+│ unicon.sh/api/mcp │
 └─────────────────────────────┘`}
             </pre>
           </div>
@@ -428,7 +428,7 @@ export default function MCPSSEDocsPage() {
               <p className="text-sm text-muted-foreground mb-3">
                 Add Unicon as an MCP server in v0&apos;s settings:
               </p>
-              <CodeBlock>{`https://unicon.webrenew.com/api/mcp`}</CodeBlock>
+              <CodeBlock>{`https://unicon.sh/api/mcp`}</CodeBlock>
             </div>
 
             <div>
@@ -439,7 +439,7 @@ export default function MCPSSEDocsPage() {
               <CodeBlock title="mcp.json">{`{
   "mcpServers": {
     "unicon": {
-      "url": "https://unicon.webrenew.com/api/mcp"
+      "url": "https://unicon.sh/api/mcp"
     }
   }
 }`}</CodeBlock>
@@ -454,7 +454,7 @@ export default function MCPSSEDocsPage() {
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const transport = new StreamableHTTPClientTransport(
-  new URL("https://unicon.webrenew.com/api/mcp")
+  new URL("https://unicon.sh/api/mcp")
 );
 
 const client = new Client({
@@ -565,7 +565,7 @@ Access-Control-Allow-Headers: Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol
             <div className="p-4 rounded-lg border border-border bg-card">
               <h3 className="font-semibold mb-2">Connection Issues</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>1. Verify the URL is exactly <code className="text-[var(--accent-aqua)]">https://unicon.webrenew.com/api/mcp</code></li>
+                <li>1. Verify the URL is exactly <code className="text-[var(--accent-aqua)]">https://unicon.sh/api/mcp</code></li>
                 <li>2. Check that your client supports Streamable HTTP transport</li>
                 <li>3. Ensure network allows outbound HTTPS connections</li>
               </ul>

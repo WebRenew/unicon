@@ -6,7 +6,7 @@ Created comprehensive hosted documentation for Unicon covering CLI, MCP, and gen
 
 ### 1. `/docs` - Main Documentation Hub
 **File:** `src/app/docs/page.tsx`
-**URL:** `https://unicon.webrenew.com/docs`
+**URL:** `https://unicon.sh/docs`
 
 **Content:**
 - Overview of what Unicon is
@@ -31,7 +31,7 @@ Created comprehensive hosted documentation for Unicon covering CLI, MCP, and gen
 
 ### 2. `/docs/mcp` - MCP Integration Guide
 **File:** `src/app/docs/mcp/page.tsx`
-**URL:** `https://unicon.webrenew.com/docs/mcp`
+**URL:** `https://unicon.sh/docs/mcp`
 
 **Content:**
 - What is Model Context Protocol (MCP)
@@ -66,7 +66,7 @@ Created comprehensive hosted documentation for Unicon covering CLI, MCP, and gen
 
 ### 3. `/docs/api` - API Reference
 **File:** `src/app/docs/api/page.tsx`
-**URL:** `https://unicon.webrenew.com/docs/api`
+**URL:** `https://unicon.sh/docs/api`
 
 **Content:**
 - Base URL and rate limits

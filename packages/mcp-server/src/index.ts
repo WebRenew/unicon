@@ -32,7 +32,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 const API_BASE_URL =
-  process.env.UNICON_API_URL || "https://unicon.webrenew.com/api/mcp";
+  process.env.UNICON_API_URL || "https://unicon.sh/api/mcp";
 
 const MCP_PROTOCOL_VERSION = "2024-11-05";
 

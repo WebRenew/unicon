@@ -10,7 +10,7 @@ Place `.uniconrc.json` in your project root (same level as `package.json`).
 
 ```json
 {
-  "$schema": "https://unicon.webrenew.com/schema/uniconrc.json",
+  "$schema": "https://unicon.sh/schema/uniconrc.json",
   "outputDir": "./src/icons",
   "format": "react",
   "defaultSource": "lucide",

@@ -652,7 +652,7 @@ unicon sync
 
 REST API for programmatic access to Unicon icons.
 
-**Base URL**: `https://unicon.webrenew.com/api`
+**Base URL**: `https://unicon.sh/api`
 
 ### GET /api/icons
 
@@ -699,16 +699,16 @@ Fetch icons with optional filters. Supports AI-powered semantic search.
 
 ```bash
 # Search with AI
-curl "https://unicon.webrenew.com/api/icons?q=dashboard"
+curl "https://unicon.sh/api/icons?q=dashboard"
 
 # Filter by source
-curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide"
+curl "https://unicon.sh/api/icons?q=arrow&source=lucide"
 
 # Get specific icons by name
-curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"
+curl "https://unicon.sh/api/icons?names=home,settings,user"
 
 # Browse by category
-curl "https://unicon.webrenew.com/api/icons?category=Social&limit=50"
+curl "https://unicon.sh/api/icons?category=Social&limit=50"
 ```
 
 ### POST /api/search
@@ -750,12 +750,12 @@ Hybrid semantic + exact match search with scoring.
 
 ```bash
 # Basic search
-curl -X POST "https://unicon.webrenew.com/api/search" \
+curl -X POST "https://unicon.sh/api/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "dashboard"}'
 
 # Filter by source
-curl -X POST "https://unicon.webrenew.com/api/search" \
+curl -X POST "https://unicon.sh/api/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "arrow", "sourceId": "phosphor", "limit": 20}'
 ```
@@ -921,7 +921,7 @@ import { Home } from "./icons";
 
 ## Web Interface
 
-Browse and copy icons visually at: **https://unicon.webrenew.com**
+Browse and copy icons visually at: **https://unicon.sh**
 
 Features:
 - Visual search with AI
@@ -934,7 +934,7 @@ Features:
 
 ## Support & Resources
 
-- **Website**: https://unicon.webrenew.com
+- **Website**: https://unicon.sh
 - **GitHub**: https://github.com/WebRenew/unicon
 - **Issues**: https://github.com/WebRenew/unicon/issues
 - **License**: MIT

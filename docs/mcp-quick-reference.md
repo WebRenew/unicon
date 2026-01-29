@@ -7,7 +7,7 @@ Quick command reference for using Unicon with Claude/Cursor.
 ### Cloud IDEs (v0, Bolt, Lovable) - Direct URL
 
 ```
-https://unicon.webrenew.com/api/mcp
+https://unicon.sh/api/mcp
 ```
 
 Add this URL as an MCP server in your tool's settings. No installation needed!
@@ -97,7 +97,7 @@ All icons use: `library:icon-name`
 
 **Finding IDs:**
 1. Search first: "Search for X icons"
-2. Browse: https://unicon.webrenew.com
+2. Browse: https://unicon.sh
 3. Use CLI: `unicon search "query"`
 
 ## Available Libraries
@@ -175,7 +175,7 @@ import { ArrowRight } from './icons/ArrowRight';
 ### Icon not found
 - Verify ID format: `library:icon-name`
 - Search first to get exact ID
-- Check icon exists at unicon.webrenew.com
+- Check icon exists at unicon.sh
 
 ### Slow responses
 - First request may be slow (cold start)
@@ -218,6 +218,6 @@ Done! 🎉
 ---
 
 **Quick Links:**
-- Website: https://unicon.webrenew.com
+- Website: https://unicon.sh
 - GitHub: https://github.com/webrenew/unicon
 - NPM: https://www.npmjs.com/package/@webrenew/unicon-mcp-server

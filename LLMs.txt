@@ -14,7 +14,7 @@
 - Direct integration with v0.dev
 - Light/dark mode support
 
-**Live Site:** https://unicon.webrenew.com
+**Live Site:** https://unicon.sh
 **Repository:** https://github.com/WebRenew/unicon
 **License:** MIT
 
@@ -668,7 +668,7 @@ See `.claude/sprites/` directory for detailed feature specifications:
 
 - **Issues:** [GitHub Issues](https://github.com/WebRenew/unicon/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/WebRenew/unicon/discussions)
-- **Website:** [unicon.webrenew.com](https://unicon.webrenew.com)
+- **Website:** [unicon.sh](https://unicon.sh)
 - **Company:** [WebRenew](https://webrenew.com)
 
 ---

@@ -99,7 +99,7 @@ mkdir -p .claude/skills/unicon
 
 2. Download the skill:
 \`\`\`bash
-curl -o .claude/skills/unicon/SKILL.md https://unicon.webrenew.com/skills/unicon.md
+curl -o .claude/skills/unicon/SKILL.md https://unicon.sh/skills/unicon.md
 \`\`\`
 
 ### Global Installation
@@ -108,7 +108,7 @@ To make the skill available across all projects:
 
 \`\`\`bash
 mkdir -p ~/.claude/skills/unicon
-curl -o ~/.claude/skills/unicon/SKILL.md https://unicon.webrenew.com/skills/unicon.md
+curl -o ~/.claude/skills/unicon/SKILL.md https://unicon.sh/skills/unicon.md
 \`\`\`
 
 ## Skill Contents
@@ -177,7 +177,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon for Claude Code",
     description: "Complete guide to using Unicon with Claude Code. Install MCP server and skill for the best experience.",
-    url: "https://unicon.webrenew.com/docs/mcp/claude-code",
+    url: "https://unicon.sh/docs/mcp/claude-code",
     type: "website",
   },
 };
@@ -387,7 +387,7 @@ bunx @webrenew/unicon skill --ide claude     # bun`}</CodeBlock>
                 <p className="text-sm text-muted-foreground">1. Create the directory:</p>
                 <CodeBlock>{`mkdir -p .claude/skills/unicon`}</CodeBlock>
                 <p className="text-sm text-muted-foreground">2. Download the skill:</p>
-                <CodeBlock>{`curl -o .claude/skills/unicon/SKILL.md https://unicon.webrenew.com/skills/unicon.md`}</CodeBlock>
+                <CodeBlock>{`curl -o .claude/skills/unicon/SKILL.md https://unicon.sh/skills/unicon.md`}</CodeBlock>
               </div>
             </div>
 
@@ -397,7 +397,7 @@ bunx @webrenew/unicon skill --ide claude     # bun`}</CodeBlock>
                 To make the skill available across all projects:
               </p>
               <CodeBlock>{`mkdir -p ~/.claude/skills/unicon
-curl -o ~/.claude/skills/unicon/SKILL.md https://unicon.webrenew.com/skills/unicon.md`}</CodeBlock>
+curl -o ~/.claude/skills/unicon/SKILL.md https://unicon.sh/skills/unicon.md`}</CodeBlock>
             </div>
           </div>
         </section>

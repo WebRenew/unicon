@@ -9,7 +9,7 @@ const PAGE_MARKDOWN = `# Unicon API Reference
 
 REST API for programmatic access to 19,000+ icons across 9 libraries.
 
-Base URL: \`https://unicon.webrenew.com\`
+Base URL: \`https://unicon.sh\`
 
 ## GET /api/icons
 
@@ -53,16 +53,16 @@ Search and retrieve icons.
 
 \`\`\`bash
 # Search for icons
-curl "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10"
+curl "https://unicon.sh/api/icons?q=dashboard&limit=10"
 
 # Get specific icons by name
-curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"
+curl "https://unicon.sh/api/icons?names=home,settings,user"
 
 # Filter by library
-curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide"
+curl "https://unicon.sh/api/icons?q=arrow&source=lucide"
 
 # Paginate results
-curl "https://unicon.webrenew.com/api/icons?q=social&limit=20&offset=40"
+curl "https://unicon.sh/api/icons?q=social&limit=20&offset=40"
 \`\`\`
 
 ## POST /api/search
@@ -102,7 +102,7 @@ Rate limit headers included in responses:
 
 \`\`\`typescript
 async function searchIcons(query: string, limit = 20) {
-  const url = new URL("https://unicon.webrenew.com/api/icons");
+  const url = new URL("https://unicon.sh/api/icons");
   url.searchParams.set("q", query);
   url.searchParams.set("limit", String(limit));
   
@@ -122,7 +122,7 @@ import requests
 
 def search_icons(query, limit=20):
     response = requests.get(
-        "https://unicon.webrenew.com/api/icons",
+        "https://unicon.sh/api/icons",
         params={"q": query, "limit": limit}
     )
     response.raise_for_status()
@@ -136,10 +136,10 @@ icons = search_icons("dashboard")
 
 \`\`\`bash
 # Search for icons
-curl -s "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10" | jq '.icons[] | {name: .name, source: .sourceId}'
+curl -s "https://unicon.sh/api/icons?q=dashboard&limit=10" | jq '.icons[] | {name: .name, source: .sourceId}'
 
 # Get specific icons
-curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" | jq '.icons'
+curl -s "https://unicon.sh/api/icons?names=home,settings,user" | jq '.icons'
 \`\`\`
 
 ## CORS
@@ -168,7 +168,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon API Reference",
     description: "REST API for programmatic access to 19,000+ icons across 9 libraries.",
-    url: "https://unicon.webrenew.com/docs/api",
+    url: "https://unicon.sh/docs/api",
     type: "website",
   },
 };
@@ -240,7 +240,7 @@ export default function APIDocsPage() {
         {/* Base URL */}
         <section>
           <h2 className="text-2xl font-bold mb-4">Base URL</h2>
-          <CodeBlock>https://unicon.webrenew.com/api</CodeBlock>
+          <CodeBlock>https://unicon.sh/api</CodeBlock>
           <p className="text-sm text-muted-foreground mt-3">
             All endpoints are HTTPS only. No authentication required for public endpoints.
           </p>
@@ -327,19 +327,19 @@ export default function APIDocsPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Search with AI:</p>
-                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?q=dashboard"`}</CodeBlock>
+                  <CodeBlock>{`curl "https://unicon.sh/api/icons?q=dashboard"`}</CodeBlock>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Filter by source:</p>
-                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?q=arrow&source=lucide&limit=10"`}</CodeBlock>
+                  <CodeBlock>{`curl "https://unicon.sh/api/icons?q=arrow&source=lucide&limit=10"`}</CodeBlock>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Get specific icons by name:</p>
-                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?names=home,settings,user"`}</CodeBlock>
+                  <CodeBlock>{`curl "https://unicon.sh/api/icons?names=home,settings,user"`}</CodeBlock>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Browse by category:</p>
-                  <CodeBlock>{`curl "https://unicon.webrenew.com/api/icons?category=Social&limit=50"`}</CodeBlock>
+                  <CodeBlock>{`curl "https://unicon.sh/api/icons?category=Social&limit=50"`}</CodeBlock>
                 </div>
               </div>
             </div>
@@ -405,13 +405,13 @@ export default function APIDocsPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Basic search:</p>
-                  <CodeBlock>{`curl -X POST "https://unicon.webrenew.com/api/search" \\
+                  <CodeBlock>{`curl -X POST "https://unicon.sh/api/search" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "dashboard"}'`}</CodeBlock>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Filter by source:</p>
-                  <CodeBlock>{`curl -X POST "https://unicon.webrenew.com/api/search" \\
+                  <CodeBlock>{`curl -X POST "https://unicon.sh/api/search" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "arrow", "sourceId": "phosphor", "limit": 20}'`}</CodeBlock>
                 </div>
@@ -444,7 +444,7 @@ export default function APIDocsPage() {
   "usage": {
     "direct": "POST /api/mcp with { action, params }",
     "mcp": "Install: npx @webrenew/unicon-mcp-server",
-    "docs": "https://unicon.webrenew.com/docs/mcp"
+    "docs": "https://unicon.sh/docs/mcp"
   }
 }`}</CodeBlock>
             </div>
@@ -555,7 +555,7 @@ export default function APIDocsPage() {
               <h3 className="text-lg font-semibold mb-3">JavaScript/TypeScript</h3>
               <CodeBlock title="fetch-icons.ts">{`async function searchIcons(query: string) {
   const response = await fetch(
-    \`https://unicon.webrenew.com/api/icons?q=\${encodeURIComponent(query)}&limit=20\`
+    \`https://unicon.sh/api/icons?q=\${encodeURIComponent(query)}&limit=20\`
   );
   
   if (!response.ok) {
@@ -577,7 +577,7 @@ console.log(icons);`}</CodeBlock>
 
 def search_icons(query: str, limit: int = 20):
     response = requests.get(
-        "https://unicon.webrenew.com/api/icons",
+        "https://unicon.sh/api/icons",
         params={"q": query, "limit": limit}
     )
     response.raise_for_status()
@@ -593,11 +593,11 @@ print(icons)`}</CodeBlock>
               <CodeBlock title="search-icons.sh">{`#!/bin/bash
 
 # Search for icons
-curl -s "https://unicon.webrenew.com/api/icons?q=dashboard&limit=10" \\
+curl -s "https://unicon.sh/api/icons?q=dashboard&limit=10" \\
   | jq '.icons[] | {name: .name, source: .sourceId}'
 
 # Get specific icons
-curl -s "https://unicon.webrenew.com/api/icons?names=home,settings,user" \\
+curl -s "https://unicon.sh/api/icons?names=home,settings,user" \\
   | jq '.icons'`}</CodeBlock>
             </div>
           </div>

@@ -43,7 +43,7 @@ Whether you prefer browsing icons visually, using a command-line interface, or l
 ## Getting Started
 
 ### Web Interface
-Browse and search icons visually at https://unicon.webrenew.com. Copy React, Vue, Svelte components or raw SVG with one click.
+Browse and search icons visually at https://unicon.sh. Copy React, Vue, Svelte components or raw SVG with one click.
 
 ### CLI Tool
 Command-line interface for searching, bundling, and generating icon components. Perfect for CI/CD.
@@ -83,10 +83,10 @@ Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 
 ## Links
 
-- CLI Documentation: https://unicon.webrenew.com/cli
-- MCP Integration: https://unicon.webrenew.com/docs/mcp
-- API Reference: https://unicon.webrenew.com/docs/api
-- Skills Registry: https://unicon.webrenew.com/docs/skills
+- CLI Documentation: https://unicon.sh/cli
+- MCP Integration: https://unicon.sh/docs/mcp
+- API Reference: https://unicon.sh/docs/api
+- Skills Registry: https://unicon.sh/docs/skills
 - GitHub: https://github.com/WebRenew/unicon
 `;
 
@@ -110,7 +110,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Unicon Documentation",
     description: "Browse, search, and export 19,000+ icons. CLI tool and AI assistant integration included.",
-    url: "https://unicon.webrenew.com/docs",
+    url: "https://unicon.sh/docs",
     type: "website",
   },
 };
