@@ -154,6 +154,22 @@ export function PacksGrid() {
 
   return (
     <div className="space-y-8">
+      <style>{`
+        .search-gradient-border {
+          --gradient-stop: 8%;
+          --gradient-opacity: 1;
+          background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(0,0,0,0.1) var(--gradient-stop), rgba(0,0,0,0.1) 100%);
+          transition: --gradient-stop 0.5s cubic-bezier(0.4, 0, 0.2, 1), --gradient-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dark .search-gradient-border {
+          background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent-lavender), transparent calc((1 - var(--gradient-opacity)) * 100%)) 0%, rgba(255,255,255,0.1) var(--gradient-stop), rgba(255,255,255,0.1) 100%);
+        }
+        .search-gradient-border:focus-within {
+          --gradient-stop: 100%;
+          --gradient-opacity: 0.4;
+          transform: scale(1.01);
+        }
+      `}</style>
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search Input */}
