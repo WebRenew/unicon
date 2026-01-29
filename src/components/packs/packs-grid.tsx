@@ -7,9 +7,12 @@ import { SearchIcon } from "@/components/icons/ui/search";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { XIcon } from "@/components/icons/ui/x";
 import { CheckIcon } from "@/components/icons/ui/check";
+import { CopyIcon } from "@/components/icons/ui/copy";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
+import { V0Icon } from "@/components/icons/ui/v0";
 import { STARTER_PACKS, type StarterPack } from "@/lib/starter-packs";
+import { generateV0Prompt } from "@/lib/icon-utils";
 import { logger } from "@/lib/logger";
 
 type CategoryFilter = "all" | "ui" | "brand";
@@ -19,6 +22,7 @@ export function PacksGrid() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
+  const [copiedV0PackId, setCopiedV0PackId] = useState<string | null>(null);
 
   // Filter packs based on search and category
   const filteredPacks = useMemo(() => {
@@ -110,13 +114,42 @@ export function PacksGrid() {
 
   const clearSearch = () => setSearch("");
 
+  const handleCopyV0Prompt = async (pack: StarterPack, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const params = new URLSearchParams({ names: pack.iconNames.join(",") });
+      const res = await fetch(`/api/icons?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch icons");
+      const data = await res.json();
+      const icons = data.icons || [];
+      if (icons.length === 0) {
+        toast.error("No icons found for this pack");
+        return;
+      }
+      const prompt = generateV0Prompt(icons);
+      await navigator.clipboard.writeText(prompt);
+      setCopiedV0PackId(pack.id);
+      toast.success("v0 prompt copied to clipboard");
+      setTimeout(() => setCopiedV0PackId(null), 2000);
+    } catch (error) {
+      logger.error("Failed to copy v0 prompt:", error);
+      toast.error("Failed to copy v0 prompt");
+    }
+  };
+
   const handleCopyPackCommand = async (pack: StarterPack, e: React.MouseEvent) => {
     e.stopPropagation();
-    const iconSample = pack.iconNames.slice(0, 5).join(" ");
-    const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length}`;
-    await navigator.clipboard.writeText(command);
-    setCopiedPackId(pack.id);
-    setTimeout(() => setCopiedPackId(null), 2000);
+    try {
+      const iconSample = pack.iconNames.slice(0, 5).join(" ");
+      const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length}`;
+      await navigator.clipboard.writeText(command);
+      setCopiedPackId(pack.id);
+      toast.success("CLI command copied to clipboard");
+      setTimeout(() => setCopiedPackId(null), 2000);
+    } catch (error) {
+      logger.error("Failed to copy CLI command:", error);
+      toast.error("Failed to copy CLI command");
+    }
   };
 
   return (
@@ -200,7 +233,7 @@ export function PacksGrid() {
               return (
                 <div
                   key={pack.id}
-                  className={`group bg-transparent hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all
+                  className={`group bg-transparent hover:bg-black/[0.02] dark:hover:bg-[var(--accent-mint)]/5 transition-all
                     ${isEven && !isLastOddItem ? "md:border-r border-black/10 dark:border-white/10" : ""}
                     ${!isLastRow && !isLastOddItem ? "border-b border-black/10 dark:border-white/10" : ""}
                     ${isLastOddItem ? "md:col-span-2 md:border-r-0" : ""}
@@ -211,10 +244,13 @@ export function PacksGrid() {
                     className="w-full p-4 pb-2 text-left"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <span className="text-sm font-medium text-black dark:text-white">
+                      <span className="text-sm font-medium text-black dark:text-white group-hover:text-[var(--accent-mint)] dark:group-hover:text-[var(--accent-mint)] transition-colors duration-[650ms] ease-out">
                         {pack.name}
                       </span>
-                      <ArrowRightIcon className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider opacity-0 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 text-[var(--accent-mint)] transition-all duration-[650ms] ease-out">Add to cart</span>
+                        <ArrowRightIcon className="w-4 h-4 text-black/20 dark:text-white/20 group-hover:text-[var(--accent-mint)] dark:group-hover:text-[var(--accent-mint)] group-hover:translate-x-0.5 transition-all duration-[650ms] ease-out" />
+                      </div>
                     </div>
                     <p className="text-[11px] text-black/50 dark:text-white/50 leading-relaxed mb-2">
                       {pack.description}
@@ -224,21 +260,52 @@ export function PacksGrid() {
                     </span>
                   </button>
 
-                  {/* CLI Command */}
-                  <div className="px-4 pb-3">
+                  {/* CLI Command + v0 Prompt */}
+                  <div className="px-4 pb-3 flex gap-1.5">
                     <button
                       onClick={(e) => handleCopyPackCommand(pack, e)}
-                      className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors group/cmd"
+                      className="flex-1 relative flex items-center gap-1.5 px-2 py-1.5 rounded bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors group/cmd min-w-0 overflow-hidden"
                       title="Copy CLI command"
                     >
-                      {copiedPackId === pack.id ? (
-                        <CheckIcon className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
-                      ) : (
-                        <TerminalIcon className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
-                      )}
-                      <span className="text-[9px] font-mono text-black/50 dark:text-white/50 truncate">
-                        {command}
+                      <TerminalIcon className="w-3 h-3 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
+                      <span className="relative flex-1 min-w-0 overflow-hidden">
+                        {/* Command text - always rendered */}
+                        <span
+                          className={`block text-[9px] font-mono whitespace-nowrap ${copiedPackId === pack.id ? "text-[var(--accent-mint)]" : "text-black/50 dark:text-white/50"}`}
+                          style={{ maskImage: 'linear-gradient(to right, black calc(100% - 32px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 32px), transparent)' }}
+                        >
+                          <span className="dark:group-hover:text-[var(--accent-mint)] transition-colors duration-[650ms] ease-out">{command}</span>
+                        </span>
+                        {/* Copied overlay */}
+                        {copiedPackId === pack.id && (
+                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-semibold text-[var(--accent-mint)] bg-black/5 dark:bg-white/5 rounded">
+                            Copied!
+                          </span>
+                        )}
                       </span>
+                      {copiedPackId === pack.id ? (
+                        <CheckIcon className="w-3 h-3 text-[var(--accent-mint)] shrink-0" />
+                      ) : (
+                        <CopyIcon className="w-3 h-3 text-black/30 dark:text-white/30 group-hover/cmd:text-black/50 dark:group-hover/cmd:text-white/50 transition-colors shrink-0" />
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => handleCopyV0Prompt(pack, e)}
+                      className="flex items-center gap-1 px-2 py-1.5 rounded bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-colors text-[9px] font-mono leading-none shrink-0"
+                      title="Copy v0 prompt"
+                    >
+                      {copiedV0PackId === pack.id ? (
+                        <>
+                          <CheckIcon className="w-3 h-3" />
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Copy</span>
+                          <V0Icon className="w-3 h-3" />
+                          <span>Prompt</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
