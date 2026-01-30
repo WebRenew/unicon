@@ -29,7 +29,7 @@ Add to your Claude config file:
   "mcpServers": {
     "unicon": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-remote@latest", "https://unicon.sh/api/mcp"]
+      "args": ["-y", "@webrenew/unicon-mcp-server"]
     }
   }
 }
@@ -58,9 +58,10 @@ Search for icons using AI-powered semantic search.
 
 Parameters:
 - \`query\` (required) - Search terms
-- \`library\` - Filter by source (lucide, phosphor, etc.)
+- \`source\` - Filter by library (lucide, phosphor, heroicons, etc.)
 - \`limit\` - Max results (default: 20)
 - \`includeCode\` - Return code with results (default: false)
+- \`format\` - Output format when includeCode=true (default: react)
 - \`strokeWidth\` - Stroke width when includeCode=true
 - \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
@@ -68,17 +69,19 @@ Parameters:
 Get a specific icon by ID.
 
 Parameters:
-- \`id\` (required) - Icon ID from search
+- \`iconId\` (required) - Icon ID in format "source:name" (e.g., "lucide:arrow-right")
 - \`format\` - react, vue, svelte, svg, json (default: react)
+- \`size\` - Icon size in pixels (default: 24)
 - \`strokeWidth\` - Stroke width
 - \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
 ### get_multiple_icons
-Get multiple icons at once.
+Get multiple icons at once (up to 50).
 
 Parameters:
-- \`ids\` (required) - Array of icon IDs
+- \`iconIds\` (required) - Array of icon IDs
 - \`format\` - Output format (default: react)
+- \`output\` - "bundle" (single file) or "individual" (default: bundle)
 - \`strokeWidth\` - Stroke width for all icons
 - \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
@@ -86,24 +89,26 @@ Parameters:
 Get a curated starter pack of icons.
 
 Parameters:
-- \`packId\` (required) - Pack ID
+- \`packId\` (required) - Pack ID (shadcn-ui, dashboard, ecommerce, navigation, etc.)
 - \`format\` - Output format (default: react)
 - \`strokeWidth\` - Stroke width for all icons
 - \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
-### list_libraries
-List all available icon libraries.
+## Available Resources
 
-### list_categories
-List available categories.
+- \`unicon://sources\` - List all available icon libraries
+- \`unicon://categories\` - List all icon categories
+- \`unicon://stats\` - Total icon count and per-library statistics
+- \`unicon://starter_packs\` - Curated icon packs for common use cases
+- \`unicon://instructions\` - Detailed usage guide for AI assistants
 
 ## Example Prompts
 
 - "Search for dashboard icons"
 - "Find me a home icon from Lucide"
-- "Get React components for home, settings, and user icons"
+- "Get React components for lucide:home, lucide:settings, and lucide:user"
+- "Get the shadcn-ui starter pack"
 - "Search for icons related to notifications"
-- "What icon libraries are available?"
 
 ## Verification
 

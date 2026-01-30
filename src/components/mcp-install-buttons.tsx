@@ -6,11 +6,18 @@ import { CursorIcon } from "@/components/icons/ui/cursor";
 import { ClaudeIcon } from "@/components/icons/ui/claude";
 import { AnthropicIcon } from "@/components/icons/ui/anthropic";
 
+// Cursor deeplinks require base64-encoded config
+// See: https://cursor.com/docs/context/mcp/install-links
 const MCP_CONFIG = {
   url: "https://unicon.sh/api/mcp",
 };
 
-const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${encodeURIComponent(JSON.stringify(MCP_CONFIG))}`;
+// Base64 encode the config for Cursor deeplink (must be base64, not URL-encoded JSON)
+const CURSOR_CONFIG_BASE64 = typeof window !== "undefined" 
+  ? btoa(JSON.stringify(MCP_CONFIG))
+  : Buffer.from(JSON.stringify(MCP_CONFIG)).toString("base64");
+
+const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${CURSOR_CONFIG_BASE64}`;
 
 const CLAUDE_CODE_COMMAND =
   "npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server";

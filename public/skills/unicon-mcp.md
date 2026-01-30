@@ -95,9 +95,11 @@ Get curated icon packs for common use cases.
 
 ## Resources
 
-- `unicon://sources` for library metadata
-- `unicon://categories` for category list
-- `unicon://stats` for overall counts
+- `unicon://sources` - List all available icon libraries with versions and icon counts
+- `unicon://categories` - List all icon categories for filtering searches
+- `unicon://stats` - Total icon count and per-library statistics
+- `unicon://starter_packs` - Curated icon packs for common use cases (shadcn-ui, dashboard, etc.)
+- `unicon://instructions` - Detailed usage guide with examples for AI assistants
 
 ## Troubleshooting
 

@@ -117,6 +117,8 @@ The MCP server exposes these resources:
 | `unicon://sources` | Library metadata (names, icon counts) |
 | `unicon://categories` | Available category list |
 | `unicon://stats` | Overall icon statistics |
+| `unicon://starter_packs` | Curated icon packs (shadcn-ui, dashboard, etc.) |
+| `unicon://instructions` | Detailed usage guide with examples |
 
 ## Troubleshooting
 

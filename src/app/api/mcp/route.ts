@@ -166,7 +166,20 @@ function createMcpServer() {
   const server = new McpServer({
     name: "unicon",
     version: "1.0.0",
-    description: `19,000+ icons from 9 libraries in React/Vue/Svelte/SVG. Quick start: get_starter_pack({ packId: "shadcn-ui" }) for shadcn/ui projects, or "dashboard" for admin UIs. Use search_icons to find specific icons.`,
+    description: `Unicon: 19,000+ icons from 9 libraries (Lucide, Phosphor, Heroicons, etc.) in React/Vue/Svelte/SVG.
+
+AVAILABLE TOOLS:
+- search_icons: Search icons by keyword. Use includeCode=true to get React components.
+- get_icon: Get a single icon by ID (e.g., "lucide:arrow-right").
+- get_multiple_icons: Get multiple icons at once (up to 50).
+- get_starter_pack: Get curated icon packs (shadcn-ui, dashboard, ecommerce, etc.).
+
+QUICK START:
+- For shadcn/ui: get_starter_pack({ packId: "shadcn-ui" })
+- Search + code: search_icons({ query: "arrow", includeCode: true, limit: 5 })
+- Specific icon: get_icon({ iconId: "lucide:home", format: "react" })
+
+Read unicon://instructions for detailed usage.`,
   });
 
   // ============================================
@@ -916,6 +929,109 @@ Returns:
             uri: "unicon://starter_packs",
             mimeType: "application/json",
             text: JSON.stringify(packs, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  // ============================================
+  // INSTRUCTIONS RESOURCE - Tool Discoverability
+  // ============================================
+  server.registerResource(
+    "instructions",
+    "unicon://instructions",
+    {
+      description: "How to use Unicon MCP - read this first to understand available tools",
+      mimeType: "text/markdown",
+    },
+    async () => {
+      const instructions = `# Unicon MCP Server
+
+Access 19,000+ icons from 9 libraries (Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons, Iconoir).
+
+## Available Tools
+
+### 1. search_icons
+Search for icons by keyword. Returns matching icons with IDs.
+
+**Example:**
+\`\`\`json
+{ "query": "arrow", "limit": 10 }
+\`\`\`
+
+**With code included:**
+\`\`\`json
+{ "query": "arrow", "includeCode": true, "format": "react", "limit": 5 }
+\`\`\`
+
+### 2. get_icon
+Get a single icon's code by ID.
+
+**Example:**
+\`\`\`json
+{ "iconId": "lucide:arrow-right", "format": "react" }
+\`\`\`
+
+Icon IDs use format \`source:name\` (e.g., "lucide:home", "phosphor:user", "heroicons:cog").
+
+### 3. get_multiple_icons
+Get multiple icons at once (up to 50). Returns a single bundled file.
+
+**Example:**
+\`\`\`json
+{ "iconIds": ["lucide:home", "lucide:settings", "lucide:user"], "format": "react" }
+\`\`\`
+
+### 4. get_starter_pack
+Get a curated set of icons for common use cases.
+
+**Popular packs:** shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai
+
+**Example:**
+\`\`\`json
+{ "packId": "shadcn-ui", "format": "react" }
+\`\`\`
+
+## Supported Formats
+
+- \`react\` (default) - React component with TypeScript
+- \`svg\` - Raw SVG markup
+- \`vue\` - Vue 3 SFC component
+- \`svelte\` - Svelte component
+- \`json\` - JSON with SVG paths
+
+## Quick Workflows
+
+**Adding icons to a React project:**
+1. Search: \`search_icons({ query: "dashboard", includeCode: true, limit: 10 })\`
+2. Or get specific: \`get_multiple_icons({ iconIds: ["lucide:home", "lucide:settings"] })\`
+3. Copy the returned code to \`src/components/icons/\`
+
+**Starting a new project:**
+1. Get a starter pack: \`get_starter_pack({ packId: "shadcn-ui" })\`
+2. Save to your icons directory
+
+## Icon Libraries
+
+| Library | Prefix | Style |
+|---------|--------|-------|
+| Lucide | lucide: | Outline, clean |
+| Phosphor | phosphor: | Multiple weights |
+| Heroicons | heroicons: | Outline/solid |
+| Tabler | tabler: | Consistent stroke |
+| Hugeicons | hugeicons: | Modern, detailed |
+| Feather | feather: | Minimal |
+| Remix | remix: | Versatile |
+| Simple Icons | simple-icons: | Brand logos |
+| Iconoir | iconoir: | European style |
+`;
+      return {
+        contents: [
+          {
+            uri: "unicon://instructions",
+            mimeType: "text/markdown",
+            text: instructions,
           },
         ],
       };
