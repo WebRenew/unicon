@@ -156,6 +156,7 @@ function TypingTerminal() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
       onClick={handleCopy}
+      aria-label={`Copy command: ${SKILL_COMMAND}`}
       className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors mb-8 max-w-full overflow-hidden"
     >
       <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
@@ -230,7 +231,7 @@ export function MetallicIconBrowserHeader({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-        className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4"
+        className="text-black/60 dark:text-white/60 text-sm md:text-base max-w-xl mb-4"
       >
         Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
         icons.
@@ -291,7 +292,7 @@ export function MetallicIconBrowserHeader({
             placeholder="Try 'business icons' or 'celebration'…"
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
+            className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
             autoComplete="off"
           />
         </div>
@@ -326,9 +327,10 @@ export function MetallicIconBrowserHeader({
             {/* Filters toggle button */}
             <button
               onClick={() => onFiltersExpandedChange(!filtersExpanded)}
+              aria-expanded={filtersExpanded}
               className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
             >
-              <FilterIcon className="w-3.5 h-3.5" />
+              <FilterIcon className="w-3.5 h-3.5" aria-hidden="true" />
               <span className="text-[10px] font-mono uppercase tracking-wider">
                 Filters
               </span>
@@ -338,6 +340,7 @@ export function MetallicIconBrowserHeader({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
+                aria-hidden="true"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -354,7 +357,7 @@ export function MetallicIconBrowserHeader({
               <>
                 {/* Library */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  <span className="text-[10px] font-mono text-black/50 dark:text-white/50 uppercase tracking-wider">
                     Library
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -378,7 +381,7 @@ export function MetallicIconBrowserHeader({
 
                 {/* Category Combobox */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                  <span className="text-[10px] font-mono text-black/50 dark:text-white/50 uppercase tracking-wider">
                     Category
                   </span>
                   <Popover open={categoryOpen} onOpenChange={onCategoryOpenChange}>
@@ -471,9 +474,10 @@ export function MetallicIconBrowserHeader({
           {/* Controls toggle button */}
           <button
             onClick={() => onControlsExpandedChange(!controlsExpanded)}
+            aria-expanded={controlsExpanded}
             className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
           >
-            <SlidersHorizontalIcon className={`w-3.5 h-3.5 transition-transform ${controlsExpanded ? "rotate-90" : ""}`} />
+            <SlidersHorizontalIcon className={`w-3.5 h-3.5 transition-transform ${controlsExpanded ? "rotate-90" : ""}`} aria-hidden="true" />
             <span className="text-[10px] font-mono uppercase tracking-wider">
               Controls
             </span>
@@ -483,6 +487,7 @@ export function MetallicIconBrowserHeader({
               viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
+              aria-hidden="true"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
@@ -493,7 +498,7 @@ export function MetallicIconBrowserHeader({
             <>
               {/* Size Presets */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-black/50 dark:text-white/50 uppercase tracking-wider">
                   Size
                 </span>
                 <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
@@ -511,7 +516,7 @@ export function MetallicIconBrowserHeader({
                     </button>
                   ))}
                 </div>
-                <span className="text-[10px] font-mono text-black/30 dark:text-white/30">
+                <span className="text-[10px] font-mono text-black/50 dark:text-white/50">
                   {SIZE_PRESETS[sizePreset].px}
                 </span>
               </div>
@@ -521,7 +526,7 @@ export function MetallicIconBrowserHeader({
 
               {/* Stroke Weight Presets */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-black/30 dark:text-white/30 uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-black/50 dark:text-white/50 uppercase tracking-wider">
                   Weight
                 </span>
                 <div className="flex rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">

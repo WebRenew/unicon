@@ -18,14 +18,14 @@ export default function DocsLayout({
       <DocsSidebar />
 
       {/* Main content with padding for fixed header */}
-      <main className="pt-14 lg:pl-64 min-h-screen flex flex-col">
+      <div className="pt-14 lg:pl-64 min-h-screen flex flex-col">
         <div className="flex-1 flex justify-center overflow-x-hidden">
           <div className="w-full max-w-5xl min-w-0">
             {children}
           </div>
         </div>
         <Footer />
-      </main>
+      </div>
     </div>
   );
 }

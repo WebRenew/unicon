@@ -107,7 +107,7 @@ export default async function PublicBundlePage({ params }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
+      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-start gap-4 mb-8">
@@ -164,7 +164,7 @@ export default async function PublicBundlePage({ params }: PageProps) {
             </p>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

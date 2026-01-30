@@ -16,7 +16,7 @@
   --secondary: 0 0% 85%;
   --secondary-foreground: 0 0% 10%;
   --muted: 0 0% 85%;
-  --muted-foreground: 0 0% 40%;
+  --muted-foreground: 0 0% 32%;
   --accent: 0 0% 85%;
   --accent-foreground: 0 0% 10%;
   --destructive: 0 84% 60%;
@@ -58,7 +58,7 @@
   --secondary: 0 0% 15%;
   --secondary-foreground: 0 0% 98%;
   --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 60%;
+  --muted-foreground: 0 0% 65%;
   --accent: 0 0% 15%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62% 50%;
@@ -181,5 +181,16 @@
   * {
     scrollbar-width: thin;
     scrollbar-color: #333 hsl(0, 0%, 3%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

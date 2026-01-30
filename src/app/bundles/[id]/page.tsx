@@ -54,9 +54,9 @@ export default async function BundleDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
+      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
         <BundleDetailClient initialBundle={bundle as Bundle} />
-      </main>
+      </div>
     </div>
   );
 }

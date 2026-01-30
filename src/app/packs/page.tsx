@@ -31,7 +31,7 @@ export default function PacksPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[hsl(0,0%,3%)]">
       <SiteHeader />
-      <main className="flex-1 px-4 lg:px-20 xl:px-40 py-8 lg:pt-20">
+      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-8 lg:pt-20">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-10">
@@ -47,7 +47,7 @@ export default function PacksPage() {
           {/* Grid */}
           <PacksGrid />
         </div>
-      </main>
+      </div>
     </div>
   );
 }

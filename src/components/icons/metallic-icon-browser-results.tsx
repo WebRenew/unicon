@@ -137,7 +137,7 @@ export function MetallicIconBrowserResults({
         </>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="text-6xl mb-4 opacity-50">🔍</div>
+          <div className="text-6xl mb-4 opacity-50" aria-hidden="true">🔍</div>
           <h3 className="text-lg font-medium text-black/60 dark:text-white/60">No icons found</h3>
           <p className="text-sm text-black/40 dark:text-white/40 mt-1">
             Try adjusting your search or filters
