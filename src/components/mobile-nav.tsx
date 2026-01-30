@@ -68,7 +68,12 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
       />
 
       {/* Menu Panel */}
-      <div className="fixed top-14 left-0 right-0 bg-white dark:bg-background border-b border-border z-50 md:hidden animate-in slide-in-from-top-2 duration-200">
+      <div
+        role="dialog"
+        aria-label="Navigation menu"
+        aria-modal="true"
+        className="fixed top-14 left-0 right-0 bg-white dark:bg-background border-b border-border z-50 md:hidden animate-in slide-in-from-top-2 duration-200"
+      >
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;

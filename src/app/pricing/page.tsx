@@ -64,6 +64,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
     <div className="border-b border-black/5 dark:border-white/5 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
         className="w-full py-4 flex items-center justify-between text-left hover:text-foreground transition-colors"
       >
         <span className="text-sm font-medium text-foreground pr-4">{question}</span>
@@ -72,6 +73,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
             "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200",
             isOpen && "rotate-180"
           )}
+          aria-hidden="true"
         />
       </button>
       <div
@@ -142,7 +144,7 @@ function PricingContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 px-4 lg:px-20 xl:px-40 py-12">
+      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
@@ -228,7 +230,7 @@ function PricingContent() {
 
               {/* Badge */}
               <div className="relative inline-flex self-start items-center gap-1.5 px-3 py-1.5 border border-[var(--accent-aqua)] rounded-full text-[0.7rem] font-semibold text-[var(--accent-aqua)] uppercase tracking-wide mb-5">
-                ✦ Most Popular
+                <span aria-hidden="true">✦</span> Most Popular
               </div>
 
               <div className="relative mb-1">
@@ -238,9 +240,9 @@ function PricingContent() {
                 </div>
                 <div className="flex items-baseline gap-0.5 mb-1.5">
                   <span className="text-5xl font-bold text-white tracking-tighter">$29</span>
-                  <span className="text-base text-white/50">/year</span>
+                  <span className="text-base text-white/60">/year</span>
                 </div>
-                <p className="text-sm text-white/50 mb-6 leading-relaxed">
+                <p className="text-sm text-white/60 mb-6 leading-relaxed">
                   For teams and power users who need more.
                 </p>
               </div>
@@ -248,7 +250,7 @@ function PricingContent() {
               <ul className="relative space-y-3 mb-7 flex-1">
                 {PRO_FEATURES.map((feature) => (
                   <li key={feature.text} className="flex items-center gap-3">
-                    <span className="w-[18px] h-[18px] flex items-center justify-center text-[var(--accent-mint)] text-sm shrink-0">
+                    <span className="w-[18px] h-[18px] flex items-center justify-center text-[var(--accent-mint)] text-sm shrink-0" aria-hidden="true">
                       ✓
                     </span>
                     <span className="text-sm text-white">{feature.text}</span>
@@ -317,6 +319,7 @@ function PricingContent() {
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                <caption className="sr-only">Feature comparison between Free and Pro plans</caption>
                 <thead>
                   <tr className="border-b border-black/10 dark:border-white/10">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Feature</th>
@@ -327,18 +330,18 @@ function PricingContent() {
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
                   <tr>
                     <td className="py-3 px-4 text-foreground">Icon browsing & search</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Copy & download</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">CLI access</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Saved cloud bundles</td>
@@ -347,25 +350,25 @@ function PricingContent() {
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground flex items-center gap-2">
-                      <GlobeIcon className="w-4 h-4" />
+                      <GlobeIcon className="w-4 h-4" aria-hidden="true" />
                       Public sharing links
                     </td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">-</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
+                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
+                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Authenticated MCP</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">-</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
                     <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Brand kit</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">-</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
                     <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Custom uploads</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">-</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
                     <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
                   </tr>
                 </tbody>
@@ -437,7 +440,7 @@ function PricingContent() {
             </p>
           </div>
         </div>
-      </main>
+      </div>
 
       <LoginDialog
         open={loginDialogOpen}
@@ -454,9 +457,9 @@ export default function PricingPage() {
       fallback={
         <div className="min-h-screen flex flex-col">
           <SiteHeader />
-          <main className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <Loader2Icon className="w-6 h-6 animate-spin text-muted-foreground" />
-          </main>
+          </div>
         </div>
       }
     >

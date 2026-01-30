@@ -184,8 +184,16 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased flex flex-col min-h-screen`}>
         <ThemeProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-black focus:text-white focus:rounded-lg focus:text-sm focus:font-medium dark:focus:bg-white dark:focus:text-black"
+          >
+            Skip to main content
+          </a>
           <div className="flex-1">
-            {children}
+            <main id="main-content">
+              {children}
+            </main>
           </div>
           <ConditionalFooter />
           <Toaster />
