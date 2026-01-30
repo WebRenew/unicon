@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import * as motion from "motion/react-client";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { SparklesIcon } from "@/components/icons/ui/sparkles";
@@ -117,18 +118,23 @@ function TypingTerminal() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex < SKILL_COMMAND.length) {
-        setDisplayedText(SKILL_COMMAND.slice(0, currentIndex + 1));
-        currentIndex++;
-      } else {
-        setIsComplete(true);
-        clearInterval(interval);
-      }
-    }, 35);
+    // Small delay before starting to type
+    const startDelay = setTimeout(() => {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < SKILL_COMMAND.length) {
+          setDisplayedText(SKILL_COMMAND.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          setIsComplete(true);
+          clearInterval(interval);
+        }
+      }, 35);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }, 300);
+
+    return () => clearTimeout(startDelay);
   }, []);
 
   const handleCopy = useCallback(async () => {
@@ -143,7 +149,10 @@ function TypingTerminal() {
   }, []);
 
   return (
-    <button
+    <motion.button
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
       onClick={handleCopy}
       className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors mb-8 max-w-full overflow-hidden"
     >
@@ -161,7 +170,7 @@ function TypingTerminal() {
           <CopyIcon className="w-4 h-4" />
         )}
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -198,13 +207,23 @@ export function MetallicIconBrowserHeader({
 }: MetallicIconBrowserHeaderProps) {
   return (
     <>
-      <h1 className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white">
+      <motion.h1
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white"
+      >
         Just the icons you need. Zero bloat.
-      </h1>
-      <p className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4">
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+        className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4"
+      >
         Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
         icons.
-      </p>
+      </motion.p>
 
       <TypingTerminal />
 
