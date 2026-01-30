@@ -7,8 +7,7 @@ import { ClaudeIcon } from "@/components/icons/ui/claude";
 import { AnthropicIcon } from "@/components/icons/ui/anthropic";
 
 const MCP_CONFIG = {
-  command: "npx",
-  args: ["-y", "@webrenew/unicon-mcp-server"],
+  url: "https://unicon.sh/api/mcp",
 };
 
 const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${encodeURIComponent(JSON.stringify(MCP_CONFIG))}`;
