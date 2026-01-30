@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { SparklesIcon } from "@/components/icons/ui/sparkles";
@@ -7,6 +10,8 @@ import { CheckIcon } from "@/components/icons/ui/check";
 import { ChevronsUpDownIcon } from "@/components/icons/ui/chevrons-up-down";
 import { PackagePlusIcon } from "@/components/icons/ui/package-plus";
 import { Trash2Icon } from "@/components/icons/ui/trash-2";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
@@ -104,6 +109,62 @@ function toTitleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
+const SKILL_COMMAND = "npx skills add https://github.com/webrenew/unicon --skill unicon";
+
+function TypingTerminal() {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex < SKILL_COMMAND.length) {
+        setDisplayedText(SKILL_COMMAND.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsComplete(true);
+        clearInterval(interval);
+      }
+    }, 35);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(SKILL_COMMAND);
+      setCopied(true);
+      toast.success("Command copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }, []);
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors mb-8 max-w-full overflow-hidden"
+    >
+      <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
+      <span className="text-white/90 truncate">
+        {displayedText}
+        {!isComplete && (
+          <span className="inline-block w-2 h-4 bg-white/70 ml-0.5 animate-pulse" />
+        )}
+      </span>
+      <span className={`ml-auto shrink-0 transition-colors ${copied ? "text-[var(--accent-mint)]" : "text-white/40 group-hover:text-white/70"}`}>
+        {copied ? (
+          <CheckIcon className="w-4 h-4" />
+        ) : (
+          <CopyIcon className="w-4 h-4" />
+        )}
+      </span>
+    </button>
+  );
+}
+
 export function MetallicIconBrowserHeader({
   totalCount,
   countBySource,
@@ -144,6 +205,8 @@ export function MetallicIconBrowserHeader({
         Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
         icons.
       </p>
+
+      <TypingTerminal />
 
       {/* Stats - Interactive Library Filters */}
       <div className="hidden md:flex flex-wrap items-center gap-2 text-xs mb-8">

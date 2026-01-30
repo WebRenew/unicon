@@ -199,30 +199,30 @@ export function PacksGrid() {
         <div className="flex gap-2">
           <button
             onClick={() => setCategory("all")}
-            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${
               category === "all"
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10"
+                ? "bg-[var(--accent-lavender)]/30 text-[var(--accent-500)] border-[var(--accent-500)]"
+                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 border-transparent"
             }`}
           >
             All ({STARTER_PACKS.length})
           </button>
           <button
             onClick={() => setCategory("ui")}
-            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${
               category === "ui"
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10"
+                ? "bg-[var(--accent-lavender)]/30 text-[var(--accent-500)] border-[var(--accent-500)]"
+                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 border-transparent"
             }`}
           >
             UI Packs ({uiPacksCount})
           </button>
           <button
             onClick={() => setCategory("brand")}
-            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${
               category === "brand"
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10"
+                ? "bg-[var(--accent-lavender)]/30 text-[var(--accent-500)] border-[var(--accent-500)]"
+                : "bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 border-transparent"
             }`}
           >
             Brand Packs ({brandPacksCount})
