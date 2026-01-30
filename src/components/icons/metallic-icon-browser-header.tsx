@@ -121,10 +121,10 @@ function TypingTerminal() {
   const displayedText = SKILL_COMMAND.slice(0, charIndex);
 
   useEffect(() => {
-    // Delay before starting to type
+    // Delay before starting to type (after terminal fades in)
     const startDelay = setTimeout(() => {
       setIsTyping(true);
-    }, 600);
+    }, 900);
 
     return () => clearTimeout(startDelay);
   }, []);
@@ -154,7 +154,7 @@ function TypingTerminal() {
     <motion.button
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.4 }}
+      transition={{ duration: 0.5, delay: 0.6 }}
       onClick={handleCopy}
       className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors mb-8 max-w-full overflow-hidden"
     >
@@ -219,8 +219,8 @@ export function MetallicIconBrowserHeader({
   return (
     <>
       <motion.h1
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white"
       >
@@ -229,7 +229,7 @@ export function MetallicIconBrowserHeader({
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
         className="text-black/50 dark:text-white/50 text-sm md:text-base max-w-xl mb-4"
       >
         Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
