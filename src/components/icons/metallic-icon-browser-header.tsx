@@ -113,29 +113,31 @@ function toTitleCase(value: string): string {
 const SKILL_COMMAND = "npx skills add https://github.com/webrenew/unicon --skill unicon";
 
 function TypingTerminal() {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    // Small delay before starting to type
-    const startDelay = setTimeout(() => {
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        if (currentIndex < SKILL_COMMAND.length) {
-          setDisplayedText(SKILL_COMMAND.slice(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          setIsComplete(true);
-          clearInterval(interval);
-        }
-      }, 35);
+  const isComplete = charIndex >= SKILL_COMMAND.length;
+  const displayedText = SKILL_COMMAND.slice(0, charIndex);
 
-      return () => clearInterval(interval);
-    }, 300);
+  useEffect(() => {
+    // Delay before starting to type
+    const startDelay = setTimeout(() => {
+      setIsTyping(true);
+    }, 600);
 
     return () => clearTimeout(startDelay);
   }, []);
+
+  useEffect(() => {
+    if (!isTyping || isComplete) return;
+
+    const timeout = setTimeout(() => {
+      setCharIndex((prev) => prev + 1);
+    }, 50);
+
+    return () => clearTimeout(timeout);
+  }, [isTyping, isComplete, charIndex]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -159,9 +161,12 @@ function TypingTerminal() {
       <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
       <span className="text-white/90 truncate">
         {displayedText}
-        {!isComplete && (
-          <span className="inline-block w-2 h-4 bg-white/70 ml-0.5 animate-pulse" />
-        )}
+        <span
+          className={`inline-block w-[2px] h-[1.1em] bg-white/80 ml-[1px] align-middle ${isComplete ? "animate-blink" : ""}`}
+          style={{
+            animation: isComplete ? "blink 1s step-end infinite" : "none",
+          }}
+        />
       </span>
       <span className={`ml-auto shrink-0 transition-colors ${copied ? "text-[var(--accent-mint)]" : "text-white/40 group-hover:text-white/70"}`}>
         {copied ? (
@@ -170,6 +175,12 @@ function TypingTerminal() {
           <CopyIcon className="w-4 h-4" />
         )}
       </span>
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
     </motion.button>
   );
 }
