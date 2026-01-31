@@ -12,6 +12,7 @@ import { ChevronsUpDownIcon } from "@/components/icons/ui/chevrons-up-down";
 import { PackagePlusIcon } from "@/components/icons/ui/package-plus";
 import { Trash2Icon } from "@/components/icons/ui/trash-2";
 import { CopyIcon } from "@/components/icons/ui/copy";
+import { CursorIcon } from "@/components/icons/ui/cursor";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -112,6 +113,16 @@ function toTitleCase(value: string): string {
 
 const SKILL_COMMAND = "npx skills add https://github.com/webrenew/unicon --skill unicon";
 
+// Cursor MCP deeplink - base64 encoded config
+// See: https://cursor.com/docs/context/mcp/install-links
+const MCP_CONFIG = { url: "https://unicon.sh/api/mcp" };
+const CURSOR_CONFIG_BASE64 = typeof window !== "undefined"
+  ? btoa(JSON.stringify(MCP_CONFIG))
+  : Buffer.from(JSON.stringify(MCP_CONFIG)).toString("base64");
+const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(
+  "unicon",
+)}&config=${CURSOR_CONFIG_BASE64}`;
+
 function TypingTerminal() {
   const [charIndex, setCharIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
@@ -157,7 +168,7 @@ function TypingTerminal() {
       transition={{ duration: 0.5, delay: 0.6 }}
       onClick={handleCopy}
       aria-label={`Copy command: ${SKILL_COMMAND}`}
-      className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors mb-8 max-w-full overflow-hidden"
+      className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors max-w-full overflow-hidden"
     >
       <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
       <span className="text-white/90 truncate">
@@ -237,7 +248,23 @@ export function MetallicIconBrowserHeader({
         icons.
       </motion.p>
 
-      <TypingTerminal />
+      {/* Hero CTAs */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        <TypingTerminal />
+        
+        {/* Cursor MCP Install Button */}
+        <motion.a
+          href={CURSOR_INSTALL_URL}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/30 hover:border-[var(--accent-aqua)]/60 hover:bg-[var(--accent-aqua)]/20 transition-colors text-sm"
+        >
+          <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+          <span className="text-black/80 dark:text-white/80 font-medium">Add to Cursor</span>
+          <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
+        </motion.a>
+      </div>
 
       {/* Stats - Interactive Library Filters */}
       <div className="hidden md:flex flex-wrap items-center gap-2 text-xs mb-8">
