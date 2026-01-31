@@ -249,11 +249,11 @@ function CommandCard({
 }) {
   return (
     <div className="p-4 md:p-5 rounded-xl border border-border bg-card hover:bg-accent transition-colors overflow-hidden">
-      <div className="flex items-center gap-2 md:gap-3 mb-3">
+      <div className="flex items-start gap-2 md:gap-3 mb-3">
         <div className="p-1.5 md:p-2 rounded-lg bg-[var(--accent-aqua)]/10 shrink-0">
           <Icon className="w-4 h-4 text-[var(--accent-aqua)]" />
         </div>
-        <code className="font-mono font-medium text-sm md:text-base break-all">{command}</code>
+        <code className="font-mono font-medium text-sm md:text-base overflow-x-auto whitespace-nowrap">{command}</code>
       </div>
       <p className="text-muted-foreground text-sm mb-4">{description}</p>
       <CodeBlock>{example}</CodeBlock>
@@ -263,17 +263,14 @@ function CommandCard({
 
 export default function CLIPage() {
   return (
-    <div className="w-full py-10 px-6 md:px-12 lg:px-16 bg-background text-foreground">
+    <div className="w-full py-10 px-4 md:px-12 lg:px-16 bg-background text-foreground">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center justify-between gap-2 md:gap-3 mb-4 flex-wrap">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="p-2 md:p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
             <TerminalIcon className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
           </div>
           <CopyPageButton markdown={PAGE_MARKDOWN} />
-          <span className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-mono bg-muted text-muted-foreground">
-            @webrenew/unicon
-          </span>
         </div>
         <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Unicon CLI</h1>
         <p className="text-base md:text-xl text-muted-foreground max-w-2xl">
