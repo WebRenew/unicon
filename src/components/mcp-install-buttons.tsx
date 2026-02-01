@@ -1,17 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { CursorIcon } from "@/components/icons/ui/cursor";
 import { ClaudeIcon } from "@/components/icons/ui/claude";
 import { AnthropicIcon } from "@/components/icons/ui/anthropic";
+import { V0Icon } from "@/components/icons/ui/v0";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { CheckIcon } from "@/components/icons/ui/check";
 
+// Cursor deeplinks require base64-encoded config
+// See: https://cursor.com/docs/context/mcp/install-links
 const MCP_CONFIG = {
-  command: "npx",
-  args: ["-y", "@webrenew/unicon-mcp-server"],
+  url: "https://unicon.sh/api/mcp",
 };
 
-const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${encodeURIComponent(JSON.stringify(MCP_CONFIG))}`;
+// Base64 encode the config for Cursor deeplink (must be base64, not URL-encoded JSON)
+const CURSOR_CONFIG_BASE64 = typeof window !== "undefined" 
+  ? btoa(JSON.stringify(MCP_CONFIG))
+  : Buffer.from(JSON.stringify(MCP_CONFIG)).toString("base64");
+
+const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("unicon")}&config=${CURSOR_CONFIG_BASE64}`;
 
 const CLAUDE_CODE_COMMAND =
   "npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-server";
@@ -66,8 +75,21 @@ function ArrowDownIcon({ className }: { className?: string }) {
   );
 }
 
+const SSE_ENDPOINT = "https://unicon.sh/api/mcp";
+
 export function MCPInstallButtons() {
   const [showClaudeCodeCommand, setShowClaudeCodeCommand] = useState(false);
+  const [copiedSSE, setCopiedSSE] = useState(false);
+
+  const handleCopySSE = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(SSE_ENDPOINT);
+      setCopiedSSE(true);
+      setTimeout(() => setCopiedSSE(false), 2000);
+    } catch {
+      // silent
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -78,22 +100,8 @@ export function MCPInstallButtons() {
           Add Unicon to your AI assistant with one click or command.
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          {/* Cursor Button */}
-          <a
-            href={CURSOR_INSTALL_URL}
-            className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-aqua)]/50 transition-all group"
-          >
-            <div className="p-2 rounded-lg bg-[var(--accent-aqua)]/10 group-hover:bg-[var(--accent-aqua)]/20 transition-colors">
-              <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm">Cursor</div>
-              <div className="text-xs text-muted-foreground">One-click</div>
-            </div>
-            <ExternalLinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] transition-colors" />
-          </a>
-
+        {/* Row 1: NPX-based installs */}
+        <div className="grid gap-4 sm:grid-cols-2">
           {/* Claude Code Button */}
           <button
             onClick={() => setShowClaudeCodeCommand(!showClaudeCodeCommand)}
@@ -143,6 +151,45 @@ export function MCPInstallButtons() {
             </pre>
           </div>
         )}
+
+        {/* Row 2: One-click / URL-based installs */}
+        <div className="grid gap-4 sm:grid-cols-2 mt-4">
+          {/* Cursor Button */}
+          <a
+            href={CURSOR_INSTALL_URL}
+            className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-[var(--accent-aqua)]/50 transition-all group"
+          >
+            <div className="p-2 rounded-lg bg-[var(--accent-aqua)]/10 group-hover:bg-[var(--accent-aqua)]/20 transition-colors">
+              <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm">Cursor</div>
+              <div className="text-xs text-muted-foreground">One-click</div>
+            </div>
+            <ExternalLinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] transition-colors" />
+          </a>
+
+          {/* v0 Button - Copy SSE endpoint */}
+          <button
+            onClick={handleCopySSE}
+            className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-foreground/30 transition-all group text-left"
+          >
+            <div className="p-2 rounded-lg bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
+              <V0Icon className="w-5 h-5 text-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm">v0</div>
+              <div className="text-xs text-muted-foreground">
+                {copiedSSE ? "Copied!" : "Copy SSE endpoint"}
+              </div>
+            </div>
+            {copiedSSE ? (
+              <CheckIcon className="w-4 h-4 text-emerald-400 transition-colors" />
+            ) : (
+              <CopyIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Manual Setup Links */}
