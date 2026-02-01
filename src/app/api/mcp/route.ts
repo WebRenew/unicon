@@ -169,7 +169,7 @@ function createMcpServer() {
     description: `Unicon: 19,000+ icons from 9 libraries (Lucide, Phosphor, Heroicons, etc.) in React/Vue/Svelte/SVG.
 
 AVAILABLE TOOLS:
-- search_icons: Search icons by keyword. Use includeCode=true to get React components.
+- search_icons: Search icons by keyword. Use includeCode=true to get ready-to-use components in one call.
 - get_icon: Get a single icon by ID (e.g., "lucide:arrow-right").
 - get_multiple_icons: Get multiple icons at once (up to 50).
 - get_starter_pack: Get curated icon packs (shadcn-ui, dashboard, ecommerce, etc.).
@@ -1095,9 +1095,29 @@ export async function POST(request: Request) {
 
 /**
  * GET /api/mcp - SSE stream for server-initiated messages
+ * In stateless mode, there are no server-initiated messages to stream.
+ * Return 405 to prevent clients from polling/reconnecting in a loop.
  */
-export async function GET(request: Request) {
-  return handleMcpRequest(request, "GET");
+export async function GET() {
+  return withCors(
+    new Response(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "Server does not support SSE streams in stateless mode. Use POST for requests.",
+        },
+        id: null,
+      }),
+      {
+        status: 405,
+        headers: {
+          "Content-Type": "application/json",
+          Allow: "POST, OPTIONS",
+        },
+      }
+    )
+  );
 }
 
 /**
