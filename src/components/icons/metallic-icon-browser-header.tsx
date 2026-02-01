@@ -283,7 +283,7 @@ export function MetallicIconBrowserHeader({
       </motion.p>
 
       {/* Hero CTAs */}
-      <div className="flex flex-col gap-3 mb-8">
+      <div className="flex flex-col gap-3 mb-10 pb-8 border-b border-border">
         <TypingTerminal />
         {/* Second row: Cursor + v0 */}
         <div className="flex flex-row gap-3">
