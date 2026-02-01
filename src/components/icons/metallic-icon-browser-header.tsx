@@ -13,6 +13,7 @@ import { PackagePlusIcon } from "@/components/icons/ui/package-plus";
 import { Trash2Icon } from "@/components/icons/ui/trash-2";
 import { CopyIcon } from "@/components/icons/ui/copy";
 import { CursorIcon } from "@/components/icons/ui/cursor";
+import { V0Icon } from "@/components/icons/ui/v0";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -123,6 +124,8 @@ const CURSOR_INSTALL_URL = `cursor://anysphere.cursor-deeplink/mcp/install?name=
   "unicon",
 )}&config=${CURSOR_CONFIG_BASE64}`;
 
+const SSE_ENDPOINT = MCP_CONFIG.url;
+
 function TypingTerminal() {
   const [charIndex, setCharIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
@@ -197,6 +200,37 @@ function TypingTerminal() {
   );
 }
 
+function V0SSEButton() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(SSE_ENDPOINT);
+      setCopied(true);
+      toast.success("SSE endpoint copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }, []);
+
+  return (
+    <motion.button
+      onClick={handleCopy}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.8 }}
+      className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-foreground/5 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10 transition-colors text-sm"
+    >
+      <V0Icon className="w-5 h-5 text-foreground" />
+      <span className="text-black/80 dark:text-white/80 font-medium">
+        {copied ? "Copied!" : "Add to v0"}
+      </span>
+      <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">SSE</span>
+    </motion.button>
+  );
+}
+
 export function MetallicIconBrowserHeader({
   totalCount,
   countBySource,
@@ -249,21 +283,26 @@ export function MetallicIconBrowserHeader({
       </motion.p>
 
       {/* Hero CTAs */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+      <div className="flex flex-col gap-3 mb-8">
         <TypingTerminal />
-        
-        {/* Cursor MCP Install Button */}
-        <motion.a
-          href={CURSOR_INSTALL_URL}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/30 hover:border-[var(--accent-aqua)]/60 hover:bg-[var(--accent-aqua)]/20 transition-colors text-sm"
-        >
-          <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
-          <span className="text-black/80 dark:text-white/80 font-medium">Add to Cursor</span>
-          <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
-        </motion.a>
+        {/* Second row: Cursor + v0 */}
+        <div className="flex flex-row gap-3">
+          {/* Cursor MCP Install Button */}
+          <motion.a
+            href={CURSOR_INSTALL_URL}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/30 hover:border-[var(--accent-aqua)]/60 hover:bg-[var(--accent-aqua)]/20 transition-colors text-sm"
+          >
+            <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
+            <span className="text-black/80 dark:text-white/80 font-medium">Add to Cursor</span>
+            <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
+          </motion.a>
+
+          {/* v0 SSE Button */}
+          <V0SSEButton />
+        </div>
       </div>
 
       {/* Stats - Interactive Library Filters */}
