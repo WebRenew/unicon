@@ -1,5 +1,16 @@
 # Unicon Project Rules
 
+## For Contributors & Fork Users
+
+This file gives Claude Code (and other AI assistants) context about the project.
+If you fork this repo, update the sections below to match your setup.
+
+### Project-Specific Context
+
+Add your own notes, reminders, and task tracking here. Use `.claude/docs/` and
+`.claude/sprites/` locally for internal planning — these directories are gitignored
+and won't be committed.
+
 ## Reminders
 
 **Team Bundle Sharing (added 2025-01-25):**
@@ -58,3 +69,4 @@ export function IconNameIcon({ className, ...props }: SVGProps<SVGSVGElement>) {
 - Functional components with hooks
 - Tailwind CSS for styling
 - Use `cn()` from `@/lib/utils` for conditional classes
+- Use theme CSS variables (e.g., `bg-background`, `text-foreground`, `border-border`) — never hardcode colors
