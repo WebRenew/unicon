@@ -171,19 +171,19 @@ function TypingTerminal() {
       transition={{ duration: 0.5, delay: 0.6 }}
       onClick={handleCopy}
       aria-label={`Copy command: ${SKILL_COMMAND}`}
-      className="group relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors max-w-full overflow-hidden"
+      className="group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg bg-muted/30 border border-border font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors w-full max-w-[40rem] overflow-hidden"
     >
       <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
-      <span className="text-white/90 truncate">
+      <span className="text-foreground/90 truncate">
         {displayedText}
         <span
-          className={`inline-block w-[2px] h-[1.1em] bg-white/80 ml-[1px] align-middle ${isComplete ? "animate-blink" : ""}`}
+          className={`inline-block w-[2px] h-[1.1em] bg-foreground/80 ml-[1px] align-middle ${isComplete ? "animate-blink" : ""}`}
           style={{
             animation: isComplete ? "blink 1s step-end infinite" : "none",
           }}
         />
       </span>
-      <span className={`ml-auto shrink-0 transition-colors ${copied ? "text-[var(--accent-mint)]" : "text-white/40 group-hover:text-white/70"}`}>
+      <span className={`ml-auto shrink-0 transition-colors ${copied ? "text-[var(--accent-mint)]" : "text-muted-foreground group-hover:text-foreground/70"}`}>
         {copied ? (
           <CheckIcon className="w-4 h-4" />
         ) : (
@@ -226,7 +226,7 @@ function V0SSEButton() {
       <span className="text-black/80 dark:text-white/80 font-medium">
         {copied ? "Copied!" : "Add to v0"}
       </span>
-      <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">SSE</span>
+      <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
     </motion.button>
   );
 }
@@ -344,7 +344,7 @@ export function MetallicIconBrowserHeader({
       </div>
 
       {/* Search */}
-      <div className="relative mb-4 w-full max-w-md">
+      <div className="relative mb-4 w-full max-w-[40rem]">
         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
         <label htmlFor="icon-search-main" className="sr-only">
           Search icons
