@@ -155,7 +155,7 @@ export default function DocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
             <FileCodeIcon className="w-6 h-6 text-[var(--accent-lavender)]" />
           </div>

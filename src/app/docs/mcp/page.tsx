@@ -167,14 +167,11 @@ export default function MCPDocsPage() {
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6">
           <div className="p-3 rounded-xl bg-[var(--accent-lavender)]/10 border border-[var(--accent-lavender)]/20">
             <MCPIcon className="w-6 h-6 text-[var(--accent-lavender)]" size={24} />
           </div>
           <CopyPageButton markdown={PAGE_MARKDOWN} />
-          <span className="px-3 py-1 rounded-full text-xs font-mono bg-[var(--accent-lavender)]/10 text-[var(--accent-lavender)] border border-[var(--accent-lavender)]/30">
-            MCP Server
-          </span>
         </div>
         <h1 className="text-4xl font-bold mb-4">MCP Integration</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">

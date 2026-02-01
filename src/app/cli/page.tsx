@@ -266,7 +266,7 @@ export default function CLIPage() {
     <div className="w-full py-10 px-4 md:px-12 lg:px-16 bg-background text-foreground">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4">
           <div className="p-2 md:p-3 rounded-xl bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/20">
             <TerminalIcon className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-aqua)]" />
           </div>
