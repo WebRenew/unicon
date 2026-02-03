@@ -221,12 +221,12 @@ export const metadata: Metadata = {
     "offline icon tool",
   ],
   alternates: {
-    canonical: "/cli",
+    canonical: "/docs/cli",
   },
   openGraph: {
     title: "Unicon CLI — Icon Bundler for Command Line",
     description: "Search and bundle icons from the command line. Generate tree-shakeable components for React, Vue, and Svelte.",
-    url: "https://unicon.sh/cli",
+    url: "https://unicon.sh/docs/cli",
     type: "website",
   },
   twitter: {
@@ -669,7 +669,7 @@ unicon cache --clear  # Clear all cached data`}
         </section>
 
         {/* Page Navigation */}
-        <DocsPageNav {...getDocsNavLinks("/cli")} />
+        <DocsPageNav {...getDocsNavLinks("/docs/cli")} />
       </div>
     </div>
   );

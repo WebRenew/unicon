@@ -24,7 +24,7 @@ const navItems = [
     hoverBg: "hover:bg-[var(--accent-lavender)]/10",
   },
   {
-    href: "/cli",
+    href: "/docs/cli",
     label: "CLI",
     icon: TerminalIcon,
     color: "text-[var(--accent-aqua)]",

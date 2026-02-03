@@ -83,7 +83,7 @@ Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 
 ## Links
 
-- CLI Documentation: https://unicon.sh/cli
+- CLI Documentation: https://unicon.sh/docs/cli
 - MCP Integration: https://unicon.sh/docs/mcp
 - API Reference: https://unicon.sh/docs/api
 - Skills Registry: https://unicon.sh/docs/skills
@@ -243,7 +243,7 @@ export default function DocsPage() {
               icon={TerminalIcon}
               title="CLI Tool"
               description="Command-line interface for searching, bundling, and generating icon components. Perfect for CI/CD."
-              href="/cli"
+              href="/docs/cli"
             />
             <FeatureCard
               icon={MCPIcon}
@@ -329,7 +329,7 @@ export default function DocsPage() {
               icon={TerminalIcon}
               title="CLI Documentation"
               description="Complete guide to the command-line interface including all commands and options."
-              href="/cli"
+              href="/docs/cli"
             />
             <FeatureCard
               icon={MCPIcon}

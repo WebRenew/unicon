@@ -29,14 +29,14 @@ const navigation: NavItem[] = [
   },
   {
     title: "CLI Tool",
-    href: "/cli",
+    href: "/docs/cli",
     icon: TerminalIcon,
     items: [
-      { title: "Overview", href: "/cli" },
-      { title: "Installation", href: "/cli#installation" },
-      { title: "Commands", href: "/cli#commands" },
-      { title: "Config File", href: "/cli#config-file" },
-      { title: "Workflow", href: "/cli#workflow" },
+      { title: "Overview", href: "/docs/cli" },
+      { title: "Installation", href: "/docs/cli#installation" },
+      { title: "Commands", href: "/docs/cli#commands" },
+      { title: "Config File", href: "/docs/cli#config-file" },
+      { title: "Workflow", href: "/docs/cli#workflow" },
     ],
   },
   {

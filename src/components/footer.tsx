@@ -21,7 +21,7 @@ export function Footer() {
               Docs
             </Link>
             <Link
-              href="/cli"
+              href="/docs/cli"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               CLI

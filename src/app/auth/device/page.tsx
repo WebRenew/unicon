@@ -202,7 +202,7 @@ function DeviceAuthContent() {
         <p className="text-xs text-muted-foreground text-center mt-6">
           Having trouble?{" "}
           <a
-            href="/cli"
+            href="/docs/cli"
             className="text-[var(--accent-aqua)] hover:underline"
           >
             Read the CLI docs

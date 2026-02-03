@@ -88,7 +88,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/cli"
+            href="/docs/cli"
             className="group relative p-4 md:p-5 rounded-xl border border-pink-500/20 bg-pink-500/5 hover:bg-pink-500/10 hover:border-pink-500/40 transition-all duration-200"
           >
             <div className="flex items-center gap-3 text-left">

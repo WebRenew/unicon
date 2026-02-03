@@ -93,7 +93,7 @@ export function HomeHeader() {
                 Docs
               </Link>
               <Link
-                href="/cli"
+                href="/docs/cli"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/5 transition-colors"
               >
                 <TerminalIcon className="w-3.5 h-3.5" />
