@@ -12,7 +12,7 @@ import { TerminalIcon } from "@/components/icons/ui/terminal";
 
 function DeviceAuthContent() {
   const searchParams = useSearchParams();
-  const { user, isPro, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [userCode, setUserCode] = useState(searchParams.get("code") || "");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +37,6 @@ function DeviceAuthContent() {
   const handleAuthorize = async () => {
     if (!user) {
       setShowLoginDialog(true);
-      return;
-    }
-
-    if (!isPro) {
-      setError("API access requires a Pro subscription. Upgrade at /pricing to continue.");
-      setStatus("error");
       return;
     }
 
@@ -157,11 +151,6 @@ function DeviceAuthContent() {
                       {user.email}
                     </p>
                   </div>
-                  {isPro && (
-                    <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-amber-400/20 to-orange-500/20 text-amber-600 dark:text-amber-400 rounded">
-                      Pro
-                    </span>
-                  )}
                 </div>
               )}
 
@@ -204,15 +193,7 @@ function DeviceAuthContent() {
                 )}
               </button>
 
-              {/* Not pro warning */}
-              {user && !isPro && (
-                <p className="mt-4 text-sm text-amber-600 dark:text-amber-400 text-center">
-                  API access requires a Pro subscription.{" "}
-                  <Link href="/pricing" className="underline">
-                    Upgrade now
-                  </Link>
-                </p>
-              )}
+
             </>
           )}
         </div>

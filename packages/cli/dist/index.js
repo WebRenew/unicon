@@ -26,9 +26,93 @@ function confirm2(message) {
 }
 var API_BASE = process.env.UNICON_API_URL || "https://unicon.sh";
 var CONFIG_FILE = ".uniconrc.json";
-var CACHE_DIR = join(homedir(), ".unicon", "cache");
-var FAVORITES_FILE = join(homedir(), ".unicon", "favorites.json");
+var UNICON_DIR = join(homedir(), ".unicon");
+var CACHE_DIR = join(UNICON_DIR, "cache");
+var FAVORITES_FILE = join(UNICON_DIR, "favorites.json");
+var AUTH_FILE = join(UNICON_DIR, "auth.json");
 var CACHE_TTL = 24 * 60 * 60 * 1e3;
+function ensureUniconDir() {
+  if (!existsSync(UNICON_DIR)) {
+    mkdirSync(UNICON_DIR, { recursive: true });
+  }
+}
+function loadAuth() {
+  if (!existsSync(AUTH_FILE)) {
+    return null;
+  }
+  try {
+    const content = readFileSync(AUTH_FILE, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+function saveAuth(data) {
+  ensureUniconDir();
+  writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2), "utf-8");
+}
+function clearAuth() {
+  if (existsSync(AUTH_FILE)) {
+    unlinkSync(AUTH_FILE);
+  }
+}
+function getAuthToken() {
+  if (process.env.UNICON_API_TOKEN) {
+    return process.env.UNICON_API_TOKEN;
+  }
+  const auth = loadAuth();
+  return auth?.access_token || null;
+}
+async function startDeviceAuth() {
+  const res = await fetch(`${API_BASE}/api/auth/device/code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ client_name: "CLI", scope: "bundles:read" })
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(error.error_description || error.error || "Failed to start device authorization");
+  }
+  return res.json();
+}
+async function pollForToken(deviceCode, interval, expiresIn) {
+  const startTime = Date.now();
+  const expiresAt = startTime + expiresIn * 1e3;
+  while (Date.now() < expiresAt) {
+    await new Promise((resolve2) => setTimeout(resolve2, interval * 1e3));
+    const res = await fetch(`${API_BASE}/api/auth/device/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        device_code: deviceCode,
+        grant_type: "urn:ietf:params:oauth:grant-type:device_code"
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        created_at: (/* @__PURE__ */ new Date()).toISOString()
+      };
+    }
+    if (data.error === "authorization_pending") {
+      continue;
+    }
+    if (data.error === "slow_down") {
+      interval += 5;
+      continue;
+    }
+    if (data.error === "expired_token") {
+      throw new Error("Authorization expired. Please try again.");
+    }
+    if (data.error === "access_denied") {
+      throw new Error("Authorization denied by user.");
+    }
+    throw new Error(data.error_description || data.error || "Failed to get access token");
+  }
+  throw new Error("Authorization expired. Please try again.");
+}
 function detectFramework() {
   const packageJsonPath = resolve(process.cwd(), "package.json");
   if (!existsSync(packageJsonPath)) {
@@ -2329,6 +2413,196 @@ program.command("audit").description("Audit project for icon usage vs bundled ic
     console.log();
   } catch (error) {
     spinner.fail("Audit failed");
+    console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+    process.exit(1);
+  }
+});
+program.command("login").description("Authenticate to access your saved bundles (Pro feature)").action(async () => {
+  const existingAuth = loadAuth();
+  if (existingAuth) {
+    const shouldContinue = await confirm2("You are already logged in. Do you want to re-authenticate?");
+    if (!shouldContinue) {
+      console.log(chalk.dim("Cancelled."));
+      return;
+    }
+  }
+  console.log();
+  console.log(chalk.bold("Unicon CLI Login"));
+  console.log(chalk.dim("Authenticate to access your saved bundles."));
+  console.log();
+  const spinner = ora("Starting device authorization...").start();
+  try {
+    const deviceAuth = await startDeviceAuth();
+    spinner.stop();
+    console.log(chalk.bold("To complete login:"));
+    console.log();
+    console.log(`  1. Open: ${chalk.cyan(deviceAuth.verification_uri)}`);
+    console.log(`  2. Enter code: ${chalk.bold.yellow(deviceAuth.user_code)}`);
+    console.log();
+    const { exec } = await import("child_process");
+    const openCommand = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
+    exec(`${openCommand} "${deviceAuth.verification_uri}?code=${deviceAuth.user_code}"`);
+    console.log(chalk.dim("Browser opened automatically. If not, copy the URL above."));
+    console.log();
+    const pollSpinner = ora("Waiting for authorization...").start();
+    const auth = await pollForToken(deviceAuth.device_code, 5, deviceAuth.expires_in);
+    saveAuth(auth);
+    pollSpinner.succeed(chalk.green("Successfully logged in!"));
+    console.log();
+    console.log(chalk.dim("You can now access your saved bundles with:"));
+    console.log(chalk.cyan("  unicon bundles"));
+    console.log();
+  } catch (error) {
+    spinner.fail("Login failed");
+    console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+    process.exit(1);
+  }
+});
+program.command("logout").description("Log out and remove saved credentials").action(async () => {
+  const auth = loadAuth();
+  if (!auth) {
+    console.log(chalk.dim("Not logged in."));
+    return;
+  }
+  clearAuth();
+  console.log(chalk.green("Logged out successfully."));
+});
+program.command("whoami").description("Show current authentication status").action(async () => {
+  const token = getAuthToken();
+  if (!token) {
+    console.log(chalk.dim("Not logged in."));
+    console.log();
+    console.log(`Run ${chalk.cyan("unicon login")} to authenticate.`);
+    return;
+  }
+  const spinner = ora("Checking authentication...").start();
+  try {
+    const res = await fetch(`${API_BASE}/api/bundles/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const data2 = await res.json().catch(() => ({}));
+      spinner.fail(data2.message || "Invalid or expired token");
+      console.log();
+      console.log(`Run ${chalk.cyan("unicon login")} to re-authenticate.`);
+      return;
+    }
+    const data = await res.json();
+    spinner.succeed(chalk.green("Authenticated"));
+    console.log();
+    console.log(`  Bundles: ${chalk.bold(data.total)} saved`);
+    console.log();
+  } catch (error) {
+    spinner.fail("Failed to check authentication");
+    console.error(chalk.red(error instanceof Error ? error.message : "Network error"));
+  }
+});
+program.command("bundles").description("List your saved bundles (requires login)").option("-j, --json", "Output as JSON").action(async (options) => {
+  const token = getAuthToken();
+  if (!token) {
+    console.log(chalk.red("Not logged in."));
+    console.log();
+    console.log(`Run ${chalk.cyan("unicon login")} to authenticate.`);
+    process.exit(1);
+  }
+  const spinner = ora("Fetching your bundles...").start();
+  try {
+    const res = await fetch(`${API_BASE}/api/bundles/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const data2 = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        spinner.fail("Session expired");
+        console.log();
+        console.log(`Run ${chalk.cyan("unicon login")} to re-authenticate.`);
+        process.exit(1);
+      }
+      if (res.status === 403) {
+        spinner.fail(data2.message || "Pro subscription required");
+        process.exit(1);
+      }
+      throw new Error(data2.message || "Failed to fetch bundles");
+    }
+    const data = await res.json();
+    spinner.stop();
+    if (options.json) {
+      console.log(JSON.stringify(data, null, 2));
+      return;
+    }
+    if (data.bundles.length === 0) {
+      console.log(chalk.dim("No bundles found."));
+      console.log();
+      console.log(`Create bundles at ${chalk.cyan("https://unicon.sh/bundles")}`);
+      return;
+    }
+    console.log(chalk.bold(`Your Bundles (${data.total})`));
+    console.log();
+    for (const bundle of data.bundles) {
+      const publicTag = bundle.is_public ? chalk.green(" [public]") : "";
+      console.log(`  ${chalk.cyan(bundle.name)}${publicTag}`);
+      console.log(chalk.dim(`    ID: ${bundle.id}`));
+      console.log(chalk.dim(`    Icons: ${bundle.icon_count}`));
+      if (bundle.description) {
+        console.log(chalk.dim(`    ${bundle.description}`));
+      }
+      console.log();
+    }
+    console.log(chalk.dim(`Use ${chalk.cyan("unicon bundle:pull <id>")} to download a bundle.`));
+  } catch (error) {
+    spinner.fail("Failed to fetch bundles");
+    console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
+    process.exit(1);
+  }
+});
+program.command("bundle:pull <bundleId>").description("Download a bundle to your project (requires login)").option("-o, --output <path>", "Output file path", "src/components/icons/bundle.tsx").option("-f, --format <format>", "Output format (react, svg, json)", "react").action(async (bundleId, options) => {
+  const token = getAuthToken();
+  if (!token) {
+    console.log(chalk.red("Not logged in."));
+    console.log();
+    console.log(`Run ${chalk.cyan("unicon login")} to authenticate.`);
+    process.exit(1);
+  }
+  const spinner = ora("Fetching bundle...").start();
+  try {
+    const url = new URL(`${API_BASE}/api/bundles/me/${bundleId}`);
+    url.searchParams.set("format", options.format);
+    url.searchParams.set("code", "true");
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const data2 = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        spinner.fail("Session expired");
+        console.log();
+        console.log(`Run ${chalk.cyan("unicon login")} to re-authenticate.`);
+        process.exit(1);
+      }
+      if (res.status === 404) {
+        spinner.fail("Bundle not found");
+        console.log();
+        console.log(`Run ${chalk.cyan("unicon bundles")} to see your bundles.`);
+        process.exit(1);
+      }
+      throw new Error(data2.message || "Failed to fetch bundle");
+    }
+    const data = await res.json();
+    spinner.stop();
+    if (!data.code) {
+      console.log(chalk.yellow("Bundle is empty - no icons to export."));
+      return;
+    }
+    const outputPath = resolve(process.cwd(), options.output);
+    const outputDir = dirname(outputPath);
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+    writeFileSync(outputPath, data.code, "utf-8");
+    console.log(chalk.green(`Bundle "${data.bundle.name}" saved to ${options.output}`));
+    console.log(chalk.dim(`  ${data.bundle.icon_count} icons exported as ${options.format}`));
+  } catch (error) {
+    spinner.fail("Failed to pull bundle");
     console.error(chalk.red(error instanceof Error ? error.message : "Unknown error"));
     process.exit(1);
   }

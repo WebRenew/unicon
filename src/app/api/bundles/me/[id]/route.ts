@@ -3,11 +3,16 @@
  * 
  * Get a specific bundle with full icon data for the authenticated user.
  * Used by MCP and CLI to fetch bundle contents.
+ * 
+ * Rate limits:
+ * - Free users: 10 requests/minute
+ * - Pro users: 100 requests/minute
  */
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractBearerToken, validateApiToken } from "@/lib/auth/api-token";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { getIconsByIds } from "@/lib/queries";
 import {
   generateReactBundle,
@@ -51,13 +56,21 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    if (!validation.isPro) {
+    // Check rate limit (different limits for free vs Pro)
+    const rateLimit = await checkRateLimit(validation.userId!, validation.isPro ?? false);
+    
+    if (!rateLimit.success) {
       return NextResponse.json(
         { 
-          error: "pro_required", 
-          message: "API access requires a Pro subscription. Upgrade at https://unicon.sh/pricing" 
+          error: "rate_limit_exceeded", 
+          message: validation.isPro 
+            ? "Rate limit exceeded. Please wait before making more requests."
+            : "Rate limit exceeded. Upgrade to Pro for higher limits: https://unicon.sh/pricing"
         },
-        { status: 403 }
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimit),
+        }
       );
     }
 
@@ -129,25 +142,30 @@ export async function GET(request: Request, { params }: RouteParams) {
       }
     }
 
-    return NextResponse.json({
-      bundle: {
-        id: bundle.id,
-        name: bundle.name,
-        description: bundle.description,
-        icon_count: icons.length,
-        stroke_preset: bundle.stroke_preset,
-        normalize_strokes: bundle.normalize_strokes,
-        target_stroke_width: bundle.target_stroke_width,
-        icons: icons.map(icon => ({
-          id: icon.id,
-          name: icon.name,
-          normalizedName: icon.normalizedName,
-          source: icon.sourceId,
-        })),
+    return NextResponse.json(
+      {
+        bundle: {
+          id: bundle.id,
+          name: bundle.name,
+          description: bundle.description,
+          icon_count: icons.length,
+          stroke_preset: bundle.stroke_preset,
+          normalize_strokes: bundle.normalize_strokes,
+          target_stroke_width: bundle.target_stroke_width,
+          icons: icons.map(icon => ({
+            id: icon.id,
+            name: icon.name,
+            normalizedName: icon.normalizedName,
+            source: icon.sourceId,
+          })),
+        },
+        format,
+        code,
       },
-      format,
-      code,
-    });
+      {
+        headers: getRateLimitHeaders(rateLimit),
+      }
+    );
   } catch (err) {
     console.error("GET /api/bundles/me/[id] error:", err);
     return NextResponse.json(

@@ -3,11 +3,16 @@
  * 
  * List all bundles for the authenticated user (via API token).
  * Used by MCP and CLI to fetch user's saved bundles.
+ * 
+ * Rate limits:
+ * - Free users: 10 requests/minute
+ * - Pro users: 100 requests/minute
  */
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractBearerToken, validateApiToken } from "@/lib/auth/api-token";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
   try {
@@ -38,13 +43,21 @@ export async function GET(request: Request) {
       );
     }
 
-    if (!validation.isPro) {
+    // Check rate limit (different limits for free vs Pro)
+    const rateLimit = await checkRateLimit(validation.userId!, validation.isPro ?? false);
+    
+    if (!rateLimit.success) {
       return NextResponse.json(
         { 
-          error: "pro_required", 
-          message: "API access requires a Pro subscription. Upgrade at https://unicon.sh/pricing" 
+          error: "rate_limit_exceeded", 
+          message: validation.isPro 
+            ? "Rate limit exceeded. Please wait before making more requests."
+            : "Rate limit exceeded. Upgrade to Pro for higher limits: https://unicon.sh/pricing"
         },
-        { status: 403 }
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimit),
+        }
       );
     }
 
@@ -65,10 +78,15 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.json({
-      bundles: bundles || [],
-      total: bundles?.length || 0,
-    });
+    return NextResponse.json(
+      {
+        bundles: bundles || [],
+        total: bundles?.length || 0,
+      },
+      {
+        headers: getRateLimitHeaders(rateLimit),
+      }
+    );
   } catch (err) {
     console.error("GET /api/bundles/me error:", err);
     return NextResponse.json(

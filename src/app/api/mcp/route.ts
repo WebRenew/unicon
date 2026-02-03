@@ -171,7 +171,7 @@ interface AuthContext {
 
 // Create MCP server with all tools and resources
 function createMcpServer(authContext?: AuthContext) {
-  const isAuthenticated = !!authContext?.userId && authContext?.isPro;
+  const isAuthenticated = !!authContext?.userId;
   
   const server = new McpServer({
     name: "unicon",
@@ -184,7 +184,7 @@ AVAILABLE TOOLS:
 - get_multiple_icons: Get multiple icons at once (up to 50).
 - get_starter_pack: Get curated icon packs (shadcn-ui, dashboard, ecommerce, etc.).
 ${isAuthenticated ? `
-PRO TOOLS (authenticated):
+AUTHENTICATED TOOLS:
 - list_my_bundles: List your saved icon bundles.
 - get_my_bundle: Get icons from a saved bundle.` : ""}
 
@@ -1053,7 +1053,7 @@ Get a curated set of icons for common use cases.
   );
 
   // ============================================
-  // AUTHENTICATED TOOLS (Pro users only)
+  // AUTHENTICATED TOOLS (all logged-in users)
   // ============================================
   if (isAuthenticated && authContext) {
     // TOOL: list_my_bundles
@@ -1299,8 +1299,8 @@ async function getAuthContext(request: Request): Promise<AuthContext | undefined
 
   try {
     const result = await validateApiToken(token);
-    if (result.valid && result.userId && result.isPro) {
-      return { userId: result.userId, isPro: result.isPro };
+    if (result.valid && result.userId) {
+      return { userId: result.userId, isPro: result.isPro ?? false };
     }
   } catch (err) {
     logger.error("Auth context extraction error:", err);
