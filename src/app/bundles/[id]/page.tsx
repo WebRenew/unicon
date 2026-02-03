@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { HomeHeader } from "@/components/home-header";
 import { BundleBrowserWrapper } from "@/components/bundles/bundle-browser-wrapper";
 import { getUser } from "@/lib/auth/actions";
-import { getCategories } from "@/lib/queries";
+import { getCategories, searchIcons, getTotalIconCount } from "@/lib/queries";
 import type { Bundle } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -41,7 +41,7 @@ export default async function BundleDetailPage({ params }: PageProps) {
 
   const supabase = await createClient();
 
-  const [bundleResult, categories] = await Promise.all([
+  const [bundleResult, categories, initialIcons, totalIconCount] = await Promise.all([
     supabase
       .from("bundles")
       .select("*")
@@ -49,6 +49,8 @@ export default async function BundleDetailPage({ params }: PageProps) {
       .eq("user_id", user.profile.id)
       .single(),
     getCategories(),
+    searchIcons({ limit: 200 }),
+    getTotalIconCount(),
   ]);
 
   if (bundleResult.error || !bundleResult.data) {
@@ -61,6 +63,8 @@ export default async function BundleDetailPage({ params }: PageProps) {
       <BundleBrowserWrapper 
         initialBundle={bundleResult.data as Bundle}
         categories={categories}
+        initialIcons={initialIcons}
+        totalIconCount={totalIconCount}
       />
     </div>
   );

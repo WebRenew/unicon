@@ -3,15 +3,20 @@
 import { useState } from "react";
 import { BundleBrowser } from "./bundle-browser";
 import type { Bundle } from "@/types/database";
+import type { IconData } from "@/types/icon";
 
 interface BundleBrowserWrapperProps {
   initialBundle: Bundle;
   categories: string[];
+  initialIcons: IconData[];
+  totalIconCount: number;
 }
 
 export function BundleBrowserWrapper({ 
   initialBundle, 
   categories,
+  initialIcons,
+  totalIconCount,
 }: BundleBrowserWrapperProps) {
   const [bundle, setBundle] = useState(initialBundle);
 
@@ -19,6 +24,8 @@ export function BundleBrowserWrapper({
     <BundleBrowser
       bundle={bundle}
       categories={categories}
+      initialIcons={initialIcons}
+      totalIconCount={totalIconCount}
       onUpdate={setBundle}
     />
   );

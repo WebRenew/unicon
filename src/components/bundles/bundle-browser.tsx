@@ -15,6 +15,8 @@ import { FilterIcon } from "@/components/icons/ui/filter";
 import { SlidersHorizontalIcon } from "@/components/icons/ui/sliders-horizontal";
 import { ChevronsUpDownIcon } from "@/components/icons/ui/chevrons-up-down";
 import { DownloadIcon } from "@/components/icons/ui/download";
+import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
+import { ChevronRightIcon } from "@/components/icons/ui/chevron-right";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
@@ -24,7 +26,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "@/components/icons/styled-icon";
+import { StyledIcon, SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "@/components/icons/styled-icon";
 import { generateRenderableSvg, normalizeViewBoxInContent, STANDARD_VIEWBOX } from "@/lib/icon-utils";
 import { analyzeViewBoxMixing } from "@/lib/bundle-utils";
 import type { Bundle, BundleIcon } from "@/types/database";
@@ -33,6 +35,8 @@ import type { IconData, IconLibrary } from "@/types/icon";
 interface BundleBrowserProps {
   bundle: Bundle;
   categories: string[];
+  initialIcons: IconData[];
+  totalIconCount: number;
   onUpdate: (bundle: Bundle) => void;
 }
 
@@ -49,13 +53,15 @@ const SOURCE_OPTIONS = [
   "iconoir",
 ] as const;
 
+const ICONS_PER_PAGE = 200;
+
 function toTitleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
-export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserProps) {
+export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount, onUpdate }: BundleBrowserProps) {
   // Bundle state
-  const [icons, setIcons] = useState<BundleIcon[]>(
+  const [bundleIcons, setBundleIcons] = useState<BundleIcon[]>(
     Array.isArray(bundle.icons) ? bundle.icons : []
   );
   const [normalizeStrokes, setNormalizeStrokes] = useState(bundle.normalize_strokes);
@@ -65,26 +71,37 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Search state
+  // Search/browse state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
   const [selectedCategory, setSelectedCategory] = useState<string | "all">("all");
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const [searchResults, setSearchResults] = useState<IconData[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [browseIcons, setBrowseIcons] = useState<IconData[]>(initialIcons);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchType, setSearchType] = useState<string>("text");
   const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [totalResults, setTotalResults] = useState(totalIconCount);
 
   // Display presets
   const [strokePreset, setStrokePreset] = useState<StrokePreset>("regular");
   const [sizePreset, setSizePreset] = useState<SizePreset>("m");
   const [controlsExpanded, setControlsExpanded] = useState(false);
+  const strokeWeight = STROKE_PRESETS[strokePreset].value;
   const { icon: iconSize, container: containerSize } = SIZE_PRESETS[sizePreset];
 
-  const iconIds = useMemo(() => new Set(icons.map((i) => i.id)), [icons]);
+  const bundleIconIds = useMemo(() => new Set(bundleIcons.map((i) => i.id)), [bundleIcons]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
+
+  // Memoize grid style
+  const gridStyle = useMemo(() => ({
+    gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
+    justifyContent: 'start' as const,
+  }), [containerSize]);
 
   // Debounce search
   useEffect(() => {
@@ -94,26 +111,23 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Perform search
+  // Fetch icons when search/filters/page change
   useEffect(() => {
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // If no filters active, clear results
-    if (!debouncedSearch.trim() && selectedSource === "all" && selectedCategory === "all") {
-      setSearchResults([]);
-      return;
-    }
-
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const doSearch = async () => {
-      setIsSearching(true);
+    const fetchIcons = async () => {
+      setIsLoading(true);
       try {
-        const params = new URLSearchParams({ limit: "100" });
+        const params = new URLSearchParams({ 
+          limit: String(ICONS_PER_PAGE),
+          offset: String(page * ICONS_PER_PAGE),
+        });
         if (debouncedSearch.trim()) params.set("q", debouncedSearch);
         if (selectedSource !== "all") params.set("source", selectedSource);
         if (selectedCategory !== "all") params.set("category", selectedCategory);
@@ -121,31 +135,38 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
         const res = await fetch(`/api/icons?${params}`, {
           signal: controller.signal,
         });
-        if (!res.ok) throw new Error("Search failed");
+        if (!res.ok) throw new Error("Failed to fetch icons");
         const data = await res.json();
         
         if (!controller.signal.aborted) {
-          setSearchResults(data.icons || []);
+          setBrowseIcons(data.icons || []);
+          setTotalResults(data.total || 0);
           setSearchType(data.searchType || "text");
           setExpandedQuery(data.expandedQuery || null);
         }
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
-        toast.error("Search failed");
+        toast.error("Failed to load icons");
       } finally {
         if (!controller.signal.aborted) {
-          setIsSearching(false);
+          setIsLoading(false);
         }
       }
     };
-    doSearch();
+    
+    fetchIcons();
 
     return () => controller.abort();
+  }, [debouncedSearch, selectedSource, selectedCategory, page]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
   }, [debouncedSearch, selectedSource, selectedCategory]);
 
   // Icon operations
   const handleAddIcon = useCallback((icon: IconData) => {
-    if (iconIds.has(icon.id)) {
+    if (bundleIconIds.has(icon.id)) {
       toast.info("Icon already in bundle");
       return;
     }
@@ -160,13 +181,13 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
       defaultFill: icon.defaultFill,
       defaultStroke: icon.defaultStroke,
     };
-    setIcons((prev) => [...prev, bundleIcon]);
+    setBundleIcons((prev) => [...prev, bundleIcon]);
     setHasChanges(true);
     toast.success(`Added ${icon.normalizedName}`);
-  }, [iconIds]);
+  }, [bundleIconIds]);
 
   const handleRemoveIcon = useCallback((id: string) => {
-    setIcons((prev) => prev.filter((i) => i.id !== id));
+    setBundleIcons((prev) => prev.filter((i) => i.id !== id));
     setHasChanges(true);
   }, []);
 
@@ -177,7 +198,7 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          icons: icons.map((icon) => ({
+          icons: bundleIcons.map((icon) => ({
             id: icon.id,
             name: icon.name,
             normalizedName: icon.normalizedName,
@@ -206,9 +227,9 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
     } finally {
       setIsSaving(false);
     }
-  }, [bundle.id, icons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, onUpdate]);
+  }, [bundle.id, bundleIcons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, onUpdate]);
 
-  // Rendering helpers
+  // Rendering helper for bundle icons (with normalization)
   const renderBundleIcon = useCallback((icon: BundleIcon) => {
     const svgContent = icon.svg;
     if (!svgContent) return null;
@@ -246,32 +267,9 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
     );
   }, [normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, iconSize]);
 
-  const renderSearchIcon = useCallback((icon: IconData) => {
-    const svgHtml = generateRenderableSvg(
-      {
-        viewBox: icon.viewBox,
-        content: icon.content,
-        defaultStroke: icon.defaultStroke ?? true,
-        defaultFill: icon.defaultFill ?? false,
-        strokeWidth: icon.strokeWidth ?? "2",
-      },
-      { size: iconSize }
-    );
-
-    return (
-      <div
-        className="text-black/70 dark:text-white/70 [&>svg]:w-full [&>svg]:h-full"
-        style={{ width: iconSize, height: iconSize }}
-        dangerouslySetInnerHTML={{ __html: svgHtml }}
-      />
-    );
-  }, [iconSize]);
-
-  const hasStrokeIcons = icons.some((i) => i.defaultStroke !== false || !i.defaultFill);
-  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(icons.map(i => ({ viewBox: i.viewBox ?? "0 0 24 24" }))), [icons]);
+  const hasStrokeIcons = bundleIcons.some((i) => i.defaultStroke !== false || !i.defaultFill);
+  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(bundleIcons.map(i => ({ viewBox: i.viewBox ?? "0 0 24 24" }))), [bundleIcons]);
   const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
-
-  const isSearchActive = debouncedSearch.trim() || selectedSource !== "all" || selectedCategory !== "all";
 
   return (
     <div className="min-h-screen">
@@ -302,7 +300,7 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
               <p className="text-muted-foreground">{bundle.description}</p>
             )}
             <p className="text-sm text-muted-foreground mt-2">
-              {icons.length} icon{icons.length !== 1 ? "s" : ""}
+              {bundleIcons.length} icon{bundleIcons.length !== 1 ? "s" : ""} in bundle
             </p>
           </div>
 
@@ -380,23 +378,60 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
         </div>
       </div>
 
-      {/* Search Section */}
-      <div className="px-4 lg:px-20 xl:px-40 py-6 border-b border-border bg-muted/30">
+      {/* Bundle Icons Section */}
+      {bundleIcons.length > 0 && (
+        <div className="px-4 lg:px-20 xl:px-40 py-6 border-b border-border bg-[var(--accent-mint)]/5">
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            In this bundle ({bundleIcons.length})
+          </h2>
+          <div className="grid gap-3" style={gridStyle}>
+            {bundleIcons.map((icon) => (
+              <div
+                key={icon.id}
+                className="group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 overflow-hidden rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10 ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]"
+                style={{ width: containerSize, height: containerSize }}
+                title={`${icon.normalizedName} (${icon.sourceId})`}
+              >
+                {renderBundleIcon(icon)}
+                
+                {/* Remove button */}
+                <button
+                  onClick={() => handleRemoveIcon(icon.id)}
+                  className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
+                  title="Remove from bundle"
+                >
+                  <XIcon className="w-3 h-3" />
+                </button>
+                
+                {/* Selected indicator */}
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
+                  <CheckIcon className="w-2.5 h-2.5 text-white" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Search/Browse Section */}
+      <div className="px-4 lg:px-20 xl:px-40 py-6 border-b border-border">
         {/* Search bar */}
         <div className="relative mb-4 w-full max-w-[40rem]">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
-          <input
-            type="text"
-            placeholder="Search icons to add to your bundle..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-[var(--accent-aqua)]/50"
-          />
+          <div className="search-gradient-border rounded-lg p-[1px]">
+            <input
+              type="text"
+              placeholder="Search icons to add to your bundle..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
+            />
+          </div>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
-            {isSearching && search && (
+            {isLoading && (
               <Loader2Icon className="w-4 h-4 text-black/40 dark:text-white/40 animate-spin" />
             )}
-            {!isSearching && search && searchType === "semantic" && (
+            {!isLoading && debouncedSearch && searchType === "semantic" && (
               <SparklesIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />
             )}
           </div>
@@ -556,86 +591,101 @@ export function BundleBrowser({ bundle, categories, onUpdate }: BundleBrowserPro
         </div>
       </div>
 
-      {/* Icon Grid */}
+      {/* Browse Icons Grid */}
       <div className="px-4 lg:px-20 xl:px-40 py-8">
-        {/* Search results */}
-        {isSearchActive && (
-          <div className="mb-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">
-              {isSearching ? "Searching..." : `Search results (${searchResults.length})`}
-            </h2>
-            {searchResults.length > 0 ? (
-              <div
-                className="grid gap-3"
-                style={{ gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)` }}
-              >
-                {searchResults.map((icon) => {
-                  const isInBundle = iconIds.has(icon.id);
-                  return (
-                    <button
-                      key={icon.id}
-                      onClick={() => handleAddIcon(icon)}
-                      disabled={isInBundle}
-                      className={`group relative flex items-center justify-center rounded-lg border transition-all ${
-                        isInBundle
-                          ? "bg-[var(--accent-mint)]/10 border-[var(--accent-mint)]/30 cursor-default"
-                          : "bg-black/[0.02] dark:bg-white/[0.02] border-black/5 dark:border-white/5 hover:border-[var(--accent-mint)] hover:bg-[var(--accent-mint)]/5"
-                      }`}
-                      style={{ width: containerSize, height: containerSize }}
-                      title={`${icon.normalizedName} (${icon.sourceId})`}
-                    >
-                      {renderSearchIcon(icon)}
-                      {isInBundle && (
-                        <CheckIcon className="absolute top-1 right-1 w-3 h-3 text-[var(--accent-mint)]" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : !isSearching && (
-              <p className="text-muted-foreground text-sm">No icons found</p>
-            )}
+        {/* Results count */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-black/40 dark:text-white/40 text-xs">
+            {debouncedSearch || selectedSource !== "all" || selectedCategory !== "all" 
+              ? `${totalResults.toLocaleString("en-US")} results` 
+              : `Browse ${totalResults.toLocaleString("en-US")} icons`}
+            {" • "}Click to add to bundle
+            {isLoading && <Loader2Icon className="inline ml-2 w-3 h-3 animate-spin" />}
+          </p>
+        </div>
+
+        {/* Icon Grid */}
+        {isLoading && browseIcons.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2Icon className="w-8 h-8 text-black/40 dark:text-white/40 animate-spin" />
           </div>
-        )}
-
-        {/* Bundle icons */}
-        <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
-            In this bundle ({icons.length})
-          </h2>
-          {icons.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-black/10 dark:border-white/10 rounded-xl">
-              <PackageIcon className="w-12 h-12 text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground mb-2">No icons in this bundle</p>
-              <p className="text-sm text-muted-foreground/60">Search for icons above to add them</p>
-            </div>
-          ) : (
-            <div
-              className="grid gap-3"
-              style={{ gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)` }}
-            >
-              {icons.map((icon) => (
-                <div
+        ) : browseIcons.length > 0 ? (
+          <>
+            <div className="grid gap-3" style={gridStyle}>
+              {browseIcons.map((icon) => (
+                <StyledIcon
                   key={icon.id}
-                  className="group relative flex items-center justify-center rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 transition-colors"
-                  style={{ width: containerSize, height: containerSize }}
-                  title={`${icon.normalizedName} (${icon.sourceId})`}
-                >
-                  {renderBundleIcon(icon)}
-
-                  {/* Remove button */}
-                  <button
-                    onClick={() => handleRemoveIcon(icon.id)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                    title="Remove from bundle"
-                  >
-                    <XIcon className="w-3 h-3" />
-                  </button>
-                </div>
+                  icon={icon}
+                  style="metal"
+                  isSelected={bundleIconIds.has(icon.id)}
+                  onToggleCart={handleAddIcon}
+                  strokeWeight={strokeWeight}
+                  iconSize={iconSize}
+                  containerSize={containerSize}
+                />
               ))}
             </div>
-          )}
-        </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-10">
+                <button
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeftIcon className="w-4 h-4" />
+                  Prev
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i;
+                    } else if (page < 3) {
+                      pageNum = i;
+                    } else if (page > totalPages - 4) {
+                      pageNum = totalPages - 5 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-9 h-9 text-sm font-mono rounded-lg transition-colors ${
+                          pageNum === page
+                            ? "bg-black/20 dark:bg-white/20 text-black dark:text-white"
+                            : "bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10"
+                        }`}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-mono rounded-lg bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-6xl mb-4 opacity-50">🔍</div>
+            <h3 className="text-lg font-medium text-black/60 dark:text-white/60">No icons found</h3>
+            <p className="text-sm text-black/40 dark:text-white/40 mt-1">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
