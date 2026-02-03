@@ -72,3 +72,4 @@ env/
 
 # Extractor temporary files
 extractor/tmp_extract/
+.env*.local

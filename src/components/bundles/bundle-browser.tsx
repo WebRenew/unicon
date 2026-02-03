@@ -136,8 +136,20 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Track if this is initial mount
+  const isInitialMount = useRef(true);
+
   // Fetch icons when search/filters/page change
   useEffect(() => {
+    // Skip fetch on initial mount if we have initialIcons
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // Only skip if we have no filters applied and are on page 0
+      if (!debouncedSearch && selectedSource === "all" && selectedCategory === "all" && page === 0) {
+        return;
+      }
+    }
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -412,29 +424,24 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
           <h2 className="text-sm font-medium text-muted-foreground mb-4">
             In this bundle ({bundleIcons.length})
           </h2>
-          <div className="grid gap-3" style={gridStyle}>
+          <div className="grid gap-4 pt-1" style={gridStyle}>
             {bundleIcons.map((icon) => (
               <div
                 key={icon.id}
-                className="group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 overflow-hidden rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10 ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]"
+                className="group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10"
                 style={{ width: containerSize, height: containerSize }}
                 title={`${icon.normalizedName} (${icon.sourceId})`}
               >
                 {renderBundleIcon(icon)}
                 
-                {/* Remove button */}
+                {/* Remove button on hover */}
                 <button
                   onClick={() => handleRemoveIcon(icon.id)}
-                  className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
                   title="Remove from bundle"
                 >
                   <XIcon className="w-3 h-3" />
                 </button>
-                
-                {/* Selected indicator */}
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center z-10 group-hover:opacity-0 transition-opacity">
-                  <CheckIcon className="w-2.5 h-2.5 text-white" />
-                </div>
               </div>
             ))}
           </div>
