@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
-import { BundleDetailClient } from "@/components/bundles/bundle-detail-client";
+import { HomeHeader } from "@/components/home-header";
+import { BundleBrowserWrapper } from "@/components/bundles/bundle-browser-wrapper";
 import { getUser } from "@/lib/auth/actions";
+import { getCategories } from "@/lib/queries";
 import type { Bundle } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: bundle.name,
+    title: `${bundle.name} | Unicon`,
     description: bundle.description ?? `A collection of ${bundle.icon_count} icons`,
   };
 }
@@ -40,23 +41,27 @@ export default async function BundleDetailPage({ params }: PageProps) {
 
   const supabase = await createClient();
 
-  const { data: bundle, error } = await supabase
-    .from("bundles")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.profile.id)
-    .single();
+  const [bundleResult, categories] = await Promise.all([
+    supabase
+      .from("bundles")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.profile.id)
+      .single(),
+    getCategories(),
+  ]);
 
-  if (error || !bundle) {
+  if (bundleResult.error || !bundleResult.data) {
     notFound();
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
-      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
-        <BundleDetailClient initialBundle={bundle as Bundle} />
-      </div>
+      <HomeHeader />
+      <BundleBrowserWrapper 
+        initialBundle={bundleResult.data as Bundle}
+        categories={categories}
+      />
     </div>
   );
 }
