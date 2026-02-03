@@ -37,8 +37,33 @@ interface BundleBrowserProps {
   categories: string[];
   initialIcons: IconData[];
   totalIconCount: number;
+  countBySource: Record<string, number>;
   onUpdate: (bundle: Bundle) => void;
 }
+
+const SOURCE_COLORS: Record<string, string> = {
+  lucide: "bg-orange-500",
+  phosphor: "bg-emerald-500",
+  hugeicons: "bg-violet-500",
+  heroicons: "bg-blue-500",
+  tabler: "bg-cyan-500",
+  feather: "bg-pink-500",
+  remix: "bg-red-500",
+  "simple-icons": "bg-gray-500",
+  iconoir: "bg-teal-500",
+};
+
+const SOURCE_COLORS_SELECTED: Record<string, string> = {
+  lucide: "bg-orange-500/69",
+  phosphor: "bg-emerald-500/69",
+  hugeicons: "bg-violet-500/69",
+  heroicons: "bg-blue-500/69",
+  tabler: "bg-cyan-500/69",
+  feather: "bg-pink-500/69",
+  remix: "bg-red-500/69",
+  "simple-icons": "bg-gray-500/69",
+  iconoir: "bg-teal-500/69",
+};
 
 const SOURCE_OPTIONS = [
   "all",
@@ -59,7 +84,7 @@ function toTitleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
-export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount, onUpdate }: BundleBrowserProps) {
+export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount, countBySource, onUpdate }: BundleBrowserProps) {
   // Bundle state
   const [bundleIcons, setBundleIcons] = useState<BundleIcon[]>(
     Array.isArray(bundle.icons) ? bundle.icons : []
@@ -167,7 +192,10 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
   // Icon operations
   const handleAddIcon = useCallback((icon: IconData) => {
     if (bundleIconIds.has(icon.id)) {
-      toast.info("Icon already in bundle");
+      // Remove if already in bundle
+      setBundleIcons((prev) => prev.filter((i) => i.id !== icon.id));
+      setHasChanges(true);
+      toast.success(`Removed ${icon.normalizedName}`);
       return;
     }
     const bundleIcon: BundleIcon = {
@@ -272,9 +300,9 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
   const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen px-4 lg:px-20 xl:px-40">
       {/* Hero Section - Bundle Info */}
-      <div className="px-4 lg:px-20 xl:px-40 pt-8 pb-6 border-b border-border">
+      <div className="pt-8 pb-6 border-b border-border">
         {/* Back link */}
         <Link
           href="/bundles"
@@ -378,9 +406,9 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
         </div>
       </div>
 
-      {/* Bundle Icons Section */}
+      {/* Bundle Icons Section - ABOVE filters */}
       {bundleIcons.length > 0 && (
-        <div className="px-4 lg:px-20 xl:px-40 py-6 border-b border-border bg-[var(--accent-mint)]/5">
+        <div className="py-6 border-b border-border bg-[var(--accent-mint)]/5 -mx-4 lg:-mx-20 xl:-mx-40 px-4 lg:px-20 xl:px-40">
           <h2 className="text-sm font-medium text-muted-foreground mb-4">
             In this bundle ({bundleIcons.length})
           </h2>
@@ -413,39 +441,75 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
         </div>
       )}
 
-      {/* Search/Browse Section */}
-      <div className="px-4 lg:px-20 xl:px-40 py-6 border-b border-border">
-        {/* Search bar */}
-        <div className="relative mb-4 w-full max-w-[40rem]">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
-          <div className="search-gradient-border rounded-lg p-[1px]">
-            <input
-              type="text"
-              placeholder="Search icons to add to your bundle..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
-            />
-          </div>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
-            {isLoading && (
-              <Loader2Icon className="w-4 h-4 text-black/40 dark:text-white/40 animate-spin" />
-            )}
-            {!isLoading && debouncedSearch && searchType === "semantic" && (
-              <SparklesIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-            )}
-          </div>
+      {/* Library Tabs - Like Homepage */}
+      <div className="hidden md:flex flex-wrap items-center gap-2 text-xs pt-8 mb-6">
+        <button
+          onClick={() => setSelectedSource("all")}
+          aria-label="Show all libraries"
+          aria-pressed={selectedSource === "all"}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-[background-color,border-color,color,transform] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+            selectedSource === "all"
+              ? "bg-black/90 dark:bg-white/90 text-white dark:text-black border-2 border-black dark:border-white"
+              : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
+          }`}
+        >
+          <span className="font-medium">All Libraries</span>
+          <span className="opacity-70">• {totalIconCount.toLocaleString("en-US")}</span>
+        </button>
+        {Object.entries(countBySource).map(([source, count]) => (
+          <button
+            key={source}
+            onClick={() => setSelectedSource(source as IconLibrary)}
+            aria-label={`Filter by ${source} library`}
+            aria-pressed={selectedSource === source}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/20 ${
+              selectedSource === source
+                ? `${SOURCE_COLORS_SELECTED[source]} text-white border-2 border-current shadow-sm`
+                : "bg-transparent border-2 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black/80 dark:hover:text-white/80"
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full transition-colors duration-300 ease-out ${selectedSource === source ? "bg-white" : SOURCE_COLORS[source]}`} />
+            <span className="capitalize font-medium">{source}</span>
+            <span className={selectedSource === source ? "opacity-90" : "opacity-70"}>
+              {count?.toLocaleString("en-US")}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Search bar */}
+      <div className="relative mb-4 w-full max-w-[40rem]">
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 dark:text-white/40 z-10" />
+        <div className="search-gradient-border rounded-lg p-[1px]">
+          <input
+            type="text"
+            placeholder="Search icons to add to your bundle..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-white dark:bg-[hsl(0,0%,3%)] rounded-lg pl-10 pr-12 py-2.5 text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 text-sm focus:outline-none focus:ring-0 focus:bg-gray-50 dark:focus:bg-[hsl(0,0%,5%)] transition-colors duration-500"
+          />
         </div>
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
+          {isLoading && (
+            <Loader2Icon className="w-4 h-4 text-black/40 dark:text-white/40 animate-spin" />
+          )}
+          {!isLoading && debouncedSearch && searchType === "semantic" && (
+            <SparklesIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+          )}
+        </div>
+      </div>
 
-        {/* AI feedback */}
-        {expandedQuery && debouncedSearch && (
-          <div className="mb-4 flex items-start gap-2 text-xs text-black/40 dark:text-white/40">
-            <SparklesIcon className="w-3 h-3 text-purple-500 mt-0.5 shrink-0" />
-            <span>AI expanded: <span className="text-black/60 dark:text-white/60">{expandedQuery}</span></span>
-          </div>
-        )}
+      {/* AI feedback */}
+      {expandedQuery && debouncedSearch && (
+        <div className="mb-4 flex items-start gap-2 text-xs text-black/40 dark:text-white/40">
+          <SparklesIcon className="w-3 h-3 text-purple-500 mt-0.5 shrink-0" />
+          <span>AI expanded: <span className="text-black/60 dark:text-white/60">{expandedQuery}</span></span>
+        </div>
+      )}
 
-        {/* Filters */}
+      {/* Filters & Controls */}
+      <div className="flex flex-col gap-3 mb-6">
+        {/* Row 1: Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setFiltersExpanded(!filtersExpanded)}
@@ -466,8 +530,8 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
 
           {filtersExpanded && (
             <>
-              {/* Library filter */}
-              <div className="flex items-center gap-2">
+              {/* Library filter - mobile only (desktop uses tabs above) */}
+              <div className="flex items-center gap-2 md:hidden">
                 <span className="text-[10px] font-mono text-black/50 dark:text-white/50 uppercase">Library</span>
                 <div className="flex flex-wrap gap-1.5">
                   {SOURCE_OPTIONS.map((source) => (
@@ -486,7 +550,7 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
                 </div>
               </div>
 
-              <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10" />
+              <div className="hidden sm:block w-px h-5 bg-black/10 dark:bg-white/10 md:hidden" />
 
               {/* Category filter */}
               <div className="flex items-center gap-2">
@@ -524,14 +588,14 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
           )}
         </div>
 
-        {/* Display controls */}
-        <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-black/5 dark:border-white/5">
+        {/* Row 2: Display controls */}
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/5 dark:border-white/5">
           <button
             onClick={() => setControlsExpanded(!controlsExpanded)}
             className="flex items-center gap-1.5 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition-colors"
           >
             <SlidersHorizontalIcon className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-mono uppercase tracking-wider">Display</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider">Controls</span>
             <svg
               className={`w-3 h-3 transition-transform ${controlsExpanded ? "rotate-180" : ""}`}
               fill="none"
@@ -592,24 +656,18 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
       </div>
 
       {/* Browse Icons Grid */}
-      <div className="px-4 lg:px-20 xl:px-40 py-8">
+      <div className="pb-8">
         {/* Results count */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-black/40 dark:text-white/40 text-xs">
-            {debouncedSearch || selectedSource !== "all" || selectedCategory !== "all" 
-              ? `${totalResults.toLocaleString("en-US")} results` 
-              : `Browse ${totalResults.toLocaleString("en-US")} icons`}
-            {" • "}Click to add to bundle
+            Page {page + 1} of {totalPages} • {totalResults.toLocaleString("en-US")} icons
+            {" • "}Click to add/remove from bundle
             {isLoading && <Loader2Icon className="inline ml-2 w-3 h-3 animate-spin" />}
           </p>
         </div>
 
         {/* Icon Grid */}
-        {isLoading && browseIcons.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2Icon className="w-8 h-8 text-black/40 dark:text-white/40 animate-spin" />
-          </div>
-        ) : browseIcons.length > 0 ? (
+        {browseIcons.length > 0 ? (
           <>
             <div className="grid gap-3" style={gridStyle}>
               {browseIcons.map((icon) => (
@@ -677,9 +735,13 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
               </div>
             )}
           </>
+        ) : isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2Icon className="w-8 h-8 text-black/40 dark:text-white/40 animate-spin" />
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-6xl mb-4 opacity-50">🔍</div>
+            <SearchIcon className="w-12 h-12 text-black/20 dark:text-white/20 mb-4" />
             <h3 className="text-lg font-medium text-black/60 dark:text-white/60">No icons found</h3>
             <p className="text-sm text-black/40 dark:text-white/40 mt-1">
               Try adjusting your search or filters
@@ -689,7 +751,7 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
       </div>
 
       {/* Footer */}
-      <div className="px-4 lg:px-20 xl:px-40 py-8 border-t border-border">
+      <div className="py-8 border-t border-border">
         <p className="text-sm text-muted-foreground">
           Created {new Date(bundle.created_at).toLocaleDateString("en-US", {
             month: "long",

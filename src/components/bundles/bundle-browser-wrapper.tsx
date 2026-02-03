@@ -10,6 +10,7 @@ interface BundleBrowserWrapperProps {
   categories: string[];
   initialIcons: IconData[];
   totalIconCount: number;
+  countBySource: Record<string, number>;
 }
 
 export function BundleBrowserWrapper({ 
@@ -17,6 +18,7 @@ export function BundleBrowserWrapper({
   categories,
   initialIcons,
   totalIconCount,
+  countBySource,
 }: BundleBrowserWrapperProps) {
   const [bundle, setBundle] = useState(initialBundle);
 
@@ -26,6 +28,7 @@ export function BundleBrowserWrapper({
       categories={categories}
       initialIcons={initialIcons}
       totalIconCount={totalIconCount}
+      countBySource={countBySource}
       onUpdate={setBundle}
     />
   );
