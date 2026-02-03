@@ -420,7 +420,7 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
 
       {/* Bundle Icons Section - ABOVE filters */}
       {bundleIcons.length > 0 && (
-        <div className="py-6 border-b border-border bg-[var(--accent-mint)]/5 -mx-4 lg:-mx-20 xl:-mx-40 px-4 lg:px-20 xl:px-40">
+        <div className="py-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-4">
             In this bundle ({bundleIcons.length})
           </h2>
