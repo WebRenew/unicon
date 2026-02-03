@@ -31,6 +31,8 @@ import {
 import { normalizeIcons, normalizeIcon } from "@/lib/icon-utils";
 import { STARTER_PACKS } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { validateApiToken } from "@/lib/auth/api-token";
 
 // Constants
 const CHARACTER_LIMIT = 100000; // Maximum response size in characters
@@ -41,7 +43,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id",
+    "Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id",
 };
 
 // Reusable Zod schemas
@@ -161,11 +163,19 @@ function formatBatchIconsText(
     .join(separator);
 }
 
+// Auth context for authenticated tools
+interface AuthContext {
+  userId: string;
+  isPro: boolean;
+}
+
 // Create MCP server with all tools and resources
-function createMcpServer() {
+function createMcpServer(authContext?: AuthContext) {
+  const isAuthenticated = !!authContext?.userId && authContext?.isPro;
+  
   const server = new McpServer({
     name: "unicon",
-    version: "1.0.0",
+    version: "1.1.0",
     description: `Unicon: 19,000+ icons from 9 libraries (Lucide, Phosphor, Heroicons, etc.) in React/Vue/Svelte/SVG.
 
 AVAILABLE TOOLS:
@@ -173,6 +183,10 @@ AVAILABLE TOOLS:
 - get_icon: Get a single icon by ID (e.g., "lucide:arrow-right").
 - get_multiple_icons: Get multiple icons at once (up to 50).
 - get_starter_pack: Get curated icon packs (shadcn-ui, dashboard, ecommerce, etc.).
+${isAuthenticated ? `
+PRO TOOLS (authenticated):
+- list_my_bundles: List your saved icon bundles.
+- get_my_bundle: Get icons from a saved bundle.` : ""}
 
 QUICK START:
 - For shadcn/ui: get_starter_pack({ packId: "shadcn-ui" })
@@ -1038,6 +1052,231 @@ Get a curated set of icons for common use cases.
     }
   );
 
+  // ============================================
+  // AUTHENTICATED TOOLS (Pro users only)
+  // ============================================
+  if (isAuthenticated && authContext) {
+    // TOOL: list_my_bundles
+    server.registerTool(
+      "list_my_bundles",
+      {
+        title: "List My Bundles",
+        description: `List all your saved icon bundles. Requires authentication via UNICON_API_TOKEN.
+
+Returns:
+  Array of bundles with id, name, description, and icon count.
+
+Example:
+  list_my_bundles({})`,
+        inputSchema: z.object({}).strict(),
+        outputSchema: z
+          .object({
+            bundles: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                description: z.string().nullable(),
+                icon_count: z.number(),
+                is_public: z.boolean(),
+                share_slug: z.string().nullable(),
+              })
+            ),
+            total: z.number(),
+          })
+          .strict(),
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: false,
+        },
+      },
+      async () => {
+        const supabase = createAdminClient();
+
+        const { data: bundles, error } = await supabase
+          .from("bundles")
+          .select("id, name, description, icon_count, is_public, share_slug, created_at, updated_at")
+          .eq("user_id", authContext.userId)
+          .order("updated_at", { ascending: false });
+
+        if (error) {
+          return {
+            content: [{ type: "text", text: `Error fetching bundles: ${error.message}` }],
+            isError: true,
+          };
+        }
+
+        const output = {
+          bundles: bundles || [],
+          total: bundles?.length || 0,
+        };
+
+        return {
+          content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+          structuredContent: output,
+        };
+      }
+    );
+
+    // TOOL: get_my_bundle
+    server.registerTool(
+      "get_my_bundle",
+      {
+        title: "Get My Bundle",
+        description: `Get icons from one of your saved bundles. Requires authentication via UNICON_API_TOKEN.
+
+Args:
+  - bundleId (string): The bundle ID (UUID)
+  - format (string, optional): Output format - svg, react, json (default: react)
+  - includeCode (boolean, optional): Include generated code (default: true)
+
+Returns:
+  Bundle metadata, list of icons, and optionally generated code.
+
+Example:
+  get_my_bundle({ bundleId: "abc-123", format: "react" })`,
+        inputSchema: z
+          .object({
+            bundleId: z.string().uuid().describe("Bundle ID"),
+            format: z
+              .enum(["svg", "react", "json"])
+              .default("react")
+              .describe("Output format"),
+            includeCode: z
+              .boolean()
+              .default(true)
+              .describe("Include generated code in response"),
+          })
+          .strict(),
+        outputSchema: z
+          .object({
+            bundle: z.object({
+              id: z.string(),
+              name: z.string(),
+              description: z.string().nullable(),
+              icon_count: z.number(),
+              icons: z.array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                  normalizedName: z.string(),
+                  source: z.string(),
+                })
+              ),
+            }),
+            format: z.string(),
+            code: z.string().optional(),
+          })
+          .strict(),
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: false,
+        },
+      },
+      async (params) => {
+        const supabase = createAdminClient();
+        const format = params.format as "svg" | "react" | "json";
+        const includeCode = params.includeCode ?? true;
+
+        // Fetch the bundle
+        const { data: bundle, error } = await supabase
+          .from("bundles")
+          .select("*")
+          .eq("id", params.bundleId)
+          .eq("user_id", authContext.userId)
+          .single();
+
+        if (error || !bundle) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Bundle not found. Use list_my_bundles to see your available bundles.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        // Get icon IDs from bundle
+        const iconIds = (bundle.icons as Array<{ id: string }>)?.map((i) => i.id) || [];
+
+        if (iconIds.length === 0) {
+          const output = {
+            bundle: {
+              id: bundle.id,
+              name: bundle.name,
+              description: bundle.description,
+              icon_count: 0,
+              icons: [],
+            },
+            format,
+            code: includeCode ? "// Empty bundle - no icons" : undefined,
+          };
+          return {
+            content: [{ type: "text", text: "Bundle is empty - no icons saved." }],
+            structuredContent: output,
+          };
+        }
+
+        // Fetch full icon data
+        const icons = await getIconsByIds(iconIds);
+
+        // Apply normalization if configured
+        const normalizedIcons = bundle.normalize_strokes
+          ? normalizeIcons(icons, {
+              strokeWidth: bundle.target_stroke_width || 2,
+              skipFillIcons: true,
+            })
+          : icons;
+
+        // Generate code if requested
+        let code: string | undefined;
+        if (includeCode) {
+          const strokeWidth = bundle.target_stroke_width || 2;
+          switch (format) {
+            case "react":
+              code = generateReactBundle(normalizedIcons, { strokeWidth });
+              break;
+            case "svg":
+              code = generateSvgBundle(normalizedIcons, { strokeWidth });
+              break;
+            case "json":
+              code = generateJsonBundle(normalizedIcons);
+              break;
+          }
+        }
+
+        const output = {
+          bundle: {
+            id: bundle.id,
+            name: bundle.name,
+            description: bundle.description,
+            icon_count: icons.length,
+            icons: icons.map((icon) => ({
+              id: icon.id,
+              name: icon.name,
+              normalizedName: icon.normalizedName,
+              source: icon.sourceId,
+            })),
+          },
+          format,
+          code,
+        };
+
+        const text = includeCode && code ? truncateIfNeeded(code) : JSON.stringify(output, null, 2);
+
+        return {
+          content: [{ type: "text", text }],
+          structuredContent: output,
+        };
+      }
+    );
+  }
+
   return server;
 }
 
@@ -1049,9 +1288,33 @@ function createTransport() {
   });
 }
 
+// Extract auth context from request headers
+async function getAuthContext(request: Request): Promise<AuthContext | undefined> {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader) return undefined;
+
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  const token = match?.[1];
+  if (!token || !token.startsWith("uni_")) return undefined;
+
+  try {
+    const result = await validateApiToken(token);
+    if (result.valid && result.userId && result.isPro) {
+      return { userId: result.userId, isPro: result.isPro };
+    }
+  } catch (err) {
+    logger.error("Auth context extraction error:", err);
+  }
+
+  return undefined;
+}
+
 // Shared handler for MCP requests (used by both POST and GET)
 async function handleMcpRequest(request: Request, method: string): Promise<Response> {
-  const server = createMcpServer();
+  // Extract auth context if token provided
+  const authContext = await getAuthContext(request);
+  
+  const server = createMcpServer(authContext);
   const transport = createTransport();
 
   try {

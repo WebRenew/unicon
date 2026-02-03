@@ -24,6 +24,9 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 const API_BASE_URL = process.env.UNICON_API_URL || "https://unicon.sh/api/mcp";
+// API token for authenticated access to user bundles (Pro feature)
+// Can be obtained by running: unicon login
+const API_TOKEN = process.env.UNICON_API_TOKEN;
 const MCP_PROTOCOL_VERSION = "2024-11-05";
 let requestId = 0;
 let isInitialized = false;
@@ -41,16 +44,26 @@ async function ensureInitialized() {
     isInitialized = true;
 }
 /**
+ * Build headers for API requests, including auth if available
+ */
+function getRequestHeaders() {
+    const headers = {
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+    };
+    if (API_TOKEN) {
+        headers["Authorization"] = `Bearer ${API_TOKEN}`;
+    }
+    return headers;
+}
+/**
  * Send MCP JSON-RPC request to the API
  */
 async function mcpRequest(method, params = {}) {
     requestId++;
     const response = await fetch(API_BASE_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json, text/event-stream",
-        },
+        headers: getRequestHeaders(),
         body: JSON.stringify({
             jsonrpc: "2.0",
             id: requestId,
@@ -157,6 +170,12 @@ async function main() {
     // Log to stderr so it doesn't interfere with MCP protocol on stdout
     console.error("Unicon MCP Server running");
     console.error(`API endpoint: ${API_BASE_URL}`);
+    if (API_TOKEN) {
+        console.error("Authenticated: Pro features available (list_my_bundles, get_my_bundle)");
+    }
+    else {
+        console.error("Unauthenticated: Set UNICON_API_TOKEN for Pro features");
+    }
     console.error("Ready for requests from AI assistants");
 }
 main().catch((error) => {

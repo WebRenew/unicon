@@ -8,6 +8,7 @@ Model Context Protocol (MCP) server for the Unicon icon library. Connects AI ass
 - 🎨 **Multiple Formats**: Get icons as React, Vue, Svelte, SVG, or JSON
 - 📦 **9 Icon Libraries**: Lucide, Phosphor, Hugeicons, Heroicons, Tabler, Feather, Remix, Simple Icons, Iconoir
 - ⚡ **Fast**: Hosted API with local MCP bridge for optimal performance
+- 🔐 **Pro: Access Your Bundles**: Authenticate to use your saved icon bundles
 
 ## Installation
 
@@ -148,6 +149,89 @@ Get total icon count and per-library statistics.
 ### `unicon://starter_packs`
 
 List available starter packs with their icons.
+
+## Authentication (Pro Feature)
+
+Pro subscribers can access their saved bundles via the MCP server. This requires authentication.
+
+### Step 1: Login via CLI
+
+```bash
+npx @webrenew/unicon login
+```
+
+This opens a browser window to authenticate. Once complete, your token is saved to `~/.unicon/auth.json`.
+
+### Step 2: Get Your API Token
+
+After logging in, you can find your token in `~/.unicon/auth.json` or set it manually:
+
+```bash
+cat ~/.unicon/auth.json | grep access_token
+```
+
+### Step 3: Configure MCP with Token
+
+Add the token to your MCP server configuration:
+
+**Claude Desktop:**
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"],
+      "env": {
+        "UNICON_API_TOKEN": "uni_your_token_here"
+      }
+    }
+  }
+}
+```
+
+**Cursor IDE:**
+
+```json
+{
+  "mcpServers": {
+    "unicon": {
+      "command": "npx",
+      "args": ["-y", "@webrenew/unicon-mcp-server"],
+      "env": {
+        "UNICON_API_TOKEN": "uni_your_token_here"
+      }
+    }
+  }
+}
+```
+
+### Authenticated Tools
+
+Once authenticated, you get access to these additional tools:
+
+#### `list_my_bundles`
+
+List all your saved icon bundles.
+
+**Example:**
+```
+"List my saved icon bundles"
+```
+
+#### `get_my_bundle`
+
+Get icons from one of your saved bundles.
+
+**Parameters:**
+- `bundleId` (required): Bundle ID (UUID)
+- `format` (optional): Output format (react, svg, json) - default: react
+- `includeCode` (optional): Include generated code - default: true
+
+**Example:**
+```
+"Get the icons from my dashboard bundle"
+```
 
 ## Configuration
 
