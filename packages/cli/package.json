@@ -4,7 +4,7 @@
   "description": "CLI for searching and bundling icons from Unicon - the unified icon library",
   "type": "module",
   "bin": {
-    "unicon": "./dist/index.js"
+    "unicon": "dist/index.js"
   },
   "files": [
     "dist"
@@ -30,7 +30,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/WebRenew/unicon.git",
+    "url": "git+https://github.com/WebRenew/unicon.git",
     "directory": "packages/cli"
   },
   "homepage": "https://unicon.dev",
