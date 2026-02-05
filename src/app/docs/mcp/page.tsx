@@ -94,6 +94,40 @@ Parameters:
 - \`strokeWidth\` - Stroke width for all icons
 - \`normalizeStrokes\` - Skip fill icons when normalizing strokes
 
+## Saved Bundles (Pro)
+
+To save and access your bundles, authenticate once:
+
+1. Run \`npx @webrenew/unicon login\`
+2. The local MCP server (stdio) auto-reads \`~/.unicon/auth.json\`
+3. Or set \`UNICON_API_TOKEN\` in your MCP server config
+
+**Note:** URL-based MCP clients must send \`Authorization: Bearer <token>\` to use bundle tools.
+
+### list_my_bundles
+List your saved bundles.
+
+### get_my_bundle
+Fetch a saved bundle by ID (with optional code output).
+
+Parameters:
+- \`bundleId\` (required) - Bundle ID (UUID)
+- \`format\` - Output format (react, svg, json)
+- \`includeCode\` - Include generated code (default: true)
+
+### create_my_bundle
+Create and save a new bundle.
+
+Parameters:
+- \`name\` (required) - Bundle name
+- \`iconIds\` (required) - Array of icon IDs
+- \`description\` - Bundle description
+- \`strokePreset\` - thin | regular | bold
+- \`normalizeStrokes\` - Normalize stroke widths
+- \`targetStrokeWidth\` - Stroke width when normalizing
+- \`normalizeViewbox\` - Normalize viewBox sizes
+- \`targetViewbox\` - Target viewBox when normalizing
+
 ## Available Resources
 
 - \`unicon://sources\` - List all available icon libraries
@@ -109,6 +143,7 @@ Parameters:
 - "Get React components for lucide:home, lucide:settings, and lucide:user"
 - "Get the shadcn-ui starter pack"
 - "Search for icons related to notifications"
+- "Create a bundle called 'dashboard' with lucide:home, lucide:settings, lucide:user"
 
 ## Verification
 

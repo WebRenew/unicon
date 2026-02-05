@@ -76,6 +76,22 @@ npx @anthropic-ai/claude-code mcp add unicon -- npx -y @webrenew/unicon-mcp-serv
 "Generate social media icons (Twitter, GitHub, LinkedIn) as SVG"
 ```
 
+### 💾 Saved Bundles (Pro)
+
+Authenticate once:
+
+```bash
+npx @webrenew/unicon login
+```
+
+The local MCP server will read `~/.unicon/auth.json` automatically.
+
+```
+"Create a bundle called 'dashboard' with lucide:home, lucide:settings, lucide:user"
+"List my saved bundles"
+"Get my bundle 123e4567-e89b-12d3-a456-426614174000 as React code"
+```
+
 ### ℹ️ Get Information
 
 ```

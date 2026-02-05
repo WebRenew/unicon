@@ -162,17 +162,11 @@ npx @webrenew/unicon login
 
 This opens a browser window to authenticate. Once complete, your token is saved to `~/.unicon/auth.json`.
 
-### Step 2: Get Your API Token
+### Step 2: Use the Token (Auto-Loaded)
 
-After logging in, you can find your token in `~/.unicon/auth.json` or set it manually:
+After logging in, the MCP server will automatically read `~/.unicon/auth.json`.
 
-```bash
-cat ~/.unicon/auth.json | grep access_token
-```
-
-### Step 3: Configure MCP with Token
-
-Add the token to your MCP server configuration:
+If you want to override that token (or run in a different environment), you can set `UNICON_API_TOKEN` manually:
 
 **Claude Desktop:**
 
@@ -227,6 +221,20 @@ Get icons from one of your saved bundles.
 - `bundleId` (required): Bundle ID (UUID)
 - `format` (optional): Output format (react, svg, json) - default: react
 - `includeCode` (optional): Include generated code - default: true
+
+#### `create_my_bundle`
+
+Create and save a new bundle.
+
+**Parameters:**
+- `name` (required): Bundle name
+- `iconIds` (required): Array of icon IDs
+- `description` (optional): Bundle description
+- `strokePreset` (optional): thin | regular | bold
+- `normalizeStrokes` (optional): Normalize stroke widths
+- `targetStrokeWidth` (optional): Stroke width when normalizing
+- `normalizeViewbox` (optional): Normalize viewBox sizes
+- `targetViewbox` (optional): Target viewBox when normalizing
 
 **Example:**
 ```

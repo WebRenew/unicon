@@ -24,6 +24,9 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { existsSync, readFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
 import {
   CallToolRequestSchema,
   ListResourcesRequestSchema,
@@ -36,7 +39,19 @@ const API_BASE_URL =
 
 // API token for authenticated access to user bundles (Pro feature)
 // Can be obtained by running: unicon login
-const API_TOKEN = process.env.UNICON_API_TOKEN;
+function loadCliAuthToken(): string | null {
+  try {
+    const authPath = join(homedir(), ".unicon", "auth.json");
+    if (!existsSync(authPath)) return null;
+    const raw = readFileSync(authPath, "utf-8");
+    const parsed = JSON.parse(raw) as { access_token?: string };
+    return parsed?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
+const API_TOKEN = process.env.UNICON_API_TOKEN || loadCliAuthToken();
 
 const MCP_PROTOCOL_VERSION = "2024-11-05";
 
@@ -247,9 +262,9 @@ async function main() {
   console.error("Unicon MCP Server running");
   console.error(`API endpoint: ${API_BASE_URL}`);
   if (API_TOKEN) {
-    console.error("Authenticated: Pro features available (list_my_bundles, get_my_bundle)");
+    console.error("Authenticated: Pro features available (list_my_bundles, get_my_bundle, create_my_bundle)");
   } else {
-    console.error("Unauthenticated: Set UNICON_API_TOKEN for Pro features");
+    console.error("Unauthenticated: set UNICON_API_TOKEN or run 'unicon login' for Pro features");
   }
   console.error("Ready for requests from AI assistants");
 }

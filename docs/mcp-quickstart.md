@@ -144,6 +144,20 @@ Claude will:
 **Plain SVG:**
 > "Get the SVG for simple-icons:github"
 
+### 6. Save a Bundle (Pro)
+
+Authenticate once (OAuth device flow):
+
+```bash
+npx @webrenew/unicon login
+```
+
+The local MCP server will automatically read `~/.unicon/auth.json`.
+
+Then ask:
+
+> "Create a bundle called 'dashboard' with lucide:home, lucide:settings, lucide:user"
+
 ## Example Workflows
 
 ### Building a Navigation Bar

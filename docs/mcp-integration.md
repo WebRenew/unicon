@@ -454,6 +454,53 @@ Get a curated starter pack of icons for common use cases.
 }
 ```
 
+## Authenticated Tools (Pro)
+
+Saved bundles are a Pro feature and require authentication. When authenticated, these tools appear in your MCP client.
+
+### Authentication
+
+**Desktop/stdio (Claude Desktop, Claude Code, local MCP):**
+1. Run `npx @webrenew/unicon login`
+2. The MCP server auto-reads `~/.unicon/auth.json`
+3. Optional override: set `UNICON_API_TOKEN`
+
+**URL-based MCP clients:**
+Send `Authorization: Bearer <token>` with your MCP requests.
+
+### `list_my_bundles`
+
+List all your saved bundles.
+
+### `get_my_bundle`
+
+Fetch a saved bundle by ID.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `bundleId` | string | ✅ | Bundle ID (UUID) |
+| `format` | string | ❌ | Output format (react, svg, json) |
+| `includeCode` | boolean | ❌ | Include generated code (default: true) |
+
+### `create_my_bundle`
+
+Create and save a new bundle.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `name` | string | ✅ | Bundle name |
+| `iconIds` | string[] | ✅ | Array of icon IDs |
+| `description` | string | ❌ | Bundle description |
+| `strokePreset` | string | ❌ | thin \| regular \| bold |
+| `normalizeStrokes` | boolean | ❌ | Normalize stroke widths |
+| `targetStrokeWidth` | number | ❌ | Stroke width when normalizing |
+| `normalizeViewbox` | boolean | ❌ | Normalize viewBox sizes |
+| `targetViewbox` | string | ❌ | Target viewBox when normalizing |
+
 ## Available Resources
 
 ### `unicon://sources`
@@ -739,13 +786,14 @@ Take advantage of semantic search:
 - **Search:** 100 requests per hour per user
 - **Get Icon:** 500 requests per hour per user
 - **Resources:** Unlimited (cached)
+- **Bundles (Pro):** 100 requests/minute
 
 Need higher limits? Contact us for API key access.
 
 ## Privacy & Security
 
 - **No tracking:** We don't log search queries or user data
-- **No authentication required:** Free tier is anonymous
+- **Auth only for bundles:** Icon search/generation is anonymous; saved bundles require authentication
 - **Open source:** Server code is available on GitHub
 - **Hosted infrastructure:** API runs on Vercel Edge (GDPR compliant)
 
