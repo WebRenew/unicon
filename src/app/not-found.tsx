@@ -5,12 +5,7 @@ import { HomeIcon } from "@/components/icons/ui/home";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { ArrowLeftIcon } from "@/components/icons/ui/arrow-left";
-import { Tiny5 } from "next/font/google";
-
-const tiny5 = Tiny5({
-  weight: "400",
-  subsets: ["latin"],
-});
+const tiny5 = { className: "font-mono uppercase tracking-[0.18em]" };
 
 export default function NotFound() {
   return (

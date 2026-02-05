@@ -26,6 +26,9 @@
   --ring: 0 0% 60%;
   --radius: 0.625rem;
 
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-geist-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
   /* Brand Accent Colors */
   --accent-lavender: #E6A8D7;
   --accent-aqua: #7FD3E6;

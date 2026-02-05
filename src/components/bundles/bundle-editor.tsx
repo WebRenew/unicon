@@ -175,7 +175,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [bundle.id, icons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, onUpdate]);
+  }, [bundle.id, icons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, onUpdate]);
 
   const renderIcon = useCallback((icon: BundleIcon) => {
     const svgContent = icon.svg;
@@ -214,7 +214,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
         dangerouslySetInnerHTML={{ __html: svgHtml }}
       />
     );
-  }, [normalizeStrokes, targetStrokeWidth, normalizeViewbox]);
+  }, [normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox]);
 
   const renderSearchIcon = useCallback((icon: IconData) => {
     const svgHtml = generateRenderableSvg(
