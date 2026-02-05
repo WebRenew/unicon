@@ -112,7 +112,7 @@ function toTitleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
-const SKILL_COMMAND = "npx skills add https://github.com/webrenew/unicon --skill unicon";
+const SKILL_COMMAND = "npx @webrenew/unicon";
 
 // Cursor MCP deeplink - base64 encoded config
 // See: https://cursor.com/docs/context/mcp/install-links
