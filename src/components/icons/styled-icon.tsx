@@ -255,7 +255,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
             onMouseLeave={() => onHoverSource?.(null)}
             aria-label={`${icon.normalizedName} icon from ${icon.sourceId}${isSelected ? ", selected" : ""}`}
             style={containerStyle}
-            className={`group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 overflow-hidden ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
+            className={`group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 ${styles.container} ${isSelected ? "ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-[hsl(0,0%,3%)]" : ""
               }`}
           >
             {/* Gradient corner accent on hover */}
