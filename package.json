@@ -24,7 +24,7 @@
     "@ai-sdk/anthropic": "^3.0.37",
     "@ai-sdk/openai": "^3.0.25",
     "@libsql/client": "^0.17.0",
-    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@opentelemetry/sdk-trace-node": "^2.5.0",
     "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -48,7 +48,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "drizzle-orm": "^0.45.1",
-    "motion": "^12.29.2",
+    "motion": "^12.33.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.4",
@@ -57,7 +57,7 @@
     "sonner": "^2.0.7",
     "stripe": "^20.2.0",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
