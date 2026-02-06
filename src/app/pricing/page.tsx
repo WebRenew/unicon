@@ -153,9 +153,10 @@ function PricingContent() {
       }
 
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (!data.url) {
+        throw new Error("Failed to open subscription portal");
       }
+      window.location.href = data.url;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to open subscription portal");
       setIsDowngrading(false);
