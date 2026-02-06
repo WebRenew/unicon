@@ -29,8 +29,8 @@ const PRO_FEATURES = [
   { text: "Everything in Free", comingSoon: false },
   { text: "Unlimited saved bundles", comingSoon: false },
   { text: "Share bundles with your team", comingSoon: false },
-  { text: "Authenticated MCP", comingSoon: true },
-  { text: "Brand kit for consistent icons", comingSoon: true },
+  { text: "Authenticated MCP", comingSoon: false },
+  { text: "Share saved icon packs with team", comingSoon: false },
   { text: "Priority support", comingSoon: false },
 ];
 
@@ -190,12 +190,21 @@ function PricingContent() {
               </ul>
 
               {user ? (
-                <button
-                  disabled
-                  className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
-                >
-                  Current Plan
-                </button>
+                isPro ? (
+                  <button
+                    disabled
+                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
+                  >
+                    Downgrade
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
+                  >
+                    Current Plan
+                  </button>
+                )
               ) : (
                 <button
                   onClick={() => setLoginDialogOpen(true)}
