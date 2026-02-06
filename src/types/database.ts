@@ -57,3 +57,45 @@ export interface UserWithSubscription {
   subscription: Subscription;
   isPro: boolean;
 }
+
+// Teams
+
+export type TeamRole = "owner" | "admin" | "member";
+export type InviteStatus = "pending" | "accepted" | "expired" | "revoked";
+
+export interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  max_members: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  role: TeamRole;
+  created_at: string;
+  profile?: Profile;
+}
+
+export interface TeamInvite {
+  id: string;
+  team_id: string;
+  email: string;
+  role: TeamRole;
+  token: string;
+  invited_by: string;
+  status: InviteStatus;
+  expires_at: string;
+  created_at: string;
+  inviter?: Profile;
+}
+
+export interface TeamWithMembers extends Team {
+  members: TeamMember[];
+  invites: TeamInvite[];
+}

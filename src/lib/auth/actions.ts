@@ -4,13 +4,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Subscription, UserWithSubscription } from "@/types/database";
 
-export async function signInWithGitHub() {
+export async function signInWithGitHub(redirectPath?: string) {
   const supabase = await createClient();
+
+  const callbackUrl = new URL(`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`);
+  if (redirectPath) {
+    callbackUrl.searchParams.set("next", redirectPath);
+  }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 
@@ -23,13 +28,18 @@ export async function signInWithGitHub() {
   }
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(redirectPath?: string) {
   const supabase = await createClient();
+
+  const callbackUrl = new URL(`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`);
+  if (redirectPath) {
+    callbackUrl.searchParams.set("next", redirectPath);
+  }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 

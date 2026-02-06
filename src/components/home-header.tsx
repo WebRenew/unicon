@@ -59,8 +59,17 @@ export function HomeHeader() {
     getServerCartCount
   );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { user, profile, isPro, isLoading } = useAuth();
+
+  // Detect invite token from URL on mount — auto-open login dialog
+  const [inviteRedirect] = useState<string | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const token = new URLSearchParams(window.location.search).get("invite");
+    return token ? `/invite/${token}` : undefined;
+  });
+  const [loginDialogOpen, setLoginDialogOpen] = useState(
+    () => !!inviteRedirect && !user
+  );
 
   const handleBundleClick = () => {
     // Dispatch event to open cart in MetallicIconBrowser
@@ -170,7 +179,12 @@ export function HomeHeader() {
       </header>
 
       <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
-      <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+      <LoginDialog
+        open={loginDialogOpen}
+        onOpenChange={setLoginDialogOpen}
+        redirectPath={inviteRedirect}
+        message={inviteRedirect ? "Sign in to accept your team invite." : undefined}
+      />
     </>
   );
 }

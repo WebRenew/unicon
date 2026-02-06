@@ -1,0 +1,188 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import { getUser } from "@/lib/auth/actions";
+import { CrownIcon } from "@/components/icons/ui/crown";
+import { ManageSubscriptionButton } from "./manage-subscription-button";
+import { TeamSettings } from "@/components/settings/team-settings";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { TeamWithMembers } from "@/types/database";
+
+export const metadata = {
+  title: "Settings",
+  description: "Manage your account settings",
+};
+
+export default async function SettingsPage() {
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/?login=required");
+  }
+
+  const { profile, subscription, isPro } = user;
+  const displayName = profile.full_name ?? profile.email ?? "User";
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  const renewalDate = subscription.current_period_end
+    ? new Date(subscription.current_period_end).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
+  // Fetch team data for Pro users
+  let teamData: TeamWithMembers | null = null;
+  if (isPro) {
+    const admin = createAdminClient();
+    const { data: membership } = await admin
+      .from("team_members")
+      .select("team_id")
+      .eq("user_id", profile.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (membership) {
+      const [teamResult, membersResult, invitesResult] = await Promise.all([
+        admin.from("teams").select("*").eq("id", membership.team_id).single(),
+        admin
+          .from("team_members")
+          .select("id, team_id, user_id, role, created_at, profiles(id, email, full_name, avatar_url)")
+          .eq("team_id", membership.team_id)
+          .order("created_at", { ascending: true }),
+        admin
+          .from("team_invites")
+          .select("*")
+          .eq("team_id", membership.team_id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (teamResult.data) {
+        const members = (membersResult.data ?? []).map((m) => ({
+          id: m.id,
+          team_id: m.team_id,
+          user_id: m.user_id,
+          role: m.role as "owner" | "admin" | "member",
+          created_at: m.created_at,
+          profile: (m.profiles as unknown as Record<string, unknown> | null) ?? undefined,
+        }));
+
+        teamData = {
+          ...teamResult.data,
+          members,
+          invites: invitesResult.data ?? [],
+        } as TeamWithMembers;
+      }
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
+      <div className="flex-1 px-4 lg:px-20 xl:px-40 py-8">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <h1 className="text-2xl font-semibold text-black dark:text-white">
+            Settings
+          </h1>
+
+          {/* Profile card */}
+          <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+              Profile
+            </h2>
+            <div className="flex items-center gap-4">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 flex items-center justify-center shrink-0">
+                {profile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.avatar_url}
+                    alt={displayName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-black/70 dark:text-white/70">
+                    {displayName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-black dark:text-white truncate">
+                  {displayName}
+                </p>
+                {profile.email && (
+                  <p className="text-sm text-muted-foreground truncate">
+                    {profile.email}
+                  </p>
+                )}
+                {memberSince && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Member since {memberSince}
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Managed by your sign-in provider
+            </p>
+          </div>
+
+          {/* Subscription card */}
+          <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+              Subscription
+            </h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {isPro ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-amber-400/20 to-orange-500/20 text-amber-600 dark:text-amber-400">
+                    <CrownIcon className="w-3 h-3" />
+                    Pro
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-black/5 dark:bg-white/5 text-muted-foreground">
+                    Free
+                  </span>
+                )}
+                {isPro && renewalDate && (
+                  <span className="text-sm text-muted-foreground">
+                    Renews {renewalDate}
+                  </span>
+                )}
+              </div>
+              {isPro ? (
+                <div className="flex items-center gap-2">
+                  <ManageSubscriptionButton />
+                  <ManageSubscriptionButton variant="downgrade" />
+                </div>
+              ) : (
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-opacity"
+                >
+                  Upgrade to Pro
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Team card (Pro users only) */}
+          {isPro && (
+            <TeamSettings initialTeam={teamData} userId={profile.id} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

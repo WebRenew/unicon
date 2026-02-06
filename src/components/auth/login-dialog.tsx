@@ -16,16 +16,17 @@ import { signInWithGitHub, signInWithGoogle } from "@/lib/auth/actions";
 interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  message?: string;
+  message?: string | undefined;
+  redirectPath?: string | undefined;
 }
 
-export function LoginDialog({ open, onOpenChange, message }: LoginDialogProps) {
+export function LoginDialog({ open, onOpenChange, message, redirectPath }: LoginDialogProps) {
   const [isLoading, setIsLoading] = useState<"github" | "google" | null>(null);
 
   const handleGitHubSignIn = async () => {
     setIsLoading("github");
     try {
-      await signInWithGitHub();
+      await signInWithGitHub(redirectPath);
     } catch {
       setIsLoading(null);
     }
@@ -34,7 +35,7 @@ export function LoginDialog({ open, onOpenChange, message }: LoginDialogProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading("google");
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(redirectPath);
     } catch {
       setIsLoading(null);
     }
