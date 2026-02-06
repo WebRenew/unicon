@@ -92,6 +92,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 function PricingContent() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDowngrading, setIsDowngrading] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { user, isPro, isLoading: isAuthLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -138,6 +139,26 @@ function PricingContent() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to start checkout");
       setIsLoading(false);
+    }
+  };
+
+  const handleDowngrade = async () => {
+    setIsDowngrading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to open subscription portal");
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to open subscription portal");
+      setIsDowngrading(false);
     }
   };
 
@@ -192,10 +213,15 @@ function PricingContent() {
               {user ? (
                 isPro ? (
                   <button
-                    disabled
-                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
+                    onClick={handleDowngrade}
+                    disabled={isDowngrading}
+                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                   >
-                    Downgrade
+                    {isDowngrading ? (
+                      <Loader2Icon className="w-4 h-4 animate-spin mx-auto" />
+                    ) : (
+                      "Downgrade"
+                    )}
                   </button>
                 ) : (
                   <button
