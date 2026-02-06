@@ -46,7 +46,7 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="relative flex items-center justify-center w-8 h-8 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 hover:ring-2 hover:ring-black/20 dark:hover:ring-white/20 transition-all"
+          className="relative flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 hover:ring-2 hover:ring-black/20 dark:hover:ring-white/20 transition-all"
           aria-label="User menu"
         >
           {avatarUrl ? (
@@ -54,7 +54,7 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
             <img
               src={avatarUrl}
               alt={displayName}
-              className="w-full h-full object-cover"
+              className="w-full h-full rounded-full object-cover"
             />
           ) : (
             <span className="text-xs font-medium text-black/70 dark:text-white/70">
