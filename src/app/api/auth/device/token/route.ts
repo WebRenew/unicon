@@ -4,11 +4,22 @@
  * OAuth 2.0 Device Authorization - Poll for token
  * RFC 8628: https://datatracker.ietf.org/doc/html/rfc8628
  * 
- * Called by CLI/MCP to poll for the access token after user authorizes.
+ * Called by CLI/MCP/Figma to poll for the access token after user authorizes.
  */
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept",
+};
+
+/** Handle CORS preflight */
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +31,7 @@ export async function POST(request: Request) {
     if (grantType !== "urn:ietf:params:oauth:grant-type:device_code") {
       return NextResponse.json(
         { error: "unsupported_grant_type" },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -28,7 +39,7 @@ export async function POST(request: Request) {
     if (!deviceCode) {
       return NextResponse.json(
         { error: "invalid_request", error_description: "device_code is required" },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -43,7 +54,7 @@ export async function POST(request: Request) {
       console.error("Device code check error:", error);
       return NextResponse.json(
         { error: "server_error", error_description: error.message },
-        { status: 500 }
+        { status: 500, headers: CORS_HEADERS }
       );
     }
 
@@ -51,7 +62,7 @@ export async function POST(request: Request) {
     if (!result) {
       return NextResponse.json(
         { error: "invalid_grant", error_description: "Invalid device code" },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -64,7 +75,7 @@ export async function POST(request: Request) {
           refresh_token: result.refresh_token,
           token_type: "Bearer",
           scope: "bundles:read",
-        });
+        }, { headers: CORS_HEADERS });
 
       case "pending":
         // Still waiting for user authorization - return 400 with authorization_pending
@@ -74,7 +85,7 @@ export async function POST(request: Request) {
             error_description: "The user has not yet authorized this device",
             expires_in: result.expires_in,
           },
-          { status: 400 }
+          { status: 400, headers: CORS_HEADERS }
         );
 
       case "error":
@@ -84,20 +95,20 @@ export async function POST(request: Request) {
                           result.error === "access_denied" ? 400 : 400;
         return NextResponse.json(
           { error: result.error },
-          { status: statusCode }
+          { status: statusCode, headers: CORS_HEADERS }
         );
 
       default:
         return NextResponse.json(
           { error: "server_error" },
-          { status: 500 }
+          { status: 500, headers: CORS_HEADERS }
         );
     }
   } catch (err) {
     console.error("Device token error:", err);
     return NextResponse.json(
       { error: "server_error", error_description: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }
