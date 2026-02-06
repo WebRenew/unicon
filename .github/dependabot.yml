@@ -1,0 +1,107 @@
+version: 2
+
+updates:
+  # Root app (Next.js + Supabase + AI SDK)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    reviewers:
+      - tradecraft
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "chore(deps):"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      nextjs:
+        patterns:
+          - "next*"
+          - "@next/*"
+      supabase:
+        patterns:
+          - "@supabase/*"
+      ai-sdk:
+        patterns:
+          - "@ai-sdk/*"
+          - "ai"
+      tailwind:
+        patterns:
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+          - "tw-animate-css"
+      stripe:
+        patterns:
+          - "stripe"
+          - "@stripe/*"
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      upstash:
+        patterns:
+          - "@upstash/*"
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "react*"
+          - "@types/react*"
+          - "next*"
+          - "@next/*"
+          - "@supabase/*"
+          - "@ai-sdk/*"
+          - "ai"
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+          - "tw-animate-css"
+          - "stripe"
+          - "@stripe/*"
+          - "@radix-ui/*"
+          - "@upstash/*"
+      production-minor:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "react*"
+          - "@types/react*"
+          - "next*"
+          - "@next/*"
+          - "@supabase/*"
+          - "@ai-sdk/*"
+          - "ai"
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+          - "tw-animate-css"
+          - "stripe"
+          - "@stripe/*"
+          - "@radix-ui/*"
+          - "@upstash/*"
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 5
+    reviewers:
+      - tradecraft
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "chore(ci):"
+    groups:
+      actions:
+        patterns:
+          - "*"
