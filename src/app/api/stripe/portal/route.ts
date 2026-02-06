@@ -23,10 +23,15 @@ export async function POST() {
   }
 
   // Create portal session
-  const session = await stripe.billingPortal.sessions.create({
-    customer: subscription.provider_customer_id,
-    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/settings`,
-  });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.provider_customer_id,
+      return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/settings`,
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe portal error:", err);
+    return NextResponse.json({ error: "Failed to create portal session" }, { status: 500 });
+  }
 }

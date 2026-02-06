@@ -7,6 +7,17 @@ import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { logSearch } from "@/lib/analytics";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept",
+};
+
+/** Handle CORS preflight */
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 /** Row type for vector search results */
 interface VectorSearchRow {
   id: string;
@@ -47,6 +58,7 @@ export async function GET(request: NextRequest) {
         { icons, hasMore: false, searchType: "exact" },
         {
           headers: {
+            ...CORS_HEADERS,
             "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
           },
         }
@@ -80,6 +92,7 @@ export async function GET(request: NextRequest) {
         },
         {
           headers: {
+            ...CORS_HEADERS,
             // Aggressive caching for popular searches
             // s-maxage=1800 = 30min cache at edge
             // stale-while-revalidate=3600 = serve stale for 1hr while revalidating
@@ -124,13 +137,14 @@ export async function GET(request: NextRequest) {
       { icons, hasMore: icons.length === limit, searchType: "text" },
       {
         headers: {
+          ...CORS_HEADERS,
           "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
         },
       }
     );
   } catch (error) {
     logger.error("Error fetching icons:", error);
-    return NextResponse.json({ error: "Failed to fetch icons" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch icons" }, { status: 500, headers: CORS_HEADERS });
   }
 }
 
