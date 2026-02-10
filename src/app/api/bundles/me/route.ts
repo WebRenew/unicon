@@ -95,7 +95,12 @@ export async function GET(request: Request) {
         total: bundles?.length || 0,
       },
       {
-        headers: { ...CORS_HEADERS, ...getRateLimitHeaders(rateLimit) },
+        headers: {
+          ...CORS_HEADERS,
+          ...getRateLimitHeaders(rateLimit),
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+          "Vary": "Authorization",
+        },
       }
     );
   } catch (err) {

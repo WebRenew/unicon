@@ -20,7 +20,15 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ bundles });
+  return NextResponse.json(
+    { bundles },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        "Vary": "Cookie",
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

@@ -6,6 +6,7 @@ import { expandQueryWithSynonyms, hasSynonyms } from "@/lib/synonyms";
 import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
+import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 interface SearchResult extends IconData {
   score: number;
@@ -63,6 +64,20 @@ const BOOSTS = {
  * with optional AI fallback for complex queries.
  */
 export async function POST(request: NextRequest) {
+  // Rate limit by IP (x-real-ip is set reliably by Vercel and cannot be spoofed)
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  const rateLimit = await checkPublicRateLimit(ip);
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please slow down." },
+      { status: 429, headers: getRateLimitHeaders(rateLimit) }
+    );
+  }
+
   try {
     const body = await request.json();
     const { query, sourceId, limit = 50, offset = 0, useAI = false } = body as {

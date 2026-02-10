@@ -33,6 +33,7 @@ import { STARTER_PACKS } from "@/lib/starter-packs";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateApiToken } from "@/lib/auth/api-token";
+import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 // Constants
 const CHARACTER_LIMIT = 100000; // Maximum response size in characters
@@ -1550,6 +1551,35 @@ async function handleMcpRequest(request: Request, method: string): Promise<Respo
  * POST /api/mcp - Handle MCP requests
  */
 export async function POST(request: Request) {
+  // Rate limit by IP (x-real-ip is set reliably by Vercel and cannot be spoofed)
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  const rateLimit = await checkPublicRateLimit(ip);
+
+  if (!rateLimit.success) {
+    return withCors(
+      new Response(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Rate limit exceeded. Please slow down.",
+          },
+          id: null,
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            ...getRateLimitHeaders(rateLimit),
+          },
+        }
+      )
+    );
+  }
+
   return handleMcpRequest(request, "POST");
 }
 

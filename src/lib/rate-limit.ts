@@ -31,6 +31,14 @@ export const proTierLimiter = new Ratelimit({
   prefix: "ratelimit:pro",
 });
 
+// Rate limiter for public/anonymous API access: 60 requests per minute per IP
+export const publicLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(60, "1 m"),
+  analytics: true,
+  prefix: "ratelimit:public",
+});
+
 export interface RateLimitResult {
   success: boolean;
   limit: number;
@@ -62,6 +70,33 @@ export async function checkRateLimit(
     return {
       success: true,
       limit: isPro ? 100 : 10,
+      remaining: 1,
+      reset: Date.now() + 60000,
+    };
+  }
+}
+
+/**
+ * Check rate limit for a public (unauthenticated) request by IP
+ */
+export async function checkPublicRateLimit(
+  ip: string
+): Promise<RateLimitResult> {
+  try {
+    const result = await publicLimiter.limit(ip);
+
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    };
+  } catch (error) {
+    // If rate limiting fails (e.g., Redis unavailable), allow the request
+    console.error("Public rate limit check failed:", error);
+    return {
+      success: true,
+      limit: 60,
       remaining: 1,
       reset: Date.now() + 60000,
     };
