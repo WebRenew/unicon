@@ -8,7 +8,7 @@ import { LoginDialog } from "@/components/auth/login-dialog";
 import { CheckCircleIcon } from "@/components/icons/ui/check-circle";
 import { XCircleIcon } from "@/components/icons/ui/x-circle";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
-import { TerminalIcon } from "@/components/icons/ui/terminal";
+import { PackageIcon } from "@/components/icons/ui/package";
 
 function DeviceAuthContent() {
   const searchParams = useSearchParams();
@@ -86,8 +86,8 @@ function DeviceAuthContent() {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--accent-aqua)] to-[var(--accent-purple)] mb-4">
-            <TerminalIcon className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-foreground mb-4">
+            <PackageIcon className="w-8 h-8 text-background" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Authorize Device</h1>
           <p className="text-muted-foreground mt-2">
@@ -110,7 +110,7 @@ function DeviceAuthContent() {
               </p>
               <Link
                 href="/bundles"
-                className="text-sm text-[var(--accent-aqua)] hover:underline"
+                className="text-sm text-foreground font-medium hover:underline"
               >
                 View my bundles
               </Link>
@@ -127,7 +127,7 @@ function DeviceAuthContent() {
                   setStatus("idle");
                   setError(null);
                 }}
-                className="px-4 py-2 bg-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/90 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 bg-foreground hover:bg-foreground/90 text-background rounded-lg font-medium transition-colors"
               >
                 Try Again
               </button>
@@ -169,7 +169,7 @@ function DeviceAuthContent() {
                   onChange={handleCodeChange}
                   placeholder="XXXX-XXXX"
                   maxLength={9}
-                  className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-aqua)] focus:border-transparent placeholder:text-muted-foreground/50"
+                  className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/30 focus:border-transparent placeholder:text-muted-foreground/50"
                   autoFocus
                   autoComplete="off"
                 />
@@ -179,7 +179,7 @@ function DeviceAuthContent() {
               <button
                 onClick={handleAuthorize}
                 disabled={status === "loading" || userCode.replace(/-/g, "").length < 8}
-                className="w-full px-4 py-3 bg-[var(--accent-aqua)] hover:bg-[var(--accent-aqua)]/90 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-foreground hover:bg-foreground/90 text-background rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {status === "loading" ? (
                   <>
@@ -203,7 +203,7 @@ function DeviceAuthContent() {
           Having trouble?{" "}
           <a
             href="/docs/cli"
-            className="text-[var(--accent-aqua)] hover:underline"
+            className="text-foreground font-medium hover:underline"
           >
             Read the CLI docs
           </a>
