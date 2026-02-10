@@ -2,7 +2,8 @@ import { MetallicIconBrowser } from "@/components/icons/metallic-icon-browser";
 import { HomeHeader } from "@/components/home-header";
 import { searchIcons, getTotalIconCount, getIconCountBySource, getCategories } from "@/lib/queries";
 
-// Avoid build-time DB fetches in CI/build environments.
+// force-dynamic: CI/build environment has no DB credentials, so prerendering would fail.
+// Caching is handled at the API/CDN layer instead (see /api/icons cache headers).
 export const dynamic = "force-dynamic";
 
 export default async function Home() {

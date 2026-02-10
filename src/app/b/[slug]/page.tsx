@@ -8,6 +8,9 @@ import { generateRenderableSvg } from "@/lib/icon-utils";
 import type { Bundle, BundleIcon } from "@/types/database";
 import type { Metadata } from "next";
 
+// Revalidate shared bundle pages every 5 minutes — balances freshness with cost.
+export const revalidate = 300;
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

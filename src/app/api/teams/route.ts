@@ -33,7 +33,15 @@ export async function GET() {
     role: m.role,
   }));
 
-  return NextResponse.json({ teams });
+  return NextResponse.json(
+    { teams },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        "Vary": "Cookie",
+      },
+    }
+  );
 }
 
 /**

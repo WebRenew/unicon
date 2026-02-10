@@ -6,6 +6,8 @@ import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { logSearch } from "@/lib/analytics";
+import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { waitUntil } from "@vercel/functions";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +39,20 @@ interface VectorSearchRow {
 }
 
 export async function GET(request: NextRequest) {
+  // Rate limit by IP (x-real-ip is set reliably by Vercel and cannot be spoofed)
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  const rateLimit = await checkPublicRateLimit(ip);
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please slow down." },
+      { status: 429, headers: { ...CORS_HEADERS, ...getRateLimitHeaders(rateLimit) } }
+    );
+  }
+
   const startTime = Date.now();
   const { searchParams } = new URL(request.url);
 
@@ -73,15 +89,15 @@ export async function GET(request: NextRequest) {
         offset
       );
 
-      // Log analytics (await to ensure it completes before serverless function terminates)
-      await logSearch({
+      // Log analytics (fire-and-forget, waitUntil ensures completion after response)
+      waitUntil(logSearch({
         query: queryParam.trim(),
         searchType: aiResults.searchType as "semantic" | "text",
         sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
         resultCount: aiResults.icons.length,
         cacheHit: aiResults.cacheHit,
         responseTimeMs: Date.now() - startTime,
-      });
+      }));
 
       return NextResponse.json(
         {
@@ -121,16 +137,16 @@ export async function GET(request: NextRequest) {
 
     const icons = await searchIcons(params);
 
-    // Log analytics for text search (await to ensure it completes)
+    // Log analytics for text search (fire-and-forget, waitUntil ensures completion after response)
     if (queryParam) {
-      await logSearch({
+      waitUntil(logSearch({
         query: queryParam,
         searchType: "text",
         sourceFilter: sourceParam && sourceParam !== "all" ? sourceParam : undefined,
         resultCount: icons.length,
         cacheHit: false,
         responseTimeMs: Date.now() - startTime,
-      });
+      }));
     }
 
     return NextResponse.json(

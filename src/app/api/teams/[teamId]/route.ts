@@ -77,13 +77,21 @@ export async function GET(_request: Request, { params }: RouteParams) {
     inviter: inv.profiles as unknown as Record<string, unknown> | null,
   }));
 
-  return NextResponse.json({
-    team: {
-      ...teamResult.data,
-      members,
-      invites,
+  return NextResponse.json(
+    {
+      team: {
+        ...teamResult.data,
+        members,
+        invites,
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+        "Vary": "Cookie",
+      },
+    }
+  );
 }
 
 /**
