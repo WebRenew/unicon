@@ -8,6 +8,7 @@ import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { UserIcon } from "@/components/icons/ui/user";
 import { HotPriceIcon } from "@/components/icons/ui/hot-price";
+import { FigmaIcon } from "@/components/icons/ui/figma";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { MobileNav, MobileNavTrigger } from "@/components/mobile-nav";
@@ -108,6 +109,15 @@ export function HomeHeader() {
                 <TerminalIcon className="w-3.5 h-3.5" />
                 CLI
               </Link>
+              <a
+                href="https://www.figma.com/community/plugin/1601964333135836232/unicon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
+              >
+                <FigmaIcon className="w-3.5 h-3.5" />
+                Figma
+              </a>
               <Link
                 href="/docs/mcp"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
