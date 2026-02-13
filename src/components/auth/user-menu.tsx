@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Popover,
@@ -21,6 +22,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ profile, isPro }: UserMenuProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -28,6 +30,8 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
     setIsSigningOut(true);
     try {
       await signOut();
+      router.push("/");
+      router.refresh();
     } catch {
       setIsSigningOut(false);
     }

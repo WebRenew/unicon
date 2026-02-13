@@ -13,6 +13,7 @@ import { SparklesIcon } from "@/components/icons/ui/sparkles";
 import { ArrowRightIcon } from "@/components/icons/ui/arrow-right";
 import { ExternalLinkIcon } from "@/components/icons/ui/external-link";
 import { MCPIcon } from "@/components/icons/mcp-icon";
+import { FigmaIcon } from "@/components/icons/ui/figma";
 import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 import { CopyPageButton } from "@/components/copy-page-button";
 
@@ -57,6 +58,9 @@ bunx @webrenew/unicon search "dashboard"     # bun
 ### MCP Server (AI Integration)
 Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 
+### Figma Plugin
+Browse and insert Unicon icons directly in Figma. Install from the Figma Community.
+
 ## Key Features
 
 - **AI-Powered Search**: Semantic search understands intent. Search for "celebration" and find party, confetti, and cake icons.
@@ -87,6 +91,7 @@ Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant.
 - MCP Integration: https://unicon.sh/docs/mcp
 - API Reference: https://unicon.sh/docs/api
 - Skills Registry: https://unicon.sh/docs/skills
+- Figma Plugin: https://www.figma.com/community/plugin/1601964333135836232/unicon
 - GitHub: https://github.com/WebRenew/unicon
 `;
 
@@ -251,6 +256,13 @@ export default function DocsPage() {
               description="Use Unicon with Claude Desktop, Cursor, or any MCP-compatible AI assistant."
               href="/docs/mcp"
             />
+            <FeatureCard
+              icon={FigmaIcon}
+              title="Figma Plugin"
+              description="Browse and insert Unicon icons directly in Figma. Install from the Figma Community."
+              href="https://www.figma.com/community/plugin/1601964333135836232/unicon"
+              external
+            />
           </div>
         </section>
 
@@ -348,6 +360,13 @@ export default function DocsPage() {
               title="Skills Registry"
               description="Download AI assistant skills to automate icon workflows."
               href="/docs/skills"
+            />
+            <FeatureCard
+              icon={FigmaIcon}
+              title="Figma Plugin"
+              description="Browse and insert Unicon icons directly in your Figma designs."
+              href="https://www.figma.com/community/plugin/1601964333135836232/unicon"
+              external
             />
             <FeatureCard
               icon={CodeIcon}
