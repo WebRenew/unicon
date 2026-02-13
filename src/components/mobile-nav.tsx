@@ -7,6 +7,7 @@ import { FileTextIcon } from "@/components/icons/ui/file-text";
 import { TerminalIcon } from "@/components/icons/ui/terminal";
 import { HotPriceIcon } from "@/components/icons/ui/hot-price";
 import { PackageIcon } from "@/components/icons/ui/package";
+import { FigmaIcon } from "@/components/icons/ui/figma";
 import { MCPIcon } from "@/components/icons/mcp-icon";
 import { XIcon } from "@/components/icons/ui/x";
 
@@ -51,6 +52,14 @@ const navItems = [
     color: "text-[var(--accent-mint)]",
     hoverBg: "hover:bg-[var(--accent-mint)]/10",
   },
+  {
+    href: "https://www.figma.com/community/plugin/1601964333135836232/unicon",
+    label: "Figma Plugin",
+    icon: FigmaIcon,
+    color: "text-[var(--accent-lavender)]",
+    hoverBg: "hover:bg-[var(--accent-lavender)]/10",
+    external: true,
+  },
 ];
 
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
@@ -77,25 +86,49 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            const isExternal = "external" in item && item.external;
+            const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + "/"));
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                  item.hoverBg,
-                  isActive ? item.color : "text-muted-foreground"
-                )}
-              >
+            const className = cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+              item.hoverBg,
+              isActive ? item.color : "text-muted-foreground"
+            );
+
+            const content = (
+              <>
                 {item.label === "MCP" ? (
                   <Icon className="w-5 h-5" size={20} />
                 ) : (
                   <Icon className="w-5 h-5" />
                 )}
                 <span className="font-medium">{item.label}</span>
+              </>
+            );
+
+            if (isExternal) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className={className}
+                >
+                  {content}
+                </a>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={className}
+              >
+                {content}
               </Link>
             );
           })}
