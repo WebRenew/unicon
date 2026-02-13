@@ -32,6 +32,14 @@ const navItems = [
     hoverBg: "hover:bg-[var(--accent-aqua)]/10",
   },
   {
+    href: "https://www.figma.com/community/plugin/1601964333135836232/unicon",
+    label: "Figma Plugin",
+    icon: FigmaIcon,
+    color: "text-[var(--accent-lavender)]",
+    hoverBg: "hover:bg-[var(--accent-lavender)]/10",
+    external: true,
+  },
+  {
     href: "/docs/mcp",
     label: "MCP",
     icon: MCPIcon,
@@ -51,14 +59,6 @@ const navItems = [
     icon: HotPriceIcon,
     color: "text-[var(--accent-mint)]",
     hoverBg: "hover:bg-[var(--accent-mint)]/10",
-  },
-  {
-    href: "https://www.figma.com/community/plugin/1601964333135836232/unicon",
-    label: "Figma Plugin",
-    icon: FigmaIcon,
-    color: "text-[var(--accent-lavender)]",
-    hoverBg: "hover:bg-[var(--accent-lavender)]/10",
-    external: true,
   },
 ];
 

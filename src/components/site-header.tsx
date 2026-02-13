@@ -61,6 +61,15 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                 <TerminalIcon className="w-3.5 h-3.5" />
                 CLI
               </Link>
+              <a
+                href="https://www.figma.com/community/plugin/1601964333135836232/unicon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
+              >
+                <FigmaIcon className="w-3.5 h-3.5" />
+                Figma
+              </a>
               <Link
                 href="/docs/mcp"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
@@ -82,15 +91,6 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                 <HotPriceIcon className="w-3.5 h-3.5" />
                 Pricing
               </Link>
-              <a
-                href="https://www.figma.com/community/plugin/1601964333135836232/unicon"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-[var(--accent-lavender)] hover:bg-[var(--accent-lavender)]/5 transition-colors"
-              >
-                <FigmaIcon className="w-3.5 h-3.5" />
-                Figma
-              </a>
             </nav>
           </div>
 
