@@ -1,24 +1,23 @@
-# Unicon Project Rules
+# Unicon
 
-## For Contributors & Fork Users
+**Just the icons you need. Zero bloat.**
 
-This file gives Claude Code (and other AI assistants) context about the project.
-If you fork this repo, update the sections below to match your setup.
+Browse 20,000+ icons and copy exactly what you need. Like [shadcn/ui](https://ui.shadcn.com), but for icons.
 
-### Project-Specific Context
+- **Browse once, use anywhere** — Search 9 icon libraries (Lucide, Phosphor, Huge Icons, Heroicons, Tabler, Feather, Remix, Simple Icons, Iconoir)
+- **Copy exactly what you need** — React, SVG, or JSON
+- **Bundle multiple icons** — Export a set at once
+- **Zero dependencies** — Paste directly into your project
+- **CLI** — `npx @webrenew/unicon search arrow`
+- **AI integration** — MCP server + IDE skills for Claude, Cursor, Windsurf, and more
+- **Self-hostable** — See [DEVELOPMENT.md](./DEVELOPMENT.md)
 
-Add your own notes, reminders, and task tracking here. Use `.claude/docs/` and
-`.claude/sprites/` locally for internal planning — these directories are gitignored
-and won't be committed.
+## Tech Stack
 
-## Reminders
-
-**Team Bundle Sharing (added 2025-01-25):**
-Implement rate limiting + bundle-specific MCP for Pro team sharing. Two tasks:
-1. Add Upstash rate limiting for `/b/*` and `/api/bundles/*` endpoints
-2. Create `/api/mcp/b/[share_slug]` - scoped MCP that only exposes bundle icons
-
-Context: Pro users share bundles via public link. Teams using AI tools (Claude, Cursor) need an MCP config they can copy that scopes to their curated bundle. Rate limit to prevent abuse.
+- Next.js 16, React 19, TypeScript
+- Supabase (auth, database, storage)
+- Tailwind CSS v4
+- Vercel (hosting)
 
 ## Icons
 
@@ -59,7 +58,7 @@ export function IconNameIcon({ className, ...props }: SVGProps<SVGSVGElement>) {
 
 ### Prohibited
 
-- No emojis (🎯, ⚡, 🤖, etc.) in UI components
+- No emojis in UI components
 - No external icon libraries (lucide-react, heroicons, react-icons, etc.)
 - No inline SVGs without extracting to a component
 
@@ -70,3 +69,8 @@ export function IconNameIcon({ className, ...props }: SVGProps<SVGSVGElement>) {
 - Tailwind CSS for styling
 - Use `cn()` from `@/lib/utils` for conditional classes
 - Use theme CSS variables (e.g., `bg-background`, `text-foreground`, `border-border`) — never hardcode colors
+
+## Build Notes
+
+- The app builds with `webpack` (`next build --webpack`) for deterministic CI/local builds
+- The home route (`/`) is intentionally dynamic to avoid build-time database fetches during prerender
