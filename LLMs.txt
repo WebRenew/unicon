@@ -653,6 +653,9 @@ See `.claude/sprites/` directory for detailed feature specifications:
 - [Vercel AI SDK](https://sdk.vercel.ai)
 - [Radix UI](https://www.radix-ui.com/primitives/docs/overview/introduction)
 
+### AI Integration
+- [OpenClaw Skill](https://clawhub.ai/charlesrhoward/unicon) - Claude Code skill for Unicon
+
 ### Icon Libraries
 - [Lucide](https://lucide.dev) - ISC License
 - [Phosphor Icons](https://phosphoricons.com) - MIT License

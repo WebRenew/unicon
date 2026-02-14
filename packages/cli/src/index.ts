@@ -7,10 +7,14 @@ import figlet from "figlet";
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
 import { dirname, resolve, join, extname } from "path";
 import { homedir } from "os";
+import { createRequire } from "module";
 import { createInterface } from "readline";
 import * as p from "@clack/prompts";
 import clipboard from "clipboardy";
 import chokidar from "chokidar";
+
+const require = createRequire(import.meta.url);
+const { version: CLI_VERSION } = require("../package.json") as { version: string };
 
 /**
  * Simple yes/no confirmation prompt
@@ -913,7 +917,7 @@ const program = new Command();
 program
   .name("unicon")
   .description("CLI for searching and bundling icons from Unicon")
-  .version("0.1.0")
+  .version(CLI_VERSION)
   .hook("preAction", (thisCommand) => {
     // Show banner only for main commands, not subcommands
     if (thisCommand.args.length === 0 || process.argv.includes("--help") || process.argv.includes("-h")) {

@@ -8,10 +8,13 @@ import figlet from "figlet";
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "fs";
 import { dirname, resolve, join, extname } from "path";
 import { homedir } from "os";
+import { createRequire } from "module";
 import { createInterface } from "readline";
 import * as p from "@clack/prompts";
 import clipboard from "clipboardy";
 import chokidar from "chokidar";
+var require2 = createRequire(import.meta.url);
+var { version: CLI_VERSION } = require2("../package.json");
 function confirm2(message) {
   const rl = createInterface({
     input: process.stdin,
@@ -616,7 +619,7 @@ function generateJsonBundle(icons) {
   );
 }
 var program = new Command();
-program.name("unicon").description("CLI for searching and bundling icons from Unicon").version("0.1.0").hook("preAction", (thisCommand) => {
+program.name("unicon").description("CLI for searching and bundling icons from Unicon").version(CLI_VERSION).hook("preAction", (thisCommand) => {
   if (thisCommand.args.length === 0 || process.argv.includes("--help") || process.argv.includes("-h")) {
     return;
   }
