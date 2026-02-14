@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSearchStats } from "@/lib/analytics";
+import { logger } from "@/lib/logger";
 
 /**
  * Get search analytics statistics
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to get analytics:", error);
+    logger.error("Failed to get analytics:", error);
     return NextResponse.json(
       { error: "Failed to get analytics" },
       { status: 500 }

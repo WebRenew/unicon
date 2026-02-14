@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("Device authorization error:", error);
+      logger.error("Device authorization error:", error);
       return NextResponse.json(
         { error: "server_error", message: error.message },
         { status: 500 }
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       message: `Successfully authorized ${result.client_name} to access your bundles`,
     });
   } catch (err) {
-    console.error("Device authorize error:", err);
+    logger.error("Device authorize error:", err);
     return NextResponse.json(
       { error: "server_error", message: "Internal server error" },
       { status: 500 }

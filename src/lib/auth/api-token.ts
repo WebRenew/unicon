@@ -5,6 +5,7 @@
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/logger";
 
 export interface TokenValidationResult {
   valid: boolean;
@@ -45,7 +46,7 @@ export async function validateApiToken(token: string): Promise<TokenValidationRe
   });
 
   if (error) {
-    console.error("Token validation error:", error);
+    logger.error("Token validation error:", error);
     return { valid: false, error: "validation_error" };
   }
 

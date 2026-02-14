@@ -20,6 +20,7 @@ import {
   generateJsonBundle,
 } from "@/lib/icon-converters";
 import { normalizeIcons } from "@/lib/icon-utils";
+import { logger } from "@/lib/logger";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -178,7 +179,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       }
     );
   } catch (err) {
-    console.error("GET /api/bundles/me/[id] error:", err);
+    logger.error("GET /api/bundles/me/[id] error:", err);
     return NextResponse.json(
       { error: "server_error", message: "Internal server error" },
       { status: 500, headers: CORS_HEADERS }

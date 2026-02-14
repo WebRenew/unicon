@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/logger";
 import type Stripe from "stripe";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -51,13 +52,13 @@ export async function POST(request: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    logger.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   // Idempotency check - prevent duplicate processing
   if (isEventProcessed(event.id)) {
-    console.log(`Event ${event.id} already processed, skipping`);
+    logger.log(`Event ${event.id} already processed, skipping`);
     return NextResponse.json({ received: true, skipped: true });
   }
 
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
         const userId = session.metadata?.userId;
 
         if (!userId) {
-          console.error("No userId in session metadata");
+          logger.error("No userId in session metadata");
           break;
         }
 
@@ -98,9 +99,9 @@ export async function POST(request: Request) {
           .or(`current_period_end.is.null,current_period_end.lt.${new Date(periodEnd * 1000).toISOString()}`);
 
         if (updateError) {
-          console.error(`Failed to update subscription for user ${userId}:`, updateError);
+          logger.error(`Failed to update subscription for user ${userId}:`, updateError);
         } else {
-          console.log(`Subscription activated for user ${userId}`);
+          logger.log(`Subscription activated for user ${userId}`);
         }
         break;
       }
@@ -125,9 +126,9 @@ export async function POST(request: Request) {
           .or(`current_period_end.is.null,current_period_end.lte.${periodEndDate}`);
 
         if (updateError) {
-          console.error(`Failed to update subscription ${subscription.id}:`, updateError);
+          logger.error(`Failed to update subscription ${subscription.id}:`, updateError);
         } else {
-          console.log(`Subscription ${subscription.id} updated to ${newStatus}`);
+          logger.log(`Subscription ${subscription.id} updated to ${newStatus}`);
         }
         break;
       }
@@ -147,15 +148,15 @@ export async function POST(request: Request) {
           .eq("provider_subscription_id", subscription.id);
 
         if (updateError) {
-          console.error(`Failed to cancel subscription ${subscription.id}:`, updateError);
+          logger.error(`Failed to cancel subscription ${subscription.id}:`, updateError);
         } else {
-          console.log(`Subscription canceled for subscription ${subscription.id}`);
+          logger.log(`Subscription canceled for subscription ${subscription.id}`);
         }
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.log(`Unhandled event type: ${event.type}`);
     }
 
     // Mark event as processed after successful handling
@@ -163,7 +164,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("Webhook handler error:", err);
+    logger.error("Webhook handler error:", err);
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }
