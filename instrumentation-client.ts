@@ -8,4 +8,12 @@ Sentry.init({
 
   // Performance monitoring
   tracesSampleRate: 0.1,
+
+  // Session replay for debugging
+  replaysSessionSampleRate: 0,
+  replaysOnErrorSampleRate: 1.0,
+
+  integrations: [Sentry.replayIntegration()],
 });
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
