@@ -1,8 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 import { ArrowLeftIcon } from "@/components/icons/ui/arrow-left";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { GlobeIcon } from "@/components/icons/ui/globe";
@@ -27,10 +25,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { StyledIcon, SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "@/components/icons/styled-icon";
-import { generateRenderableSvg, normalizeViewBoxInContent, STANDARD_VIEWBOX } from "@/lib/icon-utils";
-import { analyzeViewBoxMixing } from "@/lib/bundle-utils";
-import type { Bundle, BundleIcon } from "@/types/database";
+import type { Bundle } from "@/types/database";
 import type { IconData, IconLibrary } from "@/types/icon";
+import { useBundleBrowser } from "./use-bundle-browser";
 
 interface BundleBrowserProps {
   bundle: Bundle;
@@ -78,238 +75,59 @@ const SOURCE_OPTIONS = [
   "iconoir",
 ] as const;
 
-const ICONS_PER_PAGE = 200;
-
 function toTitleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
 export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount, countBySource, onUpdate }: BundleBrowserProps) {
-  // Bundle state
-  const [bundleIcons, setBundleIcons] = useState<BundleIcon[]>(
-    Array.isArray(bundle.icons) ? bundle.icons : []
-  );
-  const [normalizeStrokes, setNormalizeStrokes] = useState(bundle.normalize_strokes);
-  const [targetStrokeWidth, setTargetStrokeWidth] = useState(bundle.target_stroke_width ?? 2);
-  const [normalizeViewbox, setNormalizeViewbox] = useState(bundle.normalize_viewbox ?? false);
-  const targetViewbox = STANDARD_VIEWBOX;
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
-
-  // Search/browse state
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedSource, setSelectedSource] = useState<IconLibrary | "all">("all");
-  const [selectedCategory, setSelectedCategory] = useState<string | "all">("all");
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const [browseIcons, setBrowseIcons] = useState<IconData[]>(initialIcons);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchType, setSearchType] = useState<string>("text");
-  const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
-  const [totalResults, setTotalResults] = useState(totalIconCount);
-
-  // Display presets
-  const [strokePreset, setStrokePreset] = useState<StrokePreset>("regular");
-  const [sizePreset, setSizePreset] = useState<SizePreset>("m");
-  const [controlsExpanded, setControlsExpanded] = useState(false);
-  const strokeWeight = STROKE_PRESETS[strokePreset].value;
-  const { icon: iconSize, container: containerSize } = SIZE_PRESETS[sizePreset];
-
-  const bundleIconIds = useMemo(() => new Set(bundleIcons.map((i) => i.id)), [bundleIcons]);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const totalPages = Math.ceil(totalResults / ICONS_PER_PAGE);
-
-  // Memoize grid style
-  const gridStyle = useMemo(() => ({
-    gridTemplateColumns: `repeat(auto-fill, ${containerSize}px)`,
-    justifyContent: 'start' as const,
-  }), [containerSize]);
-
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  // Track if this is initial mount
-  const isInitialMount = useRef(true);
-
-  // Fetch icons when search/filters/page change
-  useEffect(() => {
-    // Skip fetch on initial mount if we have initialIcons
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      // Only skip if we have no filters applied and are on page 0
-      if (!debouncedSearch && selectedSource === "all" && selectedCategory === "all" && page === 0) {
-        return;
-      }
-    }
-
-    // Cancel previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const fetchIcons = async () => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams({ 
-          limit: String(ICONS_PER_PAGE),
-          offset: String(page * ICONS_PER_PAGE),
-        });
-        if (debouncedSearch.trim()) params.set("q", debouncedSearch);
-        if (selectedSource !== "all") params.set("source", selectedSource);
-        if (selectedCategory !== "all") params.set("category", selectedCategory);
-
-        const res = await fetch(`/api/icons?${params}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error("Failed to fetch icons");
-        const data = await res.json();
-        
-        if (!controller.signal.aborted) {
-          setBrowseIcons(data.icons || []);
-          setTotalResults(data.total || 0);
-          setSearchType(data.searchType || "text");
-          setExpandedQuery(data.expandedQuery || null);
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        toast.error("Failed to load icons");
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-    
-    fetchIcons();
-
-    return () => controller.abort();
-  }, [debouncedSearch, selectedSource, selectedCategory, page]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch, selectedSource, selectedCategory]);
-
-  // Icon operations
-  const handleAddIcon = useCallback((icon: IconData) => {
-    if (bundleIconIds.has(icon.id)) {
-      // Remove if already in bundle
-      setBundleIcons((prev) => prev.filter((i) => i.id !== icon.id));
-      setHasChanges(true);
-      toast.success(`Removed ${icon.normalizedName}`);
-      return;
-    }
-    const bundleIcon: BundleIcon = {
-      id: icon.id,
-      name: icon.name,
-      normalizedName: icon.normalizedName,
-      sourceId: icon.sourceId,
-      svg: icon.content,
-      viewBox: icon.viewBox,
-      strokeWidth: icon.strokeWidth,
-      defaultFill: icon.defaultFill,
-      defaultStroke: icon.defaultStroke,
-    };
-    setBundleIcons((prev) => [...prev, bundleIcon]);
-    setHasChanges(true);
-    toast.success(`Added ${icon.normalizedName}`);
-  }, [bundleIconIds]);
-
-  const handleRemoveIcon = useCallback((id: string) => {
-    setBundleIcons((prev) => prev.filter((i) => i.id !== id));
-    setHasChanges(true);
-  }, []);
-
-  const handleSave = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/bundles/${bundle.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          icons: bundleIcons.map((icon) => ({
-            id: icon.id,
-            name: icon.name,
-            normalizedName: icon.normalizedName,
-            sourceId: icon.sourceId,
-            svg: icon.svg,
-            viewBox: icon.viewBox,
-            strokeWidth: icon.strokeWidth,
-            defaultFill: icon.defaultFill,
-            defaultStroke: icon.defaultStroke,
-          })),
-          normalize_strokes: normalizeStrokes,
-          target_stroke_width: normalizeStrokes ? targetStrokeWidth : null,
-          normalize_viewbox: normalizeViewbox,
-          target_viewbox: normalizeViewbox ? targetViewbox : null,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to save");
-
-      const data = await response.json();
-      onUpdate(data.bundle);
-      setHasChanges(false);
-      toast.success("Bundle saved");
-    } catch {
-      toast.error("Failed to save bundle");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [bundle.id, bundleIcons, normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, onUpdate]);
-
-  // Rendering helper for bundle icons (with normalization)
-  const renderBundleIcon = useCallback((icon: BundleIcon) => {
-    const svgContent = icon.svg;
-    if (!svgContent) return null;
-
-    const defaultViewBox = icon.sourceId === "phosphor" ? "0 0 256 256" : "0 0 24 24";
-    const iconViewBox = icon.viewBox ?? defaultViewBox;
-    
-    let content = svgContent;
-    let viewBox = iconViewBox;
-    if (normalizeViewbox && iconViewBox !== targetViewbox) {
-      content = normalizeViewBoxInContent(svgContent, iconViewBox, targetViewbox);
-      viewBox = targetViewbox;
-    }
-
-    const svgHtml = generateRenderableSvg(
-      {
-        viewBox,
-        content,
-        defaultStroke: icon.defaultStroke ?? true,
-        defaultFill: icon.defaultFill ?? false,
-        strokeWidth: icon.strokeWidth ?? "2",
-      },
-      {
-        size: iconSize,
-        ...(normalizeStrokes && { strokeWidth: targetStrokeWidth }),
-      }
-    );
-
-    return (
-      <div
-        className="text-black/70 dark:text-white/70 [&>svg]:w-full [&>svg]:h-full"
-        style={{ width: iconSize, height: iconSize }}
-        dangerouslySetInnerHTML={{ __html: svgHtml }}
-      />
-    );
-  }, [normalizeStrokes, targetStrokeWidth, normalizeViewbox, targetViewbox, iconSize]);
-
-  const hasStrokeIcons = bundleIcons.some((i) => i.defaultStroke !== false || !i.defaultFill);
-  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(bundleIcons.map(i => ({ viewBox: i.viewBox ?? "0 0 24 24" }))), [bundleIcons]);
-  const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
+  const {
+    bundleIcons,
+    normalizeStrokes,
+    setNormalizeStrokes,
+    targetStrokeWidth,
+    setTargetStrokeWidth,
+    normalizeViewbox,
+    setNormalizeViewbox,
+    isSaving,
+    hasChanges,
+    setHasChanges,
+    search,
+    setSearch,
+    debouncedSearch,
+    selectedSource,
+    setSelectedSource,
+    selectedCategory,
+    setSelectedCategory,
+    categoryOpen,
+    setCategoryOpen,
+    filtersExpanded,
+    setFiltersExpanded,
+    browseIcons,
+    isLoading,
+    searchType,
+    expandedQuery,
+    page,
+    setPage,
+    totalResults,
+    strokePreset,
+    setStrokePreset,
+    sizePreset,
+    setSizePreset,
+    controlsExpanded,
+    setControlsExpanded,
+    strokeWeight,
+    iconSize,
+    containerSize,
+    bundleIconIds,
+    totalPages,
+    gridStyle,
+    hasStrokeIcons,
+    hasMixedViewBox,
+    handleAddIcon,
+    handleRemoveIcon,
+    handleSave,
+    renderBundleIcon,
+  } = useBundleBrowser({ bundle, initialIcons, totalIconCount, onUpdate });
 
   return (
     <div className="min-h-screen px-4 lg:px-20 xl:px-40">
@@ -425,25 +243,35 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
             In this bundle ({bundleIcons.length})
           </h2>
           <div className="grid gap-4 pt-1" style={gridStyle}>
-            {bundleIcons.map((icon) => (
-              <div
-                key={icon.id}
-                className="group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10"
-                style={{ width: containerSize, height: containerSize }}
-                title={`${icon.normalizedName} (${icon.sourceId})`}
-              >
-                {renderBundleIcon(icon)}
-                
-                {/* Remove button on hover */}
-                <button
-                  onClick={() => handleRemoveIcon(icon.id)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
-                  title="Remove from bundle"
+            {bundleIcons.map((icon) => {
+              const svgHtml = renderBundleIcon(icon);
+              return (
+                <div
+                  key={icon.id}
+                  className="group relative flex items-center justify-center shrink-0 cursor-pointer transition-all duration-150 hover:scale-105 rounded-xl dark:bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] bg-[linear-gradient(to_bottom,#fff_0%,#f5f5f5_8%,#eee_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.1)] dark:border-t dark:border-[#666]/30 border border-black/10"
+                  style={{ width: containerSize, height: containerSize }}
+                  title={`${icon.normalizedName} (${icon.sourceId})`}
                 >
-                  <XIcon className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+                  {svgHtml && (
+                    <div
+                      className="text-black/70 dark:text-white/70 [&>svg]:w-full [&>svg]:h-full"
+                      style={{ width: iconSize, height: iconSize }}
+                      // SVG content is from trusted icon library data, not user input
+                      dangerouslySetInnerHTML={{ __html: svgHtml }}
+                    />
+                  )}
+
+                  {/* Remove button on hover */}
+                  <button
+                    onClick={() => handleRemoveIcon(icon.id)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
+                    title="Remove from bundle"
+                  >
+                    <XIcon className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

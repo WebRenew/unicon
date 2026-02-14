@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { XIcon } from "@/components/icons/ui/x";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { CopyIcon } from "@/components/icons/ui/copy";
@@ -21,7 +19,15 @@ import { SyntaxHighlighter } from "@/components/ui/syntax-highlighter";
 import { BundleMixingWarning } from "./bundle-mixing-warning";
 import { SaveBundleDialog } from "./save-bundle-dialog";
 import { LoginDialog } from "@/components/auth/login-dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
+import { STARTER_PACKS } from "@/lib/starter-packs";
+import {
+  generateRenderableSvg,
+  generateV0Prompt,
+  getBrandIconColor,
+} from "@/lib/icon-utils";
+import type { IconData } from "@/types/icon";
+import { useIconCart, isFillIcon } from "./use-icon-cart";
 
 // Spaceship icon from hugeicons
 function SpaceshipIcon({ className }: { className?: string }) {
@@ -35,28 +41,6 @@ function SpaceshipIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-import { toast } from "sonner";
-import { STARTER_PACKS } from "@/lib/starter-packs";
-import {
-  generateReactFile,
-  generateSvgBundle,
-  generateJsonBundle,
-  generateRenderableSvg,
-  generateV0Prompt,
-  normalizeIcons,
-  STANDARD_VIEWBOX,
-  getBrandIconColor,
-} from "@/lib/icon-utils";
-import { getBundleLibrarySummary, analyzeViewBoxMixing } from "@/lib/bundle-utils";
-import type { IconData } from "@/types/icon";
-
-/**
- * Check if an icon is fill-based (not stroke-based).
- * Fill-based icons have defaultFill but no defaultStroke.
- */
-function isFillIcon(icon: IconData): boolean {
-  return icon.defaultFill && !icon.defaultStroke;
-}
 
 /**
  * Badge indicator for fill-based icons in the bundle grid.
@@ -64,8 +48,8 @@ function isFillIcon(icon: IconData): boolean {
  */
 function FillIconBadge({ isBrandIcon }: { isBrandIcon?: boolean }) {
   const tooltip = isBrandIcon
-    ? "Brand icon – can't be normalized"
-    : "Fill-based icon – stroke normalization doesn't apply";
+    ? "Brand icon \u2013 can\u2019t be normalized"
+    : "Fill-based icon \u2013 stroke normalization doesn\u2019t apply";
   return (
     <div
       role="img"
@@ -87,177 +71,40 @@ interface IconCartProps {
   onClose: () => void;
 }
 
-type ExportFormat = "react" | "svg" | "json";
-type TabType = "bundle" | "packs";
-
 export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose }: IconCartProps) {
-  const [copied, setCopied] = useState(false);
-  const [copiedV0, setCopiedV0] = useState(false);
-  const [copiedPackId, setCopiedPackId] = useState<string | null>(null);
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("react");
-  const [activeTab, setActiveTab] = useState<TabType>("bundle");
-  const [previewHeight, setPreviewHeight] = useState(192); // Default ~max-h-48
-  const [saveBundleOpen, setSaveBundleOpen] = useState(false);
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const { user } = useAuth();
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
-  const [normalizeStrokes, setNormalizeStrokes] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("unicon-normalize-strokes") === "true";
-    } catch {
-      return false;
-    }
-  });
-  const [targetStrokeWidth, setTargetStrokeWidth] = useState(() => {
-    if (typeof window === "undefined") return 2;
-    try {
-      const stored = localStorage.getItem("unicon-target-stroke-width");
-      return stored ? Number(stored) : 2;
-    } catch {
-      return 2;
-    }
-  });
-  const [groupByLibrary, setGroupByLibrary] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("unicon-group-by-library") === "true";
-    } catch {
-      return false;
-    }
-  });
-  const [normalizeViewbox, setNormalizeViewbox] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("unicon-normalize-viewbox") === "true";
-    } catch {
-      return false;
-    }
-  });
-  const isDraggingRef = useRef(false);
-  const startYRef = useRef(0);
-  const startHeightRef = useRef(0);
-
-  // Analyze bundle composition for stroke/fill icons
-  const bundleComposition = useMemo(() => {
-    let strokeCount = 0;
-    let fillCount = 0;
-    for (const icon of items) {
-      if (isFillIcon(icon)) {
-        fillCount++;
-      } else {
-        strokeCount++;
-      }
-    }
-    return { strokeCount, fillCount, hasStrokeIcons: strokeCount > 0 };
-  }, [items]);
-
-  // Group icons by library for grouped view
-  const librarySummary = useMemo(() => getBundleLibrarySummary(items), [items]);
-  const iconsByLibrary = useMemo(() => {
-    const map = new Map<string, typeof items>();
-    for (const icon of items) {
-      const existing = map.get(icon.sourceId) ?? [];
-      existing.push(icon);
-      map.set(icon.sourceId, existing);
-    }
-    return map;
-  }, [items]);
-
-  // Check for mixed viewBox sizes (e.g., Phosphor 256x256 with Lucide 24x24)
-  const viewBoxAnalysis = useMemo(() => analyzeViewBoxMixing(items.map(i => ({ viewBox: i.viewBox }))), [items]);
-  const hasMixedViewBox = viewBoxAnalysis.hasInconsistency;
-
-  // Persist normalization preferences to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("unicon-normalize-strokes", String(normalizeStrokes));
-    } catch {}
-  }, [normalizeStrokes]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("unicon-target-stroke-width", String(targetStrokeWidth));
-    } catch {}
-  }, [targetStrokeWidth]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("unicon-group-by-library", String(groupByLibrary));
-    } catch {}
-  }, [groupByLibrary]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("unicon-normalize-viewbox", String(normalizeViewbox));
-    } catch {}
-  }, [normalizeViewbox]);
-
-  // Handle resize drag
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    startYRef.current = e.clientY;
-    startHeightRef.current = previewHeight;
-    document.body.style.cursor = "ns-resize";
-    document.body.style.userSelect = "none";
-  }, [previewHeight]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const deltaY = e.clientY - startYRef.current;
-      // Invert: drag up (negative deltaY) = larger preview
-      const newHeight = Math.max(80, Math.min(400, startHeightRef.current - deltaY));
-      setPreviewHeight(newHeight);
-    };
-
-    const handleMouseUp = () => {
-      if (isDraggingRef.current) {
-        isDraggingRef.current = false;
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-      }
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  // Memoize export content to ensure it uses the latest items
-  const exportContent = useMemo(() => {
-    if (items.length === 0) return "";
-
-    // Build normalization options
-    const normalizationOptions: { strokeWidth?: number; skipFillIcons?: boolean; viewBox?: string } = {};
-    if (normalizeStrokes) {
-      normalizationOptions.strokeWidth = targetStrokeWidth;
-      normalizationOptions.skipFillIcons = true;
-    }
-    if (normalizeViewbox) {
-      normalizationOptions.viewBox = STANDARD_VIEWBOX;
-    }
-
-    // Apply normalization if any options are set
-    const iconsToExport = (normalizeStrokes || normalizeViewbox)
-      ? normalizeIcons(items, normalizationOptions)
-      : items;
-
-    switch (exportFormat) {
-      case "react":
-        return generateReactFile(iconsToExport);
-      case "svg":
-        return generateSvgBundle(iconsToExport);
-      case "json":
-        return generateJsonBundle(iconsToExport);
-    }
-  }, [items, exportFormat, normalizeStrokes, targetStrokeWidth, normalizeViewbox]);
+  const {
+    copied,
+    setCopied,
+    copiedV0,
+    setCopiedV0,
+    copiedPackId,
+    setCopiedPackId,
+    exportFormat,
+    setExportFormat,
+    activeTab,
+    setActiveTab,
+    previewHeight,
+    saveBundleOpen,
+    setSaveBundleOpen,
+    loginDialogOpen,
+    setLoginDialogOpen,
+    user,
+    isDarkMode,
+    normalizeStrokes,
+    setNormalizeStrokes,
+    targetStrokeWidth,
+    setTargetStrokeWidth,
+    groupByLibrary,
+    setGroupByLibrary,
+    normalizeViewbox,
+    setNormalizeViewbox,
+    bundleComposition,
+    librarySummary,
+    iconsByLibrary,
+    hasMixedViewBox,
+    exportContent,
+    handleResizeStart,
+  } = useIconCart({ items });
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -308,7 +155,6 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
 
   const handleCopyPackCommand = async (pack: typeof STARTER_PACKS[0], e: React.MouseEvent) => {
     e.stopPropagation();
-    // Generate command with first few icon names from the pack
     const iconSample = pack.iconNames.slice(0, 5).join(" ");
     const command = `npx @webrenew/unicon bundle --query "${iconSample}" --limit ${pack.iconNames.length} --output ./icons`;
     await navigator.clipboard.writeText(command);
@@ -471,7 +317,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                 </button>
               )}
 
-              {/* Stroke Normalization Control - always visible when bundle has items */}
+              {/* Stroke Normalization Control */}
               <div className={`flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5 ${
                 !bundleComposition.hasStrokeIcons ? "opacity-50" : ""
               }`}>
@@ -507,7 +353,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                 )}
               </div>
 
-              {/* ViewBox Normalization Control - only visible when mixed viewBox detected */}
+              {/* ViewBox Normalization Control */}
               {hasMixedViewBox && (
                 <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5">
                   <label htmlFor="normalize-viewbox" className="flex items-center gap-2 cursor-pointer">
@@ -585,6 +431,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
                     >
                       <div
                         className="w-5 h-5 text-black/70 dark:text-white/70"
+                        // SVG content is from trusted icon library data, not user input
                         dangerouslySetInnerHTML={{
                           __html: generateRenderableSvg(icon, {
                             size: 20,
@@ -677,7 +524,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
           >
             <div className="w-12 h-1 rounded-full bg-black/10 dark:bg-white/10 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-colors" />
           </div>
-          
+
           <div className="px-4 pb-4 space-y-4">
           {/* Format selector */}
           <div className="flex gap-2">
