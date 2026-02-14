@@ -7,6 +7,14 @@ metadata:
   version: "0.2.0"
   website: https://unicon.sh
   repository: https://github.com/WebRenew/unicon
+  openclaw:
+    emoji: "🦄"
+    requires:
+      bins: ["node"]
+    install:
+      - type: node
+        package: "@webrenew/unicon"
+        global: true
 ---
 
 # Unicon

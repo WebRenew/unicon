@@ -8,6 +8,14 @@ metadata:
   version: "1.0.0"
   website: https://unicon.sh
   repository: https://github.com/WebRenew/unicon
+  openclaw:
+    emoji: "🔌"
+    requires:
+      bins: ["node", "npx"]
+    install:
+      - type: node
+        package: "@webrenew/unicon-mcp-server"
+        global: true
 ---
 
 # Unicon MCP
