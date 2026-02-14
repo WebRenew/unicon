@@ -65,7 +65,6 @@ export function ApiTokenSettings({ initialSessions }: ApiTokenSettingsProps) {
         <GenerateForm
           onGenerated={(session) => {
             setSessions((prev) => [session, ...prev]);
-            setShowForm(false);
             setError(null);
           }}
           onCancel={() => setShowForm(false)}
