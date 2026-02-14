@@ -6,8 +6,9 @@ import { getUser } from "@/lib/auth/actions";
 import { CrownIcon } from "@/components/icons/ui/crown";
 import { ManageSubscriptionButton } from "./manage-subscription-button";
 import { TeamSettings } from "@/components/settings/team-settings";
+import { ApiTokenSettings } from "@/components/settings/api-token-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { TeamWithMembers } from "@/types/database";
+import type { TeamWithMembers, ApiSession } from "@/types/database";
 
 export const metadata = {
   title: "Settings",
@@ -40,14 +41,24 @@ export default async function SettingsPage() {
 
   // Fetch team data for Pro users
   let teamData: TeamWithMembers | null = null;
+  let tokenSessions: ApiSession[] = [];
   if (isPro) {
     const admin = createAdminClient();
-    const { data: membership } = await admin
-      .from("team_members")
-      .select("team_id")
-      .eq("user_id", profile.id)
-      .limit(1)
-      .maybeSingle();
+
+    // Fetch team membership and API sessions in parallel
+    const [membershipResult, sessionsResult] = await Promise.all([
+      admin
+        .from("team_members")
+        .select("team_id")
+        .eq("user_id", profile.id)
+        .limit(1)
+        .maybeSingle(),
+      admin.rpc("list_api_sessions", { p_user_id: profile.id }),
+    ]);
+
+    tokenSessions = (sessionsResult.data ?? []) as unknown as ApiSession[];
+
+    const membership = membershipResult.data;
 
     if (membership) {
       const [teamResult, membersResult, invitesResult] = await Promise.all([
@@ -178,6 +189,11 @@ export default async function SettingsPage() {
               )}
             </div>
           </div>
+
+          {/* API Tokens card (Pro users only) */}
+          {isPro && (
+            <ApiTokenSettings initialSessions={tokenSessions} />
+          )}
 
           {/* Team card (Pro users only) */}
           {isPro && (

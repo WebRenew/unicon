@@ -99,3 +99,15 @@ export interface TeamWithMembers extends Team {
   members: TeamMember[];
   invites: TeamInvite[];
 }
+
+// API Sessions
+
+export interface ApiSession {
+  id: string;
+  name: string | null;
+  client_name: string;
+  scope: string;
+  last_used_at: string | null;
+  created_at: string;
+  token_preview: string;
+}
