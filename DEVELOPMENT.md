@@ -107,6 +107,12 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Build Behavior
+
+- Production build runs with webpack via `pnpm build` (`next build --webpack`).
+- The `/` page is configured as dynamic so build does not require live DB access during prerender.
+- This keeps CI and local builds reliable in sandboxed/offline environments.
+
 ## How Semantic Search Works
 
 Unicon uses vector embeddings to understand the meaning of search queries:
