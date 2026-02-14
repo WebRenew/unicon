@@ -4,7 +4,7 @@ import { DocsPageNav, getDocsNavLinks } from "@/components/docs-page-nav";
 import { CopyPageButton } from "@/components/copy-page-button";
 import { CodeBlock } from "@/components/ui/code-block";
 
-const PAGE_MARKDOWN = `# MCP Transport: stdio vs SSE
+const PAGE_MARKDOWN = `# MCP Transport: stdio vs Streamable HTTP
 
 Unicon MCP supports two connection methods. This guide helps you choose the right one.
 
@@ -17,12 +17,12 @@ Unicon MCP supports two connection methods. This guide helps you choose the righ
 | Claude Desktop | stdio | Only supports stdio |
 | Claude Code (CLI) | stdio | Local Node.js available |
 | Cursor IDE | Either | Supports both, stdio recommended |
-| v0 (Vercel) | SSE | Cloud-based, no local process |
-| Bolt / Lovable | SSE | Cloud-based, no local process |
-| Replit | SSE | Cloud-based, no local process |
-| Custom web app | SSE | Browser environment |
+| v0 (Vercel) | Streamable HTTP | Cloud-based, no local process |
+| Bolt / Lovable | Streamable HTTP | Cloud-based, no local process |
+| Replit | Streamable HTTP | Cloud-based, no local process |
+| Custom web app | Streamable HTTP | Browser environment |
 
-**TL;DR:** Desktop apps → stdio. Cloud/browser apps → SSE.
+**TL;DR:** Desktop apps → stdio. Cloud/browser apps → Streamable HTTP.
 
 ## What's the Difference?
 
@@ -35,8 +35,8 @@ Your App ←→ Local Process (npx) ←→ Unicon API
 
 **Requires:** Node.js/npm installed locally
 
-### SSE (Server-Sent Events / HTTP)
-Direct HTTP connection to our hosted endpoint. Nothing runs locally.
+### Streamable HTTP
+Direct HTTP connection to our hosted endpoint. Nothing runs locally. This is the current MCP standard transport for remote servers, replacing the deprecated SSE transport.
 
 \`\`\`
 Your App ←→ unicon.sh/api/mcp
@@ -46,8 +46,8 @@ Your App ←→ unicon.sh/api/mcp
 
 ## Comparison
 
-| Factor | stdio | SSE |
-|--------|-------|-----|
+| Factor | stdio | Streamable HTTP |
+|--------|-------|-----------------|
 | Setup complexity | Config file + restart | Just paste URL |
 | Local dependencies | Needs Node.js | None |
 | Latency | Lower (local process) | Slightly higher (HTTP) |
@@ -60,17 +60,17 @@ Your App ←→ unicon.sh/api/mcp
 
 **Both give you the exact same tools and results.** The only difference is how your app connects to Unicon.
 
-If your app supports both, stdio is marginally faster but SSE is simpler to set up. For most users, the difference is imperceptible.
+If your app supports both, stdio is marginally faster but Streamable HTTP is simpler to set up. For most users, the difference is imperceptible.
 
 ---
 
-## SSE Endpoint URL
+## Endpoint URL
 
 \`\`\`
 https://unicon.sh/api/mcp
 \`\`\`
 
-This is a Streamable HTTP endpoint that supports both SSE and standard HTTP responses.
+This is a Streamable HTTP endpoint — the current MCP standard for remote server connections.
 
 ## How It Works
 
@@ -141,7 +141,7 @@ const result = await client.callTool({
 
 ## Available Tools
 
-The SSE endpoint provides the same tools as the stdio transport:
+The Streamable HTTP endpoint provides the same tools as the stdio transport:
 
 | Tool | Description |
 |------|-------------|
@@ -159,7 +159,7 @@ The endpoint supports CORS for browser-based integrations:
 \`\`\`
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id
+Access-Control-Allow-Headers: Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id
 \`\`\`
 
 ## Rate Limits
@@ -184,29 +184,29 @@ Verify you're using the correct tool names (search_icons, get_icon, etc.)
 `;
 
 export const metadata: Metadata = {
-  title: "MCP SSE Transport | Unicon",
-  description: "Use Unicon MCP with Server-Sent Events (SSE) transport for cloud IDEs like v0, Bolt, and custom integrations.",
+  title: "MCP Streamable HTTP Transport | Unicon",
+  description: "Use Unicon MCP with Streamable HTTP transport for cloud IDEs like v0, Bolt, and custom integrations. The modern MCP standard for remote servers.",
   keywords: [
-    "mcp sse",
-    "server sent events",
+    "mcp streamable http",
+    "mcp transport",
     "streamable http",
     "v0 mcp",
     "bolt mcp",
     "cloud ide mcp",
-    "mcp transport",
+    "mcp remote server",
   ],
   alternates: {
     canonical: "/docs/mcp/sse",
   },
   openGraph: {
-    title: "Unicon MCP SSE Transport",
-    description: "Use Unicon with cloud IDEs and URL-based MCP clients via SSE transport.",
+    title: "Unicon MCP Streamable HTTP Transport",
+    description: "Use Unicon with cloud IDEs and URL-based MCP clients via Streamable HTTP transport.",
     url: "https://unicon.sh/docs/mcp/sse",
     type: "website",
   },
 };
 
-export default function MCPSSEDocsPage() {
+export default function MCPStreamableHTTPDocsPage() {
   return (
     <div className="w-full py-10 px-6 md:px-12 lg:px-16">
       {/* Header */}
@@ -217,7 +217,7 @@ export default function MCPSSEDocsPage() {
           </div>
           <CopyPageButton markdown={PAGE_MARKDOWN} />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">MCP Transport: stdio vs SSE</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">MCP Transport: stdio vs Streamable HTTP</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
           Unicon MCP supports two connection methods. This guide helps you choose the right one.
         </p>
@@ -257,22 +257,22 @@ export default function MCPSSEDocsPage() {
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-3 px-4">v0 (Vercel)</td>
-                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">SSE</td>
+                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">Streamable HTTP</td>
                   <td className="py-3 px-4 text-muted-foreground">Cloud-based, no local process</td>
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-3 px-4">Bolt / Lovable</td>
-                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">SSE</td>
+                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">Streamable HTTP</td>
                   <td className="py-3 px-4 text-muted-foreground">Cloud-based, no local process</td>
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-3 px-4">Replit</td>
-                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">SSE</td>
+                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">Streamable HTTP</td>
                   <td className="py-3 px-4 text-muted-foreground">Cloud-based, no local process</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4">Custom web app</td>
-                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">SSE</td>
+                  <td className="py-3 px-4 font-mono text-[var(--accent-aqua)]">Streamable HTTP</td>
                   <td className="py-3 px-4 text-muted-foreground">Browser environment</td>
                 </tr>
               </tbody>
@@ -281,7 +281,7 @@ export default function MCPSSEDocsPage() {
           <div className="mt-4 p-4 rounded-lg border border-[var(--accent-mint)]/20 bg-[var(--accent-mint)]/5">
             <p className="text-sm">
               <strong className="text-[var(--accent-mint)]">TL;DR:</strong>{" "}
-              <span className="text-muted-foreground">Desktop apps → stdio. Cloud/browser apps → SSE.</span>
+              <span className="text-muted-foreground">Desktop apps → stdio. Cloud/browser apps → Streamable HTTP.</span>
             </p>
           </div>
         </section>
@@ -289,7 +289,7 @@ export default function MCPSSEDocsPage() {
         {/* What's the Difference */}
         <section>
           <h2 className="text-2xl font-bold mb-6">What&apos;s the Difference?</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="p-5 rounded-xl border border-[var(--accent-lavender)]/20 bg-[var(--accent-lavender)]/5">
               <h3 className="font-semibold text-[var(--accent-lavender)] mb-3">stdio (Standard I/O)</h3>
@@ -305,9 +305,9 @@ export default function MCPSSEDocsPage() {
             </div>
 
             <div className="p-5 rounded-xl border border-[var(--accent-aqua)]/20 bg-[var(--accent-aqua)]/5">
-              <h3 className="font-semibold text-[var(--accent-aqua)] mb-3">SSE (Server-Sent Events / HTTP)</h3>
+              <h3 className="font-semibold text-[var(--accent-aqua)] mb-3">Streamable HTTP</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Direct HTTP connection to our hosted endpoint. Nothing runs locally.
+                Direct HTTP connection to our hosted endpoint. Nothing runs locally. This is the current MCP standard for remote servers.
               </p>
               <div className="p-3 rounded bg-black/20 font-mono text-xs text-muted-foreground">
                 Your App ←→ unicon.sh/api/mcp
@@ -328,7 +328,7 @@ export default function MCPSSEDocsPage() {
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 font-semibold">Factor</th>
                   <th className="text-left py-3 px-4 font-semibold text-[var(--accent-lavender)]">stdio</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--accent-aqua)]">SSE</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--accent-aqua)]">Streamable HTTP</th>
                 </tr>
               </thead>
               <tbody>
@@ -381,7 +381,7 @@ export default function MCPSSEDocsPage() {
               The only difference is how your app connects to Unicon.
             </p>
             <p className="text-muted-foreground mt-2">
-              If your app supports both, stdio is marginally faster but SSE is simpler to set up. 
+              If your app supports both, stdio is marginally faster but Streamable HTTP is simpler to set up.
               For most users, the difference is imperceptible.
             </p>
           </div>
@@ -389,12 +389,12 @@ export default function MCPSSEDocsPage() {
 
         <hr className="border-border" />
 
-        {/* SSE Endpoint URL */}
+        {/* Endpoint URL */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">SSE Endpoint URL</h2>
+          <h2 className="text-2xl font-bold mb-4">Endpoint URL</h2>
           <CodeBlock title="MCP Endpoint">{`https://unicon.sh/api/mcp`}</CodeBlock>
           <p className="text-sm text-muted-foreground mt-3">
-            This is a Streamable HTTP endpoint that supports both SSE and standard HTTP responses.
+            This is a Streamable HTTP endpoint — the current MCP standard for remote server connections.
           </p>
         </section>
 
@@ -421,7 +421,7 @@ export default function MCPSSEDocsPage() {
         {/* Configuration Examples */}
         <section>
           <h2 className="text-2xl font-bold mb-6">Configuration Examples</h2>
-          
+
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-3">v0 (Vercel)</h3>
@@ -479,7 +479,7 @@ const result = await client.callTool({
         <section>
           <h2 className="text-2xl font-bold mb-4">Available Tools</h2>
           <p className="text-muted-foreground mb-4">
-            The SSE endpoint provides the same tools as the stdio transport:
+            The Streamable HTTP endpoint provides the same tools as the stdio transport:
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -527,7 +527,7 @@ const result = await client.callTool({
           </p>
           <CodeBlock>{`Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id`}</CodeBlock>
+Access-Control-Allow-Headers: Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-Id`}</CodeBlock>
         </section>
 
         {/* Rate Limits */}

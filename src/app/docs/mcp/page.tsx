@@ -102,7 +102,7 @@ To save and access your bundles, authenticate once:
 2. The local MCP server (stdio) auto-reads \`~/.unicon/auth.json\`
 3. Or set \`UNICON_API_TOKEN\` in your MCP server config
 
-**Note:** URL-based MCP clients must send \`Authorization: Bearer <token>\` to use bundle tools.
+**Note:** Streamable HTTP MCP clients must send \`Authorization: Bearer <token>\` to use bundle tools.
 
 ### list_my_bundles
 List your saved bundles.
@@ -261,7 +261,7 @@ export default function MCPDocsPage() {
               </div>
             </div>
             <div className="p-4 rounded-xl border border-border bg-card">
-              <h3 className="text-sm font-semibold mb-3 text-[var(--accent-lavender)]">Cloud IDEs (HTTP)</h3>
+              <h3 className="text-sm font-semibold mb-3 text-[var(--accent-lavender)]">Cloud IDEs (Streamable HTTP)</h3>
               <div className="font-mono text-xs space-y-1 text-muted-foreground">
                 <div>v0 / Bolt / Lovable</div>
                 <div className="text-center">↓ Streamable HTTP</div>
@@ -271,7 +271,7 @@ export default function MCPDocsPage() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            Desktop apps require a local bridge for stdio transport. Cloud IDEs connect directly via HTTP.
+            Desktop apps require a local bridge for stdio transport. Cloud IDEs connect directly via Streamable HTTP.
             Both methods provide the same functionality.
           </p>
         </section>
@@ -475,7 +475,7 @@ export default function MCPDocsPage() {
 
             <div className="p-4 rounded-lg border border-[var(--accent-lavender)]/20 bg-[var(--accent-lavender)]/5">
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Why two methods?</strong> Desktop apps like Claude Desktop and Cursor require a local bridge (stdio transport). Cloud IDEs can connect directly via HTTP.
+                <strong className="text-foreground">Why two methods?</strong> Desktop apps like Claude Desktop and Cursor require a local bridge (stdio transport). Cloud IDEs can connect directly via Streamable HTTP.
               </p>
             </div>
           </div>

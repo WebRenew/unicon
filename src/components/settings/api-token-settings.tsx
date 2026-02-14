@@ -38,7 +38,7 @@ export function ApiTokenSettings({ initialSessions }: ApiTokenSettingsProps) {
             Personal API tokens
           </p>
           <p className="text-xs text-muted-foreground">
-            Use tokens with SSE/MCP clients like v0, Cursor, and others
+            Use tokens with MCP clients like v0, Cursor, and others
           </p>
         </div>
       </div>

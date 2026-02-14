@@ -75,17 +75,17 @@ function ArrowDownIcon({ className }: { className?: string }) {
   );
 }
 
-const SSE_ENDPOINT = "https://unicon.sh/api/mcp";
+const MCP_ENDPOINT = "https://unicon.sh/api/mcp";
 
 export function MCPInstallButtons() {
   const [showClaudeCodeCommand, setShowClaudeCodeCommand] = useState(false);
-  const [copiedSSE, setCopiedSSE] = useState(false);
+  const [copiedEndpoint, setCopiedEndpoint] = useState(false);
 
-  const handleCopySSE = useCallback(async () => {
+  const handleCopyEndpoint = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(SSE_ENDPOINT);
-      setCopiedSSE(true);
-      setTimeout(() => setCopiedSSE(false), 2000);
+      await navigator.clipboard.writeText(MCP_ENDPOINT);
+      setCopiedEndpoint(true);
+      setTimeout(() => setCopiedEndpoint(false), 2000);
     } catch {
       // silent
     }
@@ -169,9 +169,9 @@ export function MCPInstallButtons() {
             <ExternalLinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-aqua)] transition-colors" />
           </a>
 
-          {/* v0 Button - Copy SSE endpoint */}
+          {/* v0 Button - Copy MCP endpoint */}
           <button
-            onClick={handleCopySSE}
+            onClick={handleCopyEndpoint}
             className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-foreground/30 transition-all group text-left"
           >
             <div className="p-2 rounded-lg bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
@@ -180,10 +180,10 @@ export function MCPInstallButtons() {
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">v0</div>
               <div className="text-xs text-muted-foreground">
-                {copiedSSE ? "Copied!" : "Copy SSE endpoint"}
+                {copiedEndpoint ? "Copied!" : "Copy endpoint URL"}
               </div>
             </div>
-            {copiedSSE ? (
+            {copiedEndpoint ? (
               <CheckIcon className="w-4 h-4 text-emerald-400 transition-colors" />
             ) : (
               <CopyIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
