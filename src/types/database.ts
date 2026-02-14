@@ -68,6 +68,7 @@ export interface Team {
   name: string;
   slug: string;
   owner_id: string;
+  logo_url: string | null;
   max_members: number;
   created_at: string;
   updated_at: string;
