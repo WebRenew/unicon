@@ -17,6 +17,7 @@ export function ApiTokenSettings({ initialSessions }: ApiTokenSettingsProps) {
   const [sessions, setSessions] = useState<ApiSession[]>(initialSessions);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newToken, setNewToken] = useState<string | null>(null);
 
   return (
     <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
@@ -60,32 +61,102 @@ export function ApiTokenSettings({ initialSessions }: ApiTokenSettingsProps) {
         </div>
       )}
 
-      {/* Generate form */}
-      {showForm ? (
-        <GenerateForm
-          onGenerated={(session) => {
-            setSessions((prev) => [session, ...prev]);
-            setError(null);
-          }}
-          onCancel={() => setShowForm(false)}
-          setError={setError}
+      {/* Newly generated token — shown until user dismisses */}
+      {newToken && (
+        <NewTokenDisplay
+          token={newToken}
+          onDismiss={() => setNewToken(null)}
         />
-      ) : (
-        <button
-          onClick={() => {
-            setShowForm(true);
-            setError(null);
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-black/10 dark:border-white/10 text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-        >
-          <PlusIcon className="w-3.5 h-3.5" />
-          Generate Token
-        </button>
+      )}
+
+      {/* Generate form */}
+      {!newToken && (
+        <>
+          {showForm ? (
+            <GenerateForm
+              onGenerated={(session, accessToken) => {
+                setSessions((prev) => [session, ...prev]);
+                setNewToken(accessToken);
+                setShowForm(false);
+                setError(null);
+              }}
+              onCancel={() => setShowForm(false)}
+              setError={setError}
+            />
+          ) : (
+            <button
+              onClick={() => {
+                setShowForm(true);
+                setError(null);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-black/10 dark:border-white/10 text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              <PlusIcon className="w-3.5 h-3.5" />
+              Generate Token
+            </button>
+          )}
+        </>
       )}
 
       {error && (
         <p className="text-xs text-red-600 dark:text-red-400 mt-3">{error}</p>
       )}
+    </div>
+  );
+}
+
+// --- New Token Display (lives in parent, not inside form) ---
+
+function NewTokenDisplay({
+  token,
+  onDismiss,
+}: {
+  token: string;
+  onDismiss: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(token);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Silently fail
+    }
+  }, [token]);
+
+  return (
+    <div className="space-y-3 mb-4">
+      <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
+          Token created — copy it now, you won&apos;t see it again
+        </p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 text-sm font-mono text-black dark:text-white bg-black/5 dark:bg-white/5 px-2 py-1 rounded break-all select-all">
+            {token}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="p-1.5 rounded-md transition-colors text-muted-foreground hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 shrink-0"
+            aria-label={copied ? "Copied" : "Copy token"}
+          >
+            {copied ? (
+              <CheckIcon className="w-4 h-4 text-emerald-500" />
+            ) : (
+              <CopyIcon className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="text-xs text-muted-foreground hover:text-black dark:hover:text-white transition-colors"
+      >
+        Done
+      </button>
     </div>
   );
 }
@@ -170,25 +241,12 @@ function GenerateForm({
   onCancel,
   setError,
 }: {
-  onGenerated: (session: ApiSession) => void;
+  onGenerated: (session: ApiSession, accessToken: string) => void;
   onCancel: () => void;
   setError: (error: string | null) => void;
 }) {
   const [name, setName] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [newToken, setNewToken] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(async () => {
-    if (!newToken) return;
-    try {
-      await navigator.clipboard.writeText(newToken);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Silently fail
-    }
-  }, [newToken]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -209,61 +267,24 @@ function GenerateForm({
         return;
       }
 
-      setNewToken(data.access_token);
-
-      // Add to the list with a preview
       const token = data.access_token as string;
-      onGenerated({
-        id: data.session_id,
-        name: name.trim() || null,
-        client_name: "Web",
-        scope: "bundles:read",
-        last_used_at: null,
-        created_at: new Date().toISOString(),
-        token_preview: "uni_****" + token.slice(-4),
-      });
+      onGenerated(
+        {
+          id: data.session_id,
+          name: name.trim() || null,
+          client_name: "Web",
+          scope: "bundles:read",
+          last_used_at: null,
+          created_at: new Date().toISOString(),
+          token_preview: "uni_****" + token.slice(-4),
+        },
+        token
+      );
     } catch {
       setError("Failed to generate token");
     } finally {
       setGenerating(false);
     }
-  }
-
-  // Show the new token once generated
-  if (newToken) {
-    return (
-      <div className="space-y-3">
-        <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
-          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-            Token created — copy it now, you won&apos;t see it again
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 text-sm font-mono text-black dark:text-white bg-black/5 dark:bg-white/5 px-2 py-1 rounded break-all select-all">
-              {newToken}
-            </code>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="p-1.5 rounded-md transition-colors text-muted-foreground hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 shrink-0"
-              aria-label={copied ? "Copied" : "Copy token"}
-            >
-              {copied ? (
-                <CheckIcon className="w-4 h-4 text-emerald-500" />
-              ) : (
-                <CopyIcon className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-xs text-muted-foreground hover:text-black dark:hover:text-white transition-colors"
-        >
-          Done
-        </button>
-      </div>
-    );
   }
 
   return (
