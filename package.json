@@ -1,7 +1,31 @@
 {
   "name": "unicon",
   "version": "0.1.0",
-  "private": true,
+  "description": "Just the icons you need. Zero bloat. Browse 20,000+ icons and copy exactly what you need.",
+  "private": false,
+  "license": "MIT",
+  "author": "WebRenew (https://webrenew.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebRenew/unicon.git"
+  },
+  "homepage": "https://unicon.sh",
+  "bugs": {
+    "url": "https://github.com/WebRenew/unicon/issues"
+  },
+  "keywords": [
+    "icons",
+    "react",
+    "svg",
+    "nextjs",
+    "typescript",
+    "developer-tools",
+    "icon-library",
+    "lucide",
+    "heroicons",
+    "phosphor",
+    "shadcn"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",

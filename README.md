@@ -6,6 +6,8 @@ Browse 20,000+ icons and copy exactly what you need. Like [shadcn/ui](https://ui
 
 [**Try it now at unicon.sh**](https://unicon.sh)
 
+[![CI](https://github.com/WebRenew/unicon/actions/workflows/ci.yml/badge.svg)](https://github.com/WebRenew/unicon/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@webrenew/unicon.svg)](https://www.npmjs.com/package/@webrenew/unicon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Unicon — browse 20,000+ icons and copy what you need](public/readme.png)
