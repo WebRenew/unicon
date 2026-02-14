@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { UsersIcon } from "@/components/icons/ui/users";
 import { UserPlusIcon } from "@/components/icons/ui/user-plus";
@@ -8,6 +8,7 @@ import { MailIcon } from "@/components/icons/ui/mail";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { XIcon } from "@/components/icons/ui/x";
 import { Trash2Icon } from "@/components/icons/ui/trash-2";
+import { CameraIcon } from "@/components/icons/ui/camera";
 import type { TeamWithMembers, TeamMember, TeamInvite } from "@/types/database";
 
 interface TeamSettingsProps {
@@ -223,9 +224,14 @@ function TeamManagement({
 
       {/* Team name */}
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center">
-          <UsersIcon className="w-5 h-5 text-muted-foreground" />
-        </div>
+        <TeamLogo
+          team={team}
+          isAdmin={isAdmin}
+          onLogoUpdated={(logoUrl) =>
+            onTeamUpdated({ ...team, logo_url: logoUrl })
+          }
+          setError={setError}
+        />
         <div>
           <p className="text-sm font-medium text-black dark:text-white">
             {team.name}
@@ -280,6 +286,130 @@ function TeamManagement({
 
       {error && (
         <p className="text-xs text-red-600 dark:text-red-400 mt-3">{error}</p>
+      )}
+    </div>
+  );
+}
+
+// --- Team Logo ---
+
+function TeamLogo({
+  team,
+  isAdmin,
+  onLogoUpdated,
+  setError,
+}: {
+  team: TeamWithMembers;
+  isAdmin: boolean;
+  onLogoUpdated: (logoUrl: string | null) => void;
+  setError: (error: string | null) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so the same file can be re-selected
+    e.target.value = "";
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`/api/teams/${team.id}/logo`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to upload logo");
+        return;
+      }
+
+      onLogoUpdated(data.logo_url);
+    } catch {
+      setError("Failed to upload logo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleRemoveLogo() {
+    setUploading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/teams/${team.id}/logo`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to remove logo");
+        return;
+      }
+
+      onLogoUpdated(null);
+    } catch {
+      setError("Failed to remove logo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="relative group">
+      <div className="w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center overflow-hidden">
+        {uploading ? (
+          <Loader2Icon className="w-5 h-5 text-muted-foreground animate-spin" />
+        ) : team.logo_url ? (
+          <Image
+            src={team.logo_url}
+            alt={team.name}
+            width={40}
+            height={40}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <UsersIcon className="w-5 h-5 text-muted-foreground" />
+        )}
+      </div>
+
+      {isAdmin && !uploading && (
+        <>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            title={team.logo_url ? "Change logo" : "Upload logo"}
+          >
+            <CameraIcon className="w-4 h-4 text-white" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          {team.logo_url && (
+            <button
+              type="button"
+              onClick={handleRemoveLogo}
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Remove logo"
+            >
+              <XIcon className="w-2.5 h-2.5 text-white" />
+            </button>
+          )}
+        </>
       )}
     </div>
   );
