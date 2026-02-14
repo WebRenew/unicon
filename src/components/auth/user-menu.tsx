@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,7 +22,6 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ profile, isPro }: UserMenuProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -31,8 +29,6 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
     setIsSigningOut(true);
     try {
       await signOut();
-      router.push("/");
-      router.refresh();
     } catch {
       setIsSigningOut(false);
     }

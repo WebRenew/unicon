@@ -8,6 +8,8 @@ Browse 20,000+ icons and copy exactly what you need. Like [shadcn/ui](https://ui
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+![Unicon — browse 20,000+ icons and copy what you need](public/readme.png)
+
 ## Why Unicon?
 
 Most icon libraries force you to install thousands of icons just to use a handful. Unicon lets you browse everything in one place and copy only what you need.
