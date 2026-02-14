@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/logger";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("Device code check error:", error);
+      logger.error("Device code check error:", error);
       return NextResponse.json(
         { error: "server_error", error_description: error.message },
         { status: 500, headers: CORS_HEADERS }
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
         );
     }
   } catch (err) {
-    console.error("Device token error:", err);
+    logger.error("Device token error:", err);
     return NextResponse.json(
       { error: "server_error", error_description: "Internal server error" },
       { status: 500, headers: CORS_HEADERS }

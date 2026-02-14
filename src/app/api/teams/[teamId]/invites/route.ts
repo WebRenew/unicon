@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTeamInviteEmail } from "@/lib/email/resend";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ teamId: string }>;
@@ -220,7 +221,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           inviteUrl,
         });
       } catch (emailError) {
-        console.error("Failed to send invite email:", emailError);
+        logger.error("Failed to send invite email:", emailError);
       }
 
       return NextResponse.json({ invite: updatedInvite }, { status: 201 });
@@ -248,7 +249,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       inviteUrl,
     });
   } catch (emailError) {
-    console.error("Failed to send invite email:", emailError);
+    logger.error("Failed to send invite email:", emailError);
     // Don't fail the invite creation — email delivery is best-effort
   }
 

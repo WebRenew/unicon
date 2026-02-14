@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 interface LogSearchParams {
   query: string;
@@ -29,7 +30,7 @@ export async function logSearch(params: LogSearchParams): Promise<void> {
     `);
   } catch (error) {
     // Don't fail the request if analytics logging fails
-    console.error("Failed to log search analytics:", error);
+    logger.error("Failed to log search analytics:", error);
   }
 }
 
@@ -75,7 +76,7 @@ export async function getSearchStats(days = 7) {
       popularQueries: popularQueries || [],
     };
   } catch (error) {
-    console.error("Failed to get search stats:", error);
+    logger.error("Failed to get search stats:", error);
     return {
       period: `${days} days`,
       summary: {},

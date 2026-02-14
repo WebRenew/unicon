@@ -8,6 +8,7 @@
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/logger";
 
 // Initialize Redis client (uses Vercel KV env vars)
 const redis = new Redis({
@@ -66,7 +67,7 @@ export async function checkRateLimit(
     };
   } catch (error) {
     // If rate limiting fails (e.g., Redis unavailable), allow the request
-    console.error("Rate limit check failed:", error);
+    logger.error("Rate limit check failed:", error);
     return {
       success: true,
       limit: isPro ? 100 : 10,
@@ -93,7 +94,7 @@ export async function checkPublicRateLimit(
     };
   } catch (error) {
     // If rate limiting fails (e.g., Redis unavailable), allow the request
-    console.error("Public rate limit check failed:", error);
+    logger.error("Public rate limit check failed:", error);
     return {
       success: true,
       limit: 60,

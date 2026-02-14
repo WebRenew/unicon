@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { logger } from "@/lib/logger";
 
 const FROM_EMAIL = "🦄 UNICON <noreply@notifications.unicon.sh>";
 
@@ -61,7 +62,7 @@ export async function sendTeamInviteEmail({
   });
 
   if (error) {
-    console.error("Failed to send team invite email:", error);
+    logger.error("Failed to send team invite email:", error);
     throw new Error(`Failed to send invite email: ${error.message}`);
   }
 }

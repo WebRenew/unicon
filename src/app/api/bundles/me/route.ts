@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractBearerToken, validateApiToken } from "@/lib/auth/api-token";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -82,7 +83,7 @@ export async function GET(request: Request) {
       .order("updated_at", { ascending: false });
 
     if (error) {
-      console.error("Bundles fetch error:", error);
+      logger.error("Bundles fetch error:", error);
       return NextResponse.json(
         { error: "server_error", message: "Failed to fetch bundles" },
         { status: 500, headers: CORS_HEADERS }
@@ -104,7 +105,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (err) {
-    console.error("GET /api/bundles/me error:", err);
+    logger.error("GET /api/bundles/me error:", err);
     return NextResponse.json(
       { error: "server_error", message: "Internal server error" },
       { status: 500, headers: CORS_HEADERS }

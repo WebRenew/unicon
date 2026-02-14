@@ -187,6 +187,11 @@ See [MCP docs](./packages/mcp-server/README.md) for details.
 
 Want to run your own instance? See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup instructions.
 
+### Build Notes
+
+- The app build uses `webpack` (`next build --webpack`) for deterministic CI/local builds in restricted environments.
+- The home route (`/`) is intentionally dynamic to avoid build-time database fetches during prerender.
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/WebRenew/unicon)
 
 ## License

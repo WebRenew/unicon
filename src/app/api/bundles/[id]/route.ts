@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -34,7 +35,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ bundle });
   } catch (err) {
-    console.error("GET /api/bundles/[id] error:", err);
+    logger.error("GET /api/bundles/[id] error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -139,7 +140,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ bundle });
   } catch (err) {
-    console.error("PATCH /api/bundles/[id] error:", err);
+    logger.error("PATCH /api/bundles/[id] error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -167,7 +168,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("DELETE /api/bundles/[id] error:", err);
+    logger.error("DELETE /api/bundles/[id] error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
