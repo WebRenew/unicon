@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { UsersIcon } from "@/components/icons/ui/users";
 import { UserPlusIcon } from "@/components/icons/ui/user-plus";
 import { MailIcon } from "@/components/icons/ui/mail";
@@ -313,10 +314,11 @@ function MemberRow({
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-7 h-7 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center shrink-0">
           {profile?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={profile.avatar_url}
               alt={displayName}
+              width={28}
+              height={28}
               className="w-full h-full rounded-full object-cover"
             />
           ) : (

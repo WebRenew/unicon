@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  images: {
+    remotePatterns: [
+      { hostname: "avatars.githubusercontent.com" },
+      { hostname: "lh3.googleusercontent.com" },
+    ],
+  },
   experimental: {
     // Optimize barrel imports for lucide-react to reduce bundle size
     // This transforms `import { X } from "lucide-react"` to individual imports
