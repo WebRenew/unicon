@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Popover,
@@ -54,10 +55,11 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
           aria-label="User menu"
         >
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={avatarUrl}
               alt={displayName}
+              width={32}
+              height={32}
               className="w-full h-full rounded-full object-cover"
             />
           ) : (

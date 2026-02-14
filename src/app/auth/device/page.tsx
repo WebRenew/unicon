@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { LoginDialog } from "@/components/auth/login-dialog";
@@ -137,10 +138,11 @@ function DeviceAuthContent() {
               {/* User info */}
               {user && (
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg mb-6">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={user.user_metadata?.avatar_url || "/placeholder-avatar.png"}
                     alt=""
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full"
                   />
                   <div className="flex-1 min-w-0">
