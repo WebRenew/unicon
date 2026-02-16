@@ -40,6 +40,22 @@ export const publicLimiter = new Ratelimit({
   prefix: "ratelimit:public",
 });
 
+// Rate limiter for device code creation: 10 requests per minute per IP
+export const deviceCodeLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
+  analytics: true,
+  prefix: "ratelimit:device-code",
+});
+
+// Rate limiter for device token polling: 30 requests per minute per IP
+export const deviceTokenLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"),
+  analytics: true,
+  prefix: "ratelimit:device-token",
+});
+
 export interface RateLimitResult {
   success: boolean;
   limit: number;
@@ -98,6 +114,54 @@ export async function checkPublicRateLimit(
     return {
       success: true,
       limit: 60,
+      remaining: 1,
+      reset: Date.now() + 60000,
+    };
+  }
+}
+
+/**
+ * Check rate limit for the device code endpoint by IP
+ */
+export async function checkDeviceCodeRateLimit(ip: string): Promise<RateLimitResult> {
+  try {
+    const result = await deviceCodeLimiter.limit(ip);
+
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    };
+  } catch (error) {
+    logger.error("Device code rate limit check failed:", error);
+    return {
+      success: true,
+      limit: 10,
+      remaining: 1,
+      reset: Date.now() + 60000,
+    };
+  }
+}
+
+/**
+ * Check rate limit for the device token endpoint by IP
+ */
+export async function checkDeviceTokenRateLimit(ip: string): Promise<RateLimitResult> {
+  try {
+    const result = await deviceTokenLimiter.limit(ip);
+
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    };
+  } catch (error) {
+    logger.error("Device token rate limit check failed:", error);
+    return {
+      success: true,
+      limit: 30,
       remaining: 1,
       reset: Date.now() + 60000,
     };
