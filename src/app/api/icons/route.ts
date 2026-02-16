@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 import { logSearch } from "@/lib/analytics";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { waitUntil } from "@vercel/functions";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, sliceForPagination } from "@/lib/api/pagination";
 import { getTrustedClientIp } from "@/lib/request-ip";
 
 const CORS_HEADERS = {
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           icons: aiResults.icons,
-          hasMore: aiResults.icons.length === limit,
+          hasMore: aiResults.hasMore,
           searchType: aiResults.searchType,
           expandedQuery: aiResults.expandedQuery,
         },
@@ -147,7 +147,11 @@ export async function GET(request: NextRequest) {
     if (sourceParam && sourceParam !== "all") params.sourceId = sourceParam;
     if (categoryParam && categoryParam !== "all") params.category = categoryParam;
 
-    const icons = await searchIcons(params);
+    const iconRows = await searchIcons({
+      ...params,
+      limit: limit + 1,
+    });
+    const { items: icons, hasMore } = sliceForPagination(iconRows, limit);
 
     // Log analytics for text search (fire-and-forget, waitUntil ensures completion after response)
     if (queryParam) {
@@ -162,7 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { icons, hasMore: icons.length === limit, searchType: "text" },
+      { icons, hasMore, searchType: "text" },
       {
         headers: {
           ...CORS_HEADERS,
@@ -194,7 +198,7 @@ async function aiSemanticSearch(
   sourceId: string | undefined,
   limit: number,
   offset: number
-): Promise<{ icons: IconData[]; searchType: string; expandedQuery?: string; cacheHit: boolean }> {
+): Promise<{ icons: IconData[]; hasMore: boolean; searchType: string; expandedQuery?: string; cacheHit: boolean }> {
   // Check cache first
   const cacheKey = generateSearchCacheKey({
     query,
@@ -202,7 +206,7 @@ async function aiSemanticSearch(
     limit,
     offset,
   });
-  const cached = getCachedSearchResults<{ icons: IconData[]; searchType: string; expandedQuery?: string }>(cacheKey);
+  const cached = getCachedSearchResults<{ icons: IconData[]; hasMore: boolean; searchType: string; expandedQuery?: string }>(cacheKey);
   if (cached) {
     logger.log(`Cache hit for search: "${query}"`);
     return { ...cached, cacheHit: true };
@@ -246,12 +250,13 @@ async function aiSemanticSearch(
     // Fall back to text search if embedding fails
     const searchParams: { query: string; sourceId?: string; limit: number; offset: number } = {
       query,
-      limit,
+      limit: limit + 1,
       offset
     };
     if (sourceId) searchParams.sourceId = sourceId;
-    const textResults = await searchIcons(searchParams);
-    return { icons: textResults, searchType: "text", cacheHit: false };
+    const textRows = await searchIcons(searchParams);
+    const { items: icons, hasMore } = sliceForPagination(textRows, limit);
+    return { icons, hasMore, searchType: "text", cacheHit: false };
   }
 
   // Convert embedding to Turso vector format
@@ -270,7 +275,7 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL AND source_id = ${sourceId}
         ORDER BY distance ASC
-        LIMIT ${limit} OFFSET ${offset}
+        LIMIT ${limit + 1} OFFSET ${offset}
       `)
     : await db.all(sql`
         SELECT
@@ -282,11 +287,11 @@ async function aiSemanticSearch(
         FROM icons
         WHERE embedding IS NOT NULL
         ORDER BY distance ASC
-        LIMIT ${limit} OFFSET ${offset}
+        LIMIT ${limit + 1} OFFSET ${offset}
       `)) as VectorSearchRow[];
 
   // Convert to IconData
-  const icons: IconData[] = semanticResults.map((row) => {
+  const iconRows: IconData[] = semanticResults.map((row) => {
     let tags: string[];
     try {
       tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
@@ -319,9 +324,11 @@ async function aiSemanticSearch(
       brandColor: row.brandColor as string | null,
     };
   });
+  const { items: icons, hasMore } = sliceForPagination(iconRows, limit);
 
-  const result: { icons: IconData[]; searchType: string; expandedQuery?: string; cacheHit: boolean } = {
+  const result: { icons: IconData[]; hasMore: boolean; searchType: string; expandedQuery?: string; cacheHit: boolean } = {
     icons,
+    hasMore,
     searchType: "semantic",
     cacheHit: false,
   };

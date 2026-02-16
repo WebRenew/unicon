@@ -9,6 +9,11 @@ export interface PaginationValidationError {
 
 type ParsePaginationResult = ParsedPagination | PaginationValidationError;
 
+export interface PaginatedSlice<T> {
+  items: T[];
+  hasMore: boolean;
+}
+
 function isValidationError(
   result: number | PaginationValidationError
 ): result is PaginationValidationError {
@@ -81,5 +86,18 @@ export function parsePagination(params: {
   return {
     limit: parsedLimit,
     offset: parsedOffset,
+  };
+}
+
+/**
+ * Builds paginated output from a "limit + 1" result set.
+ *
+ * Callers should fetch one extra row. If present, we know there is a next page.
+ */
+export function sliceForPagination<T>(rows: T[], limit: number): PaginatedSlice<T> {
+  const hasMore = rows.length > limit;
+  return {
+    items: hasMore ? rows.slice(0, limit) : rows,
+    hasMore,
   };
 }
