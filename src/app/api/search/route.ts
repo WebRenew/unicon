@@ -7,7 +7,7 @@ import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, sliceForPagination } from "@/lib/api/pagination";
 import { getTrustedClientIp } from "@/lib/request-ip";
 
 interface SearchResult extends IconData {
@@ -130,12 +130,12 @@ export async function POST(request: NextRequest) {
 
     // For very short queries, use text search
     if (trimmedQuery.length < 3) {
-      const results = await textSearch(trimmedQuery, sourceFilter, limit, offset);
+      const textResult = await textSearch(trimmedQuery, sourceFilter, limit, offset);
       return NextResponse.json(
         {
-          results,
+          results: textResult.results,
           searchType: "text",
-          hasMore: results.length === limit,
+          hasMore: textResult.hasMore,
         },
         {
           headers: {
@@ -170,7 +170,13 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const results = await hybridSearch(trimmedQuery, searchQuery, sourceFilter, limit, offset);
+      const hybridResult = await hybridSearch(
+        trimmedQuery,
+        searchQuery,
+        sourceFilter,
+        limit,
+        offset
+      );
 
       // Use shorter cache for AI-expanded queries since results may vary
       const cacheControl = shouldUseAI && expandedTerms
@@ -179,10 +185,10 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         {
-          results,
+          results: hybridResult.results,
           searchType: "semantic",
           expandedQuery: expandedTerms,
-          hasMore: results.length === limit,
+          hasMore: hybridResult.hasMore,
         },
         {
           headers: {
@@ -192,13 +198,13 @@ export async function POST(request: NextRequest) {
       );
     } catch (error) {
       logger.error("Semantic search failed, falling back to text:", error);
-      const results = await textSearch(trimmedQuery, sourceFilter, limit, offset);
+      const textResult = await textSearch(trimmedQuery, sourceFilter, limit, offset);
       return NextResponse.json(
         {
-          results,
+          results: textResult.results,
           searchType: "text",
           fallback: true,
-          hasMore: results.length === limit,
+          hasMore: textResult.hasMore,
         },
         {
           headers: {
@@ -294,7 +300,7 @@ async function hybridSearch(
   sourceId: string | undefined,
   limit: number,
   offset: number = 0
-): Promise<SearchResult[]> {
+): Promise<{ results: SearchResult[]; hasMore: boolean }> {
   // Get embedding for the expanded query
   const queryEmbedding = await getEmbedding(expandedQuery);
   const vectorString = embeddingToVectorString(queryEmbedding);
@@ -393,9 +399,11 @@ async function hybridSearch(
     });
   }
 
-  // Sort by hybrid score descending, apply offset, and return requested page
+  // Sort by hybrid score descending and create a limit+1 page window
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(offset, offset + limit);
+  const pageWindow = scored.slice(offset, offset + limit + 1);
+  const { items: results, hasMore } = sliceForPagination(pageWindow, limit);
+  return { results, hasMore };
 }
 
 /**
@@ -406,7 +414,7 @@ async function textSearch(
   sourceId: string | undefined,
   limit: number,
   offset: number = 0
-): Promise<SearchResult[]> {
+): Promise<{ results: SearchResult[]; hasMore: boolean }> {
   const searchTerm = `%${query.toLowerCase()}%`;
 
   const conditions = [
@@ -423,7 +431,7 @@ async function textSearch(
       .from(icons)
       .where(sql`${eq(icons.sourceId, sourceId)} AND (${or(...conditions)})`)
       .orderBy(asc(icons.normalizedName))
-      .limit(limit)
+      .limit(limit + 1)
       .offset(offset);
   } else {
     results = await db
@@ -431,11 +439,10 @@ async function textSearch(
       .from(icons)
       .where(or(...conditions))
       .orderBy(asc(icons.normalizedName))
-      .limit(limit)
+      .limit(limit + 1)
       .offset(offset);
   }
-
-  return results.map((icon) => ({
+  const mappedResults = results.map((icon) => ({
     id: icon.id,
     name: icon.name,
     normalizedName: icon.normalizedName,
@@ -451,4 +458,6 @@ async function textSearch(
     brandColor: icon.brandColor ?? null,
     score: 1, // Text matches get score of 1
   }));
+  const { items, hasMore } = sliceForPagination(mappedResults, limit);
+  return { results: items, hasMore };
 }
