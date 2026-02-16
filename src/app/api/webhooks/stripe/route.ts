@@ -6,36 +6,13 @@ import { logger } from "@/lib/logger";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe-webhook";
 import type Stripe from "stripe";
 
-// Track processed events to ensure idempotency (in-memory for single instance)
-// In production with multiple instances, use Redis or database
-const processedEvents = new Map<string, number>();
-const EVENT_TTL = 60 * 60 * 1000; // 1 hour
+const EVENT_CLAIM_STALE_MS = 5 * 60 * 1000; // 5 minutes
 
-function isEventProcessed(eventId: string): boolean {
-  const timestamp = processedEvents.get(eventId);
-  if (!timestamp) return false;
-  
-  // Check if event is still within TTL
-  if (Date.now() - timestamp > EVENT_TTL) {
-    processedEvents.delete(eventId);
-    return false;
-  }
-  return true;
-}
-
-function markEventProcessed(eventId: string): void {
-  processedEvents.set(eventId, Date.now());
-  
-  // Prune old entries periodically
-  if (processedEvents.size > 1000) {
-    const now = Date.now();
-    for (const [id, ts] of processedEvents.entries()) {
-      if (now - ts > EVENT_TTL) {
-        processedEvents.delete(id);
-      }
-    }
-  }
-}
+type EventClaimResult =
+  | { kind: "claimed" }
+  | { kind: "already_processed" }
+  | { kind: "in_progress" }
+  | { kind: "error"; message: string };
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -64,13 +41,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  // Idempotency check - prevent duplicate processing
-  if (isEventProcessed(event.id)) {
-    logger.log(`Event ${event.id} already processed, skipping`);
+  const supabase = createAdminClient();
+  const claim = await claimEventForProcessing(supabase, event.id);
+
+  if (claim.kind === "already_processed" || claim.kind === "in_progress") {
+    logger.log(`Event ${event.id} already being handled or processed, skipping`);
     return NextResponse.json({ received: true, skipped: true });
   }
 
-  const supabase = createAdminClient();
+  if (claim.kind === "error") {
+    logger.error(`Failed idempotency claim for event ${event.id}: ${claim.message}`);
+    return NextResponse.json({ error: "Webhook idempotency check failed" }, { status: 500 });
+  }
 
   try {
     switch (event.type) {
@@ -173,11 +155,134 @@ export async function POST(request: Request) {
     }
 
     // Mark event as processed after successful handling
-    markEventProcessed(event.id);
+    await markEventAsProcessed(supabase, event.id);
 
     return NextResponse.json({ received: true });
   } catch (err) {
+    await releaseEventClaim(supabase, event.id);
     logger.error("Webhook handler error:", err);
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
+}
+
+async function claimEventForProcessing(
+  supabase: ReturnType<typeof createAdminClient>,
+  eventId: string
+): Promise<EventClaimResult> {
+  const nowIso = new Date().toISOString();
+
+  const { error: insertError } = await supabase.from("stripe_webhook_events").insert({
+    event_id: eventId,
+    status: "processing",
+    last_attempt_at: nowIso,
+  });
+
+  if (!insertError) {
+    return { kind: "claimed" };
+  }
+
+  // Unique violation means another attempt has already claimed this event ID.
+  if (insertError.code !== "23505") {
+    return { kind: "error", message: insertError.message };
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("stripe_webhook_events")
+    .select("status, processed_at, last_attempt_at")
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  if (existingError) {
+    return { kind: "error", message: existingError.message };
+  }
+
+  if (!existing) {
+    return { kind: "error", message: "Webhook event state not found after duplicate claim" };
+  }
+
+  if (existing.processed_at || existing.status === "processed") {
+    return { kind: "already_processed" };
+  }
+
+  if (!isClaimStale(existing.last_attempt_at)) {
+    return { kind: "in_progress" };
+  }
+
+  // Reclaim stale in-progress events so retries can recover from crashes.
+  const staleBeforeIso = new Date(Date.now() - EVENT_CLAIM_STALE_MS).toISOString();
+  const { data: reclaimed, error: reclaimError } = await supabase
+    .from("stripe_webhook_events")
+    .update({
+      status: "processing",
+      last_attempt_at: nowIso,
+    })
+    .eq("event_id", eventId)
+    .eq("status", "processing")
+    .is("processed_at", null)
+    .lt("last_attempt_at", staleBeforeIso)
+    .select("event_id")
+    .maybeSingle();
+
+  if (reclaimError) {
+    return { kind: "error", message: reclaimError.message };
+  }
+
+  return reclaimed ? { kind: "claimed" } : { kind: "in_progress" };
+}
+
+async function markEventAsProcessed(
+  supabase: ReturnType<typeof createAdminClient>,
+  eventId: string
+): Promise<void> {
+  const nowIso = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from("stripe_webhook_events")
+    .update({
+      status: "processed",
+      processed_at: nowIso,
+      last_attempt_at: nowIso,
+    })
+    .eq("event_id", eventId)
+    .eq("status", "processing")
+    .is("processed_at", null)
+    .select("event_id")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to mark webhook event ${eventId} as processed: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error(`Missing webhook claim while marking event ${eventId} as processed`);
+  }
+}
+
+async function releaseEventClaim(
+  supabase: ReturnType<typeof createAdminClient>,
+  eventId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("stripe_webhook_events")
+    .delete()
+    .eq("event_id", eventId)
+    .eq("status", "processing")
+    .is("processed_at", null);
+
+  if (error) {
+    logger.warn(`Failed to release webhook claim for ${eventId}: ${error.message}`);
+  }
+}
+
+function isClaimStale(lastAttemptAt: string | null): boolean {
+  if (!lastAttemptAt) {
+    return true;
+  }
+
+  const lastAttemptMs = Date.parse(lastAttemptAt);
+  if (Number.isNaN(lastAttemptMs)) {
+    return true;
+  }
+
+  return Date.now() - lastAttemptMs > EVENT_CLAIM_STALE_MS;
 }
