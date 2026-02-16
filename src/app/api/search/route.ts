@@ -7,6 +7,7 @@ import { sql, eq, or, like, asc } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { parsePagination } from "@/lib/api/pagination";
 
 interface SearchResult extends IconData {
   score: number;
@@ -55,6 +56,8 @@ const BOOSTS = {
   containsCategory: 0.1,
 } as const;
 
+const MAX_LIMIT = 320;
+
 
 /**
  * POST /api/search
@@ -78,28 +81,58 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let body: unknown;
   try {
-    const body = await request.json();
-    const { query, sourceId, limit = 50, offset = 0, useAI = false } = body as {
-      query: string;
-      sourceId?: string;
-      limit?: number;
-      offset?: number;
-      useAI?: boolean;
-    };
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    if (!query || typeof query !== "string") {
-      return NextResponse.json(
-        { error: "Query is required" },
-        { status: 400 }
-      );
+  try {
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
+    const payload = body as Record<string, unknown>;
+    const query = payload.query;
+    const sourceId = payload.sourceId;
+    const useAI = payload.useAI;
+
+    if (!query || typeof query !== "string") {
+      return NextResponse.json({ error: "Query is required" }, { status: 400 });
+    }
+
+    if (sourceId !== undefined && sourceId !== null && typeof sourceId !== "string") {
+      return NextResponse.json({ error: "sourceId must be a string" }, { status: 400 });
+    }
+
+    if (useAI !== undefined && typeof useAI !== "boolean") {
+      return NextResponse.json({ error: "useAI must be a boolean" }, { status: 400 });
+    }
+
+    const parsedPagination = parsePagination({
+      limit: payload.limit,
+      offset: payload.offset,
+      defaultLimit: 50,
+      maxLimit: MAX_LIMIT,
+    });
+    if ("error" in parsedPagination) {
+      return NextResponse.json({ error: parsedPagination.error }, { status: 400 });
+    }
+
+    const { limit, offset } = parsedPagination;
+    const sourceFilter =
+      typeof sourceId === "string" && sourceId.trim().length > 0 ? sourceId.trim() : undefined;
+    const shouldUseAI = useAI ?? false;
+
     const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      return NextResponse.json({ error: "Query is required" }, { status: 400 });
+    }
 
     // For very short queries, use text search
     if (trimmedQuery.length < 3) {
-      const results = await textSearch(trimmedQuery, sourceId, limit, offset);
+      const results = await textSearch(trimmedQuery, sourceFilter, limit, offset);
       return NextResponse.json(
         {
           results,
@@ -121,7 +154,7 @@ export async function POST(request: NextRequest) {
       let expandedTerms: string | undefined = searchQuery !== trimmedQuery ? searchQuery : undefined;
 
       // Only use AI expansion if explicitly requested AND synonyms didn't help
-      if (useAI && !hasSynonyms(trimmedQuery) && process.env.ANTHROPIC_API_KEY) {
+      if (shouldUseAI && !hasSynonyms(trimmedQuery) && process.env.ANTHROPIC_API_KEY) {
         try {
           // Use timeout to prevent slow AI calls from blocking response
           const aiExpanded = await withTimeout(
@@ -139,10 +172,10 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const results = await hybridSearch(trimmedQuery, searchQuery, sourceId, limit, offset);
+      const results = await hybridSearch(trimmedQuery, searchQuery, sourceFilter, limit, offset);
 
       // Use shorter cache for AI-expanded queries since results may vary
-      const cacheControl = useAI && expandedTerms
+      const cacheControl = shouldUseAI && expandedTerms
         ? "public, s-maxage=60, stale-while-revalidate=300"
         : "public, s-maxage=3600, stale-while-revalidate=86400";
 
@@ -161,7 +194,7 @@ export async function POST(request: NextRequest) {
       );
     } catch (error) {
       logger.error("Semantic search failed, falling back to text:", error);
-      const results = await textSearch(trimmedQuery, sourceId, limit, offset);
+      const results = await textSearch(trimmedQuery, sourceFilter, limit, offset);
       return NextResponse.json(
         {
           results,

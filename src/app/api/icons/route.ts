@@ -8,12 +8,15 @@ import { logger } from "@/lib/logger";
 import { logSearch } from "@/lib/analytics";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { waitUntil } from "@vercel/functions";
+import { parsePagination } from "@/lib/api/pagination";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Accept",
 };
+
+const MAX_LIMIT = 320;
 
 /** Handle CORS preflight */
 export function OPTIONS() {
@@ -60,8 +63,19 @@ export async function GET(request: NextRequest) {
   const sourceParam = searchParams.get("source");
   const categoryParam = searchParams.get("category");
   const namesParam = searchParams.get("names"); // Comma-separated list of exact names
-  const limit = parseInt(searchParams.get("limit") ?? "100", 10);
-  const offset = parseInt(searchParams.get("offset") ?? "0", 10);
+  const parsedPagination = parsePagination({
+    limit: searchParams.get("limit"),
+    offset: searchParams.get("offset"),
+    defaultLimit: 100,
+    maxLimit: MAX_LIMIT,
+  });
+  if ("error" in parsedPagination) {
+    return NextResponse.json(
+      { error: parsedPagination.error },
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
+  const { limit, offset } = parsedPagination;
   const useAI = searchParams.get("ai") !== "false"; // AI search enabled by default
 
   try {
@@ -85,7 +99,7 @@ export async function GET(request: NextRequest) {
       const aiResults = await aiSemanticSearch(
         queryParam.trim(),
         sourceParam && sourceParam !== "all" ? sourceParam : undefined,
-        Math.min(limit, 320),
+        limit,
         offset
       );
 
@@ -127,7 +141,7 @@ export async function GET(request: NextRequest) {
       limit: number;
       offset: number;
     } = {
-      limit: Math.min(limit, 320),
+      limit,
       offset,
     };
 
