@@ -6,8 +6,6 @@ import { logger } from "@/lib/logger";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe-webhook";
 import type Stripe from "stripe";
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
 // Track processed events to ensure idempotency (in-memory for single instance)
 // In production with multiple instances, use Redis or database
 const processedEvents = new Map<string, number>();
@@ -40,6 +38,15 @@ function markEventProcessed(eventId: string): void {
 }
 
 export async function POST(request: Request) {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    logger.error("STRIPE_WEBHOOK_SECRET is not configured for webhook processing");
+    return NextResponse.json(
+      { error: "Stripe webhook is not configured" },
+      { status: 503 }
+    );
+  }
+
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
