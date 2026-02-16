@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "sourceId must be a string" }, { status: 400 });
     }
 
-    if (useAI !== undefined && typeof useAI !== "boolean") {
+    if (useAI !== undefined && useAI !== null && typeof useAI !== "boolean") {
       return NextResponse.json({ error: "useAI must be a boolean" }, { status: 400 });
     }
 
