@@ -41,6 +41,7 @@
     "cache:warm": "tsx scripts/warm-cache.ts",
     "cache:warm:prod": "tsx scripts/warm-cache.ts --url=https://unicon.sh",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "prepare": "husky"
   },
@@ -94,6 +95,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.3",
+    "@vitest/coverage-v8": "^4.0.18",
     "dotenv": "^17.2.4",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9",
