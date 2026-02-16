@@ -7,6 +7,8 @@ import { logger } from "@/lib/logger";
 import { requireAdminAuth } from "@/lib/auth/admin";
 
 const BATCH_SIZE = 100;
+const MIN_BATCH_SIZE = 1;
+const MAX_BATCH_SIZE = 500;
 const MAX_BATCHES_PER_REQUEST = 10; // Process up to 1000 icons per request
 
 /**
@@ -28,10 +30,13 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const sourceId = searchParams.get("source");
-    const batchSize = Math.min(
-      parseInt(searchParams.get("batchSize") || String(BATCH_SIZE), 10),
-      500
-    );
+    const batchSize = parseBatchSizeParam(searchParams.get("batchSize"));
+    if (batchSize === null) {
+      return NextResponse.json(
+        { error: `batchSize must be an integer between ${MIN_BATCH_SIZE} and ${MAX_BATCH_SIZE}` },
+        { status: 400 }
+      );
+    }
 
     let totalProcessed = 0;
     let batchesProcessed = 0;
@@ -209,4 +214,26 @@ function buildSearchText(icon: {
   // Deduplicate and join
   const unique = [...new Set(parts)];
   return unique.join(" ");
+}
+
+function parseBatchSizeParam(rawBatchSize: string | null): number | null {
+  if (rawBatchSize === null) {
+    return BATCH_SIZE;
+  }
+
+  const trimmed = rawBatchSize.trim();
+  if (!/^-?\d+$/.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(trimmed, 10);
+  if (!Number.isSafeInteger(parsed)) {
+    return null;
+  }
+
+  if (parsed < MIN_BATCH_SIZE || parsed > MAX_BATCH_SIZE) {
+    return null;
+  }
+
+  return parsed;
 }
