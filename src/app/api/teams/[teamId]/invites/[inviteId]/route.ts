@@ -35,16 +35,40 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
-  const { error } = await admin
+  const { data: revokedInvite, error: revokeError } = await admin
     .from("team_invites")
     .update({ status: "revoked" })
     .eq("id", inviteId)
     .eq("team_id", teamId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (revokeError) {
+    return NextResponse.json({ error: revokeError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  if (revokedInvite) {
+    return NextResponse.json({ success: true });
+  }
+
+  const { data: existingInvite, error: existingInviteError } = await admin
+    .from("team_invites")
+    .select("id, status")
+    .eq("id", inviteId)
+    .eq("team_id", teamId)
+    .maybeSingle();
+
+  if (existingInviteError) {
+    return NextResponse.json({ error: existingInviteError.message }, { status: 500 });
+  }
+
+  if (!existingInvite) {
+    return NextResponse.json({ error: "Invite not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(
+    { error: `Invite is ${existingInvite.status} and cannot be revoked` },
+    { status: 409 }
+  );
 }
