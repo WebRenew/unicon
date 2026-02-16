@@ -65,10 +65,16 @@ Allowed types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `tes
    ```bash
    pnpm lint
    pnpm typecheck
+   pnpm test
+   pnpm test:coverage
    pnpm build
    ```
 4. Open a PR against `main` with a clear description
 5. Fill out the PR template
+
+Required GitHub checks for merge:
+- `Lint, Typecheck & Build`
+- `Test Coverage`
 
 ## Project Structure
 

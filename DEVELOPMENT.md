@@ -113,6 +113,27 @@ Open [http://localhost:3000](http://localhost:3000).
 - The `/` page is configured as dynamic so build does not require live DB access during prerender.
 - This keeps CI and local builds reliable in sandboxed/offline environments.
 
+## CI Checks
+
+Pull requests run two required GitHub Actions checks:
+
+- `Lint, Typecheck & Build`
+- `Test Coverage`
+
+To mirror CI locally:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test:coverage
+pnpm build
+```
+
+Coverage artifacts produced by CI:
+
+- `coverage/lcov.info`
+- `coverage/coverage-summary.json`
+
 ## How Semantic Search Works
 
 Unicon uses vector embeddings to understand the meaning of search queries:
