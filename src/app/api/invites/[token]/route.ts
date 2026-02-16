@@ -6,6 +6,13 @@ interface RouteParams {
   params: Promise<{ token: string }>;
 }
 
+interface AcceptInviteResult {
+  success: boolean;
+  error: string | null;
+  team_id: string | null;
+  team_name: string | null;
+}
+
 /**
  * POST /api/invites/[token] — Accept an invite (authenticated user)
  */
@@ -22,89 +29,43 @@ export async function POST(_request: Request, { params }: RouteParams) {
   }
 
   const admin = createAdminClient();
-
-  // Find the invite
-  const { data: invite, error: inviteError } = await admin
-    .from("team_invites")
-    .select("*, teams(name, max_members)")
-    .eq("token", token)
-    .eq("status", "pending")
-    .single();
-
-  if (inviteError || !invite) {
-    return NextResponse.json(
-      { error: "Invite not found or already used" },
-      { status: 404 }
-    );
-  }
-
-  // Check expiration
-  if (new Date(invite.expires_at) < new Date()) {
-    await admin
-      .from("team_invites")
-      .update({ status: "expired" })
-      .eq("id", invite.id);
-
-    return NextResponse.json({ error: "This invite has expired" }, { status: 410 });
-  }
-
-  // Check team capacity
-  const { count } = await admin
-    .from("team_members")
-    .select("id", { count: "exact", head: true })
-    .eq("team_id", invite.team_id);
-
-  const team = invite.teams as { name: string; max_members: number };
-  if ((count ?? 0) >= team.max_members) {
-    return NextResponse.json(
-      { error: "Team is at maximum capacity" },
-      { status: 409 }
-    );
-  }
-
-  // Check if user is already a member
-  const { data: existingMember } = await admin
-    .from("team_members")
-    .select("id")
-    .eq("team_id", invite.team_id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (existingMember) {
-    // Mark invite as accepted even if already a member
-    await admin
-      .from("team_invites")
-      .update({ status: "accepted" })
-      .eq("id", invite.id);
-
-    return NextResponse.json(
-      { error: "You're already a member of this team" },
-      { status: 409 }
-    );
-  }
-
-  // Create membership
-  const { error: memberError } = await admin.from("team_members").insert({
-    team_id: invite.team_id,
-    user_id: user.id,
-    role: invite.role === "owner" ? "member" : invite.role, // prevent invite to owner role
+  const { data, error } = await admin.rpc("accept_team_invite_atomic", {
+    p_token: token,
+    p_user_id: user.id,
   });
 
-  if (memberError) {
-    return NextResponse.json({ error: memberError.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Mark invite as accepted
-  await admin
-    .from("team_invites")
-    .update({ status: "accepted" })
-    .eq("id", invite.id);
+  const result = data?.[0] as AcceptInviteResult | undefined;
+  if (!result) {
+    return NextResponse.json(
+      { error: "Failed to accept invite" },
+      { status: 500 }
+    );
+  }
+
+  if (!result.success) {
+    const message = result.error ?? "Failed to accept invite";
+    const status = mapInviteErrorToStatus(message);
+    return NextResponse.json({ error: message }, { status });
+  }
 
   return NextResponse.json({
     success: true,
     team: {
-      id: invite.team_id,
-      name: team.name,
+      id: result.team_id,
+      name: result.team_name,
     },
   });
+}
+
+function mapInviteErrorToStatus(error: string): number {
+  if (error === "Invite not found or already used") return 404;
+  if (error === "This invite has expired") return 410;
+  if (error === "Team is at maximum capacity") return 409;
+  if (error === "You're already a member of this team") return 409;
+  if (error === "Team not found") return 404;
+  return 400;
 }
