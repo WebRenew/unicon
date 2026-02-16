@@ -14,6 +14,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { logger } from "@/lib/logger";
 import { validateApiToken } from "@/lib/auth/api-token";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getTrustedClientIp } from "@/lib/request-ip";
 import {
   type AuthContext,
   registerSearchTools,
@@ -159,11 +160,8 @@ async function handleMcpRequest(request: Request, method: string): Promise<Respo
  * POST /api/mcp - Handle MCP requests
  */
 export async function POST(request: Request) {
-  // Rate limit by IP (x-real-ip is set reliably by Vercel and cannot be spoofed)
-  const ip =
-    request.headers.get("x-real-ip") ??
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
+  // Rate limit by trusted platform IP only.
+  const ip = getTrustedClientIp(request);
   const rateLimit = await checkPublicRateLimit(ip);
 
   if (!rateLimit.success) {

@@ -8,6 +8,7 @@ import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { checkPublicRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { parsePagination } from "@/lib/api/pagination";
+import { getTrustedClientIp } from "@/lib/request-ip";
 
 interface SearchResult extends IconData {
   score: number;
@@ -67,11 +68,8 @@ const MAX_LIMIT = 320;
  * with optional AI fallback for complex queries.
  */
 export async function POST(request: NextRequest) {
-  // Rate limit by IP (x-real-ip is set reliably by Vercel and cannot be spoofed)
-  const ip =
-    request.headers.get("x-real-ip") ??
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
+  // Rate limit by trusted platform IP only.
+  const ip = getTrustedClientIp(request);
   const rateLimit = await checkPublicRateLimit(ip);
 
   if (!rateLimit.success) {
