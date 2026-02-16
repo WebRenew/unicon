@@ -11,6 +11,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
+import { checkDeviceCodeRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getTrustedClientIp } from "@/lib/request-ip";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +27,22 @@ export function OPTIONS() {
 
 export async function POST(request: Request) {
   try {
+    const ip = getTrustedClientIp(request);
+    const rateLimit = await checkDeviceCodeRateLimit(ip);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "rate_limit_exceeded",
+          error_description: "Too many device authorization requests. Please try again shortly.",
+        },
+        {
+          status: 429,
+          headers: { ...CORS_HEADERS, ...getRateLimitHeaders(rateLimit) },
+        }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const clientName = body.client_name || "CLI";
     const scope = body.scope || "bundles:read";

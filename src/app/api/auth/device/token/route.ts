@@ -10,6 +10,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
+import { checkDeviceTokenRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getTrustedClientIp } from "@/lib/request-ip";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +26,22 @@ export function OPTIONS() {
 
 export async function POST(request: Request) {
   try {
+    const ip = getTrustedClientIp(request);
+    const rateLimit = await checkDeviceTokenRateLimit(ip);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "rate_limit_exceeded",
+          error_description: "Too many token polling requests. Please slow down and retry.",
+        },
+        {
+          status: 429,
+          headers: { ...CORS_HEADERS, ...getRateLimitHeaders(rateLimit) },
+        }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const deviceCode = body.device_code;
     const grantType = body.grant_type;
@@ -90,13 +108,41 @@ export async function POST(request: Request) {
         );
 
       case "error":
-        // Map error codes to HTTP status
-        const statusCode = result.error === "slow_down" ? 400 : 
-                          result.error === "expired_token" ? 400 :
-                          result.error === "access_denied" ? 400 : 400;
+        if (result.error === "slow_down") {
+          return NextResponse.json(
+            {
+              error: "slow_down",
+              error_description: "Polling too quickly. Increase your polling interval by 5 seconds.",
+              expires_in: result.expires_in,
+            },
+            { status: 400, headers: CORS_HEADERS }
+          );
+        }
+
+        if (result.error === "expired_token") {
+          return NextResponse.json(
+            { error: "expired_token", error_description: "The device code has expired" },
+            { status: 400, headers: CORS_HEADERS }
+          );
+        }
+
+        if (result.error === "access_denied") {
+          return NextResponse.json(
+            { error: "access_denied", error_description: "The user denied the authorization request" },
+            { status: 400, headers: CORS_HEADERS }
+          );
+        }
+
+        if (result.error === "invalid_grant") {
+          return NextResponse.json(
+            { error: "invalid_grant", error_description: "Invalid device code" },
+            { status: 400, headers: CORS_HEADERS }
+          );
+        }
+
         return NextResponse.json(
-          { error: result.error },
-          { status: statusCode, headers: CORS_HEADERS }
+          { error: "server_error" },
+          { status: 500, headers: CORS_HEADERS }
         );
 
       default:
