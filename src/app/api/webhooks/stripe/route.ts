@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
+import { mapStripeSubscriptionStatus } from "@/lib/stripe-webhook";
 import type Stripe from "stripe";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -99,7 +100,9 @@ export async function POST(request: Request) {
           .or(`current_period_end.is.null,current_period_end.lt.${new Date(periodEnd * 1000).toISOString()}`);
 
         if (updateError) {
-          logger.error(`Failed to update subscription for user ${userId}:`, updateError);
+          throw new Error(
+            `Failed to update subscription for user ${userId}: ${updateError.message}`
+          );
         } else {
           logger.log(`Subscription activated for user ${userId}`);
         }
@@ -111,8 +114,7 @@ export async function POST(request: Request) {
         const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
         const periodEndDate = new Date(periodEnd * 1000).toISOString();
 
-        const newStatus = subscription.status === "active" ? "active" :
-                         subscription.status === "past_due" ? "past_due" : "canceled";
+        const newStatus = mapStripeSubscriptionStatus(subscription.status);
 
         // Update by subscription ID with optimistic locking on period end
         const { error: updateError } = await supabase
@@ -126,7 +128,9 @@ export async function POST(request: Request) {
           .or(`current_period_end.is.null,current_period_end.lte.${periodEndDate}`);
 
         if (updateError) {
-          logger.error(`Failed to update subscription ${subscription.id}:`, updateError);
+          throw new Error(
+            `Failed to update subscription ${subscription.id}: ${updateError.message}`
+          );
         } else {
           logger.log(`Subscription ${subscription.id} updated to ${newStatus}`);
         }
@@ -148,7 +152,9 @@ export async function POST(request: Request) {
           .eq("provider_subscription_id", subscription.id);
 
         if (updateError) {
-          logger.error(`Failed to cancel subscription ${subscription.id}:`, updateError);
+          throw new Error(
+            `Failed to cancel subscription ${subscription.id}: ${updateError.message}`
+          );
         } else {
           logger.log(`Subscription canceled for subscription ${subscription.id}`);
         }
