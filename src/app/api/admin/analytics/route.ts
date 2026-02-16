@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSearchStats } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 /**
  * Get search analytics statistics
  * GET /api/admin/analytics?days=7
  */
 export async function GET(request: NextRequest) {
-  // Check for admin secret if configured
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret) {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || authHeader !== `Bearer ${adminSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const authErrorResponse = requireAdminAuth(request);
+  if (authErrorResponse) {
+    return authErrorResponse;
   }
 
   const { searchParams } = new URL(request.url);
