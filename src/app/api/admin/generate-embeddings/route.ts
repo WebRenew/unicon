@@ -4,6 +4,7 @@ import { icons } from "@/lib/schema";
 import { getEmbeddings, embeddingToBlob } from "@/lib/ai";
 import { sql, isNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 const BATCH_SIZE = 100;
 const MAX_BATCHES_PER_REQUEST = 10; // Process up to 1000 icons per request
@@ -19,13 +20,9 @@ const MAX_BATCHES_PER_REQUEST = 10; // Process up to 1000 icons per request
  *   - batchSize: Number of icons per batch (default: 100)
  */
 export async function POST(request: NextRequest) {
-  // Verify admin secret in production
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${adminSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const authErrorResponse = requireAdminAuth(request);
+  if (authErrorResponse) {
+    return authErrorResponse;
   }
 
   try {
@@ -99,7 +96,12 @@ export async function POST(request: NextRequest) {
  * 
  * Get embedding statistics.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authErrorResponse = requireAdminAuth(request);
+  if (authErrorResponse) {
+    return authErrorResponse;
+  }
+
   try {
     const stats = await db
       .select({

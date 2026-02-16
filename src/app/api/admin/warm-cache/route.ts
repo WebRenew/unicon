@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 /**
  * Popular search queries to pre-warm the cache.
@@ -42,13 +43,9 @@ const POPULAR_QUERIES = [
  *   - queries: Comma-separated list of custom queries (optional)
  */
 export async function POST(request: NextRequest) {
-  // Verify admin secret in production
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${adminSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const authErrorResponse = requireAdminAuth(request);
+  if (authErrorResponse) {
+    return authErrorResponse;
   }
 
   try {
@@ -158,7 +155,12 @@ export async function POST(request: NextRequest) {
  *
  * Get list of popular queries that will be cached.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authErrorResponse = requireAdminAuth(request);
+  if (authErrorResponse) {
+    return authErrorResponse;
+  }
+
   return NextResponse.json({
     popularQueries: POPULAR_QUERIES,
     count: POPULAR_QUERIES.length,
