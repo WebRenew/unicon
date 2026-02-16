@@ -1,17 +1,13 @@
 /**
  * GET /api/bundles/me
  * 
- * List all bundles for the authenticated user (via API token).
+ * List all bundles for the authenticated Pro user (via API token).
  * Used by MCP, CLI, and Figma plugin to fetch user's saved bundles.
- * 
- * Rate limits:
- * - Free users: 10 requests/minute
- * - Pro users: 100 requests/minute
  */
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { extractBearerToken, validateApiToken } from "@/lib/auth/api-token";
+import { requireApiAuth } from "@/lib/auth/api-token";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
@@ -28,43 +24,24 @@ export function OPTIONS() {
 
 export async function GET(request: Request) {
   try {
-    // Extract and validate token
-    const token = extractBearerToken(request);
-    
-    if (!token) {
-      return NextResponse.json(
-        { 
-          error: "unauthorized", 
-          message: "Missing Authorization header. Use 'unicon login' to authenticate." 
-        },
-        { status: 401, headers: CORS_HEADERS }
-      );
-    }
-
-    const validation = await validateApiToken(token);
-
-    if (!validation.valid) {
-      return NextResponse.json(
-        { 
-          error: "invalid_token", 
-          message: validation.error === "invalid_token" 
-            ? "Invalid or expired token. Use 'unicon login' to re-authenticate."
-            : `Token validation failed: ${validation.error}` 
-        },
-        { status: 401, headers: CORS_HEADERS }
-      );
+    let authContext;
+    try {
+      authContext = await requireApiAuth(request);
+    } catch (error) {
+      if (error instanceof Response) {
+        return await responseWithCors(error);
+      }
+      throw error;
     }
 
     // Check rate limit (different limits for free vs Pro)
-    const rateLimit = await checkRateLimit(validation.userId!, validation.isPro ?? false);
+    const rateLimit = await checkRateLimit(authContext.userId, authContext.isPro);
     
     if (!rateLimit.success) {
       return NextResponse.json(
         { 
           error: "rate_limit_exceeded", 
-          message: validation.isPro 
-            ? "Rate limit exceeded. Please wait before making more requests."
-            : "Rate limit exceeded. Upgrade to Pro for higher limits: https://unicon.sh/pricing"
+          message: "Rate limit exceeded. Please wait before making more requests."
         },
         { 
           status: 429,
@@ -79,7 +56,7 @@ export async function GET(request: Request) {
     const { data: bundles, error } = await supabase
       .from("bundles")
       .select("id, name, description, icon_count, is_public, share_slug, created_at, updated_at")
-      .eq("user_id", validation.userId)
+      .eq("user_id", authContext.userId)
       .order("updated_at", { ascending: false });
 
     if (error) {
@@ -111,4 +88,18 @@ export async function GET(request: Request) {
       { status: 500, headers: CORS_HEADERS }
     );
   }
+}
+
+async function responseWithCors(response: Response): Promise<NextResponse> {
+  let payload: unknown = { error: "Unauthorized" };
+  try {
+    payload = await response.json();
+  } catch {
+    // Fall back to default payload for non-JSON responses.
+  }
+
+  return NextResponse.json(payload, {
+    status: response.status,
+    headers: CORS_HEADERS,
+  });
 }

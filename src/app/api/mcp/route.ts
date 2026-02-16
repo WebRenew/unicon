@@ -47,7 +47,7 @@ function withCors(response: Response): Response {
 
 // Create MCP server with all tools and resources
 function createMcpServer(authContext?: AuthContext) {
-  const isAuthenticated = !!authContext?.userId;
+  const hasBundleAccess = !!authContext?.userId && authContext.isPro;
 
   const server = new McpServer({
     name: "unicon",
@@ -59,11 +59,12 @@ AVAILABLE TOOLS:
 - get_icon: Get a single icon by ID (e.g., "lucide:arrow-right").
 - get_multiple_icons: Get multiple icons at once (up to 50).
 - get_starter_pack: Get curated icon packs (shadcn-ui, dashboard, ecommerce, etc.).
-${isAuthenticated ? `
+${hasBundleAccess ? `
 AUTHENTICATED TOOLS:
 - list_my_bundles: List your saved icon bundles.
 - get_my_bundle: Get icons from a saved bundle.
-- create_my_bundle: Create and save a new bundle.` : ""}
+- create_my_bundle: Create and save a new bundle.
+(Requires an active Pro API token.)` : ""}
 
 QUICK START:
 - For shadcn/ui: get_starter_pack({ packId: "shadcn-ui" })
@@ -79,8 +80,8 @@ Read unicon://instructions for detailed usage.`,
   registerStarterPackTools(server);
   registerResources(server);
 
-  // Register authenticated tools
-  if (isAuthenticated && authContext) {
+  // Register authenticated bundle tools (active Pro token required)
+  if (hasBundleAccess && authContext) {
     registerBundleTools(server, authContext);
   }
 
