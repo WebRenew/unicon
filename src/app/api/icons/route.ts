@@ -206,10 +206,21 @@ async function aiSemanticSearch(
     limit,
     offset,
   });
-  const cached = getCachedSearchResults<{ icons: IconData[]; hasMore: boolean; searchType: string; expandedQuery?: string }>(cacheKey);
+  const cached = getCachedSearchResults<{
+    icons: IconData[];
+    hasMore?: boolean;
+    searchType: string;
+    expandedQuery?: string;
+  }>(cacheKey);
   if (cached) {
     logger.log(`Cache hit for search: "${query}"`);
-    return { ...cached, cacheHit: true };
+    return {
+      icons: cached.icons,
+      hasMore: cached.hasMore ?? false,
+      searchType: cached.searchType,
+      ...(cached.expandedQuery ? { expandedQuery: cached.expandedQuery } : {}),
+      cacheHit: true,
+    };
   }
   // Start AI expansion and original embedding in parallel for faster response
   const aiExpansionPromise = process.env.ANTHROPIC_API_KEY
@@ -338,7 +349,12 @@ async function aiSemanticSearch(
   }
 
   // Cache the result (without cacheHit flag)
-  const cacheData = { icons: result.icons, searchType: result.searchType, expandedQuery: result.expandedQuery };
+  const cacheData = {
+    icons: result.icons,
+    hasMore: result.hasMore,
+    searchType: result.searchType,
+    expandedQuery: result.expandedQuery,
+  };
   setCachedSearchResults(cacheKey, cacheData);
 
   return result;
