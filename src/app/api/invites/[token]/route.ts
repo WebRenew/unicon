@@ -28,10 +28,19 @@ export async function POST(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const normalizedUserEmail = user.email?.trim().toLowerCase();
+  if (!normalizedUserEmail) {
+    return NextResponse.json(
+      { error: "Your account must have a verified email to accept this invite" },
+      { status: 403 }
+    );
+  }
+
   const admin = createAdminClient();
   const { data, error } = await admin.rpc("accept_team_invite_atomic", {
     p_token: token,
     p_user_id: user.id,
+    p_user_email: normalizedUserEmail,
   });
 
   if (error) {
@@ -67,5 +76,8 @@ function mapInviteErrorToStatus(error: string): number {
   if (error === "Team is at maximum capacity") return 409;
   if (error === "You're already a member of this team") return 409;
   if (error === "Team not found") return 404;
+  if (error === "Invite email does not match authenticated user") return 403;
+  if (error === "Authenticated user email is required") return 403;
+  if (error === "Authenticated user email does not match profile email") return 403;
   return 400;
 }
