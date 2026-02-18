@@ -65,7 +65,7 @@ export async function GET() {
 
   // Check AI API configuration
   try {
-    const hasOpenAI = !!process.env.AI_GATEWAY_API_KEY;
+    const hasOpenAI = !!(process.env.AI_GATEWAY_API_KEY || process.env.OPENAI_API_KEY);
     const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
 
     checks.ai = {
