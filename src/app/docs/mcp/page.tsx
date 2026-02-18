@@ -617,7 +617,7 @@ export default function MCPDocsPage() {
               <div className="text-xs font-mono text-muted-foreground">
                 <div>Parameters:</div>
                 <div className="ml-4 mt-1">
-                  <div>• packId (required) - Pack ID (dashboard, ecommerce, social, brand-ai)</div>
+                  <div>• packId (required) - Pack ID (dashboard, ecommerce, social, brand-ai-agents)</div>
                   <div>• format (optional) - Output format for all icons</div>
                   <div>• size (optional) - Size for all icons</div>
                   <div>• strokeWidth (optional) - Stroke width for all icons</div>

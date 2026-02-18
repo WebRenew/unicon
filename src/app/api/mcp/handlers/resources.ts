@@ -158,7 +158,7 @@ Get multiple icons at once (up to 50). Returns a single bundled file.
 ### 4. get_starter_pack
 Get a curated set of icons for common use cases.
 
-**Popular packs:** shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai
+**Popular packs:** shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai-agents, brand-ai
 
 **Example:**
 \`\`\`json
