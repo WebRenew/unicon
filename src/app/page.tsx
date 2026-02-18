@@ -1,18 +1,37 @@
 import { MetallicIconBrowser } from "@/components/icons/metallic-icon-browser";
 import { HomeHeader } from "@/components/home-header";
 import { searchIcons, getTotalIconCount, getIconCountBySource, getCategories } from "@/lib/queries";
+import { unstable_cache } from "next/cache";
 
 // force-dynamic: CI/build environment has no DB credentials, so prerendering would fail.
-// Caching is handled at the API/CDN layer instead (see /api/icons cache headers).
+// We still cache homepage DB reads at runtime using unstable_cache below.
 export const dynamic = "force-dynamic";
 
+const getCachedHomePageData = unstable_cache(
+  async () => {
+    const [icons, totalCount, countBySource, categories] = await Promise.all([
+      searchIcons({ limit: 320 }),
+      getTotalIconCount(),
+      getIconCountBySource(),
+      getCategories(),
+    ]);
+
+    return {
+      icons,
+      totalCount,
+      countBySource,
+      categories,
+    };
+  },
+  ["home-page-data-v1"],
+  {
+    revalidate: 60 * 15,
+    tags: ["home-page-data"],
+  }
+);
+
 export default async function Home() {
-  const [icons, totalCount, countBySource, categories] = await Promise.all([
-    searchIcons({ limit: 320 }),
-    getTotalIconCount(),
-    getIconCountBySource(),
-    getCategories(),
-  ]);
+  const { icons, totalCount, countBySource, categories } = await getCachedHomePageData();
 
   return (
     <>
