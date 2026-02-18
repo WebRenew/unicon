@@ -32,7 +32,7 @@ export function registerStarterPackTools(server: McpServer) {
       title: "Get Starter Pack",
       description: `Get a curated starter pack of icons for common use cases.
 
-Popular packs: shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai
+Popular packs: shadcn-ui, dashboard, ecommerce, navigation, developer, brand-ai-agents, brand-ai
 
 Args:
   - packId (string): Starter pack ID

@@ -1035,6 +1035,29 @@ export const STARTER_PACKS: StarterPack[] = [
   // Brand Icon Packs (Simple Icons)
   // ─────────────────────────────────────────────────────────────────────────────
   {
+    id: "brand-ai-agents",
+    name: "AI Agent Company Logos",
+    description:
+      "Core AI company logos for agentic prototypes. Includes practical substitutions (Google AI → Gemini mark, Mistral → mistralai slug).",
+    color: "violet",
+    iconNames: [
+      "openai",
+      "anthropic",
+      "googlegemini",
+      "meta",
+      "xai",
+      "perplexity",
+      "mistralai",
+      "cohere",
+      "huggingface",
+      "stabilityai",
+      // Documented fallback marks when specific logos are unavailable.
+      "claude",
+      "grok",
+      "stablediffusion",
+    ],
+  },
+  {
     id: "brand-ai",
     name: "AI & LLM Brands",
     description: "Logos for AI companies and LLM providers",
@@ -1247,4 +1270,3 @@ export const STARTER_PACKS: StarterPack[] = [
     ],
   },
 ];
-

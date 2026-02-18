@@ -126,7 +126,7 @@ Retrieve multiple icons at once (max 50).
 Get a curated starter pack of icons for common use cases.
 
 **Parameters:**
-- `packId` (required): Starter pack ID (e.g., "dashboard", "ecommerce", "social", "brand-ai")
+- `packId` (required): Starter pack ID (e.g., "dashboard", "ecommerce", "social", "brand-ai-agents")
 - `format` (optional): Output format - default: react
 - `size` (optional): Icon size - default: 24
 - `strokeWidth` (optional): Stroke width - default: 2
