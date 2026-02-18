@@ -1,6 +1,6 @@
 /**
  * Rate Limiting with Upstash Redis
- * 
+ *
  * Different limits for free vs Pro users:
  * - Free: 10 requests per minute
  * - Pro: 100 requests per minute
@@ -10,57 +10,116 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { logger } from "@/lib/logger";
 
-// Initialize Redis client (uses Vercel KV env vars)
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL!,
-  token: process.env.KV_REST_API_TOKEN!,
-});
+const RATE_LIMIT_WINDOW = "1 m";
+const RATE_LIMIT_RESET_MS = 60_000;
+
+const FREE_TIER_LIMIT = 10;
+const PRO_TIER_LIMIT = 100;
+const PUBLIC_LIMIT = 60;
+const DEVICE_CODE_LIMIT = 10;
+const DEVICE_TOKEN_LIMIT = 30;
+
+const kvRestApiUrl = process.env.KV_REST_API_URL;
+const kvRestApiToken = process.env.KV_REST_API_TOKEN;
+
+// Redis client is optional; missing config triggers fail-closed behavior.
+const redis = kvRestApiUrl && kvRestApiToken
+  ? new Redis({
+      url: kvRestApiUrl,
+      token: kvRestApiToken,
+    })
+  : null;
+
+let hasLoggedMissingConfig = false;
+
+function logMissingConfigOnce(): void {
+  if (hasLoggedMissingConfig || redis) {
+    return;
+  }
+
+  hasLoggedMissingConfig = true;
+  logger.warn(
+    "Rate limiting is running in fail-closed mode because KV_REST_API_URL/KV_REST_API_TOKEN are not configured."
+  );
+}
+
+function createLimiter(limit: number, prefix: string): Ratelimit | null {
+  if (!redis) {
+    return null;
+  }
+
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(limit, RATE_LIMIT_WINDOW),
+    analytics: true,
+    prefix,
+  });
+}
 
 // Rate limiter for free users: 10 requests per minute
-export const freeTierLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  analytics: true,
-  prefix: "ratelimit:free",
-});
+export const freeTierLimiter = createLimiter(FREE_TIER_LIMIT, "ratelimit:free");
 
-// Rate limiter for Pro users: 100 requests per minute  
-export const proTierLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(100, "1 m"),
-  analytics: true,
-  prefix: "ratelimit:pro",
-});
+// Rate limiter for Pro users: 100 requests per minute
+export const proTierLimiter = createLimiter(PRO_TIER_LIMIT, "ratelimit:pro");
 
 // Rate limiter for public/anonymous API access: 60 requests per minute per IP
-export const publicLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(60, "1 m"),
-  analytics: true,
-  prefix: "ratelimit:public",
-});
+export const publicLimiter = createLimiter(PUBLIC_LIMIT, "ratelimit:public");
 
 // Rate limiter for device code creation: 10 requests per minute per IP
-export const deviceCodeLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  analytics: true,
-  prefix: "ratelimit:device-code",
-});
+export const deviceCodeLimiter = createLimiter(DEVICE_CODE_LIMIT, "ratelimit:device-code");
 
 // Rate limiter for device token polling: 30 requests per minute per IP
-export const deviceTokenLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(30, "1 m"),
-  analytics: true,
-  prefix: "ratelimit:device-token",
-});
+export const deviceTokenLimiter = createLimiter(DEVICE_TOKEN_LIMIT, "ratelimit:device-token");
+
+export type RateLimitPolicy = "upstash" | "fail-closed";
+export type RateLimitStatus = "normal" | "degraded";
 
 export interface RateLimitResult {
   success: boolean;
   limit: number;
   remaining: number;
   reset: number;
+  policy?: RateLimitPolicy;
+  status?: RateLimitStatus;
+}
+
+function failClosedResult(limit: number): RateLimitResult {
+  return {
+    success: false,
+    limit,
+    remaining: 0,
+    reset: Date.now() + RATE_LIMIT_RESET_MS,
+    policy: "fail-closed",
+    status: "degraded",
+  };
+}
+
+async function runRateLimitCheck(
+  limiter: Ratelimit | null,
+  key: string,
+  fallbackLimit: number,
+  errorLabel: string
+): Promise<RateLimitResult> {
+  if (!limiter) {
+    logMissingConfigOnce();
+    return failClosedResult(fallbackLimit);
+  }
+
+  try {
+    const result = await limiter.limit(key);
+
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+      policy: "upstash",
+      status: "normal",
+    };
+  } catch (error) {
+    logger.error(`${errorLabel} Entering fail-closed mode.`, error);
+    return failClosedResult(fallbackLimit);
+  }
 }
 
 /**
@@ -71,26 +130,8 @@ export async function checkRateLimit(
   isPro: boolean
 ): Promise<RateLimitResult> {
   const limiter = isPro ? proTierLimiter : freeTierLimiter;
-  
-  try {
-    const result = await limiter.limit(userId);
-    
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
-  } catch (error) {
-    // If rate limiting fails (e.g., Redis unavailable), allow the request
-    logger.error("Rate limit check failed:", error);
-    return {
-      success: true,
-      limit: isPro ? 100 : 10,
-      remaining: 1,
-      reset: Date.now() + 60000,
-    };
-  }
+  const fallbackLimit = isPro ? PRO_TIER_LIMIT : FREE_TIER_LIMIT;
+  return runRateLimitCheck(limiter, userId, fallbackLimit, "Rate limit check failed.");
 }
 
 /**
@@ -99,82 +140,45 @@ export async function checkRateLimit(
 export async function checkPublicRateLimit(
   ip: string
 ): Promise<RateLimitResult> {
-  try {
-    const result = await publicLimiter.limit(ip);
-
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
-  } catch (error) {
-    // If rate limiting fails (e.g., Redis unavailable), allow the request
-    logger.error("Public rate limit check failed:", error);
-    return {
-      success: true,
-      limit: 60,
-      remaining: 1,
-      reset: Date.now() + 60000,
-    };
-  }
+  return runRateLimitCheck(publicLimiter, ip, PUBLIC_LIMIT, "Public rate limit check failed.");
 }
 
 /**
  * Check rate limit for the device code endpoint by IP
  */
 export async function checkDeviceCodeRateLimit(ip: string): Promise<RateLimitResult> {
-  try {
-    const result = await deviceCodeLimiter.limit(ip);
-
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
-  } catch (error) {
-    logger.error("Device code rate limit check failed:", error);
-    return {
-      success: true,
-      limit: 10,
-      remaining: 1,
-      reset: Date.now() + 60000,
-    };
-  }
+  return runRateLimitCheck(
+    deviceCodeLimiter,
+    ip,
+    DEVICE_CODE_LIMIT,
+    "Device code rate limit check failed."
+  );
 }
 
 /**
  * Check rate limit for the device token endpoint by IP
  */
 export async function checkDeviceTokenRateLimit(ip: string): Promise<RateLimitResult> {
-  try {
-    const result = await deviceTokenLimiter.limit(ip);
-
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
-  } catch (error) {
-    logger.error("Device token rate limit check failed:", error);
-    return {
-      success: true,
-      limit: 30,
-      remaining: 1,
-      reset: Date.now() + 60000,
-    };
-  }
+  return runRateLimitCheck(
+    deviceTokenLimiter,
+    ip,
+    DEVICE_TOKEN_LIMIT,
+    "Device token rate limit check failed."
+  );
 }
 
 /**
  * Get rate limit headers for response
  */
 export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
+  const retryAfterSeconds = Math.max(0, Math.ceil((result.reset - Date.now()) / 1000));
+
   return {
     "X-RateLimit-Limit": String(result.limit),
     "X-RateLimit-Remaining": String(result.remaining),
     "X-RateLimit-Reset": String(result.reset),
+    "X-RateLimit-Policy": result.policy ?? "upstash",
+    "X-RateLimit-Status": result.status ?? "normal",
+    "Retry-After": String(retryAfterSeconds),
   };
 }
