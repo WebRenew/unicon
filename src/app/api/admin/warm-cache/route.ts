@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm";
 import type { IconData } from "@/types/icon";
 import { logger } from "@/lib/logger";
 import { requireAdminAuth } from "@/lib/auth/admin";
+import { sliceForPagination } from "@/lib/api/pagination";
 
 /**
  * Popular search queries to pre-warm the cache.
@@ -80,11 +81,11 @@ export async function POST(request: NextRequest) {
           FROM icons
           WHERE embedding IS NOT NULL
           ORDER BY distance ASC
-          LIMIT ${limit} OFFSET ${offset}
+          LIMIT ${limit + 1} OFFSET ${offset}
         `);
 
         // Convert to IconData format
-        const icons: IconData[] = (semanticResults as Array<Record<string, unknown>>).map((row) => {
+        const iconRows: IconData[] = (semanticResults as Array<Record<string, unknown>>).map((row) => {
           let tags: string[];
           try {
             tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags ?? []);
@@ -115,11 +116,13 @@ export async function POST(request: NextRequest) {
             brandColor: row.brandColor as string | null,
           };
         });
+        const { items: icons, hasMore } = sliceForPagination(iconRows, limit);
 
         // Cache the results
         const cacheKey = generateSearchCacheKey({ query, limit, offset });
         setCachedSearchResults(cacheKey, {
           icons,
+          hasMore,
           searchType: "semantic",
         });
 
