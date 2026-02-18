@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { sanitizeBundleIcons } from "@/lib/svg-sanitizer";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -77,6 +78,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       if (field in body) {
         updates[field] = body[field];
       }
+    }
+
+    if ("icons" in updates) {
+      const sanitizedIcons = sanitizeBundleIcons(updates.icons);
+      if (!sanitizedIcons) {
+        return NextResponse.json({ error: "icons must be an array of objects" }, { status: 400 });
+      }
+      updates.icons = sanitizedIcons;
     }
 
     // Note: icon_count is a generated column (jsonb_array_length(icons))
