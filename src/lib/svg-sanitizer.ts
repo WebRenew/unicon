@@ -39,6 +39,11 @@ function stripEventHandlers(input: string): string {
   return input.replace(/\s+on[a-zA-Z-]+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi, "");
 }
 
+function stripStyleAttributes(input: string): string {
+  // Remove inline style attributes to avoid CSS-based scriptable payloads.
+  return input.replace(/\s+style\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi, "");
+}
+
 function stripUnsafeUrls(input: string): string {
   // Drop href/src attributes using scriptable protocols.
   return input.replace(
@@ -48,8 +53,8 @@ function stripUnsafeUrls(input: string): string {
       const isUnsafe =
         rawValue.startsWith("javascript:") ||
         rawValue.startsWith("vbscript:") ||
-        rawValue.startsWith("data:text/html") ||
-        rawValue.startsWith("data:application/javascript");
+        rawValue.startsWith("data:") ||
+        rawValue.startsWith("file:");
 
       return isUnsafe ? "" : fullMatch;
     }
@@ -60,6 +65,7 @@ export function sanitizeSvgContent(input: string): string {
   let output = input.replace(/\0/g, "");
   output = stripBlockedTags(output);
   output = stripEventHandlers(output);
+  output = stripStyleAttributes(output);
   output = stripUnsafeUrls(output);
   return output.trim();
 }

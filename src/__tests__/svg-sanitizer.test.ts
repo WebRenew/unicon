@@ -23,6 +23,18 @@ describe("sanitizeSvgContent", () => {
     expect(sanitized).toContain("<a>");
     expect(sanitized).toContain("<use");
   });
+
+  it("removes style attributes and scriptable data URLs", () => {
+    const input = `<path d="M3 3" style="fill:url(javascript:alert(1));stroke:red" /><image href="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=" /><use xlink:href="data:application/javascript,alert(1)" />`;
+    const sanitized = sanitizeSvgContent(input);
+
+    expect(sanitized).not.toContain("style=");
+    expect(sanitized).not.toContain("javascript:");
+    expect(sanitized).not.toContain("data:");
+    expect(sanitized).toContain(`<path d="M3 3" />`);
+    expect(sanitized).toContain("<image");
+    expect(sanitized).toContain("<use");
+  });
 });
 
 describe("sanitizeBundleIcons", () => {
