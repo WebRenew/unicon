@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DELETE } from "./route";
+import { DELETE, PATCH } from "./route";
 import { createClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -11,6 +11,7 @@ type MockSupabaseClient = {
     getUser: ReturnType<typeof vi.fn>;
   };
   from: ReturnType<typeof vi.fn>;
+  rpc?: ReturnType<typeof vi.fn>;
 };
 
 function createDeleteChain(result: { data: Array<{ id: string }>; error: { message: string } | null }) {
@@ -26,6 +27,27 @@ function createDeleteChain(result: { data: Array<{ id: string }>; error: { messa
     eqId,
     eqUser,
     select,
+  };
+}
+
+function createPatchChain(result: {
+  data: Record<string, unknown> | null;
+  error: { message: string; code?: string } | null;
+}) {
+  const single = vi.fn().mockResolvedValue(result);
+  const select = vi.fn().mockReturnValue({ single });
+  const eqUser = vi.fn().mockReturnValue({ select });
+  const eqId = vi.fn().mockReturnValue({ eq: eqUser });
+  const update = vi.fn().mockReturnValue({ eq: eqId });
+  const from = vi.fn().mockReturnValue({ update });
+
+  return {
+    from,
+    update,
+    eqId,
+    eqUser,
+    select,
+    single,
   };
 }
 
@@ -108,5 +130,86 @@ describe("DELETE /api/bundles/[id]", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ success: true });
+  });
+});
+
+describe("PATCH /api/bundles/[id]", () => {
+  const createClientMock = vi.mocked(createClient);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns 400 when icons payload is invalid", async () => {
+    const chain = createPatchChain({ data: { id: "bundle-1" }, error: null });
+    const supabase: MockSupabaseClient = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-1" } },
+          error: null,
+        }),
+      },
+      from: chain.from,
+    };
+
+    createClientMock.mockResolvedValue(supabase as unknown as Awaited<ReturnType<typeof createClient>>);
+
+    const response = await PATCH(
+      new Request("https://example.com/api/bundles/bundle-1", {
+        method: "PATCH",
+        body: JSON.stringify({ icons: ["bad"] }),
+      }),
+      { params: Promise.resolve({ id: "bundle-1" }) }
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "icons must be an array of objects",
+    });
+    expect(chain.from).not.toHaveBeenCalled();
+  });
+
+  it("sanitizes icon payloads before updating bundles", async () => {
+    const chain = createPatchChain({ data: { id: "bundle-1" }, error: null });
+    const supabase: MockSupabaseClient = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-1" } },
+          error: null,
+        }),
+      },
+      from: chain.from,
+    };
+
+    createClientMock.mockResolvedValue(supabase as unknown as Awaited<ReturnType<typeof createClient>>);
+
+    const response = await PATCH(
+      new Request("https://example.com/api/bundles/bundle-1", {
+        method: "PATCH",
+        body: JSON.stringify({
+          icons: [
+            {
+              id: "tabler:home",
+              content:
+                `<foreignObject><iframe src="javascript:1"></iframe></foreignObject>` +
+                `<path d="M2 2" onclick="evil()" style="fill:url(javascript:1)" />`,
+            },
+          ],
+        }),
+      }),
+      { params: Promise.resolve({ id: "bundle-1" }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updates = chain.update.mock.calls[0]?.[0] as {
+      icons: Array<{ content: string }>;
+    };
+    const sanitizedContent = updates.icons[0]?.content;
+
+    expect(sanitizedContent).toContain(`<path d="M2 2"`);
+    expect(sanitizedContent).not.toContain("<foreignObject");
+    expect(sanitizedContent).not.toContain("onclick=");
+    expect(sanitizedContent).not.toContain("style=");
+    expect(sanitizedContent).not.toContain("javascript:");
   });
 });
