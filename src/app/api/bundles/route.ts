@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { sanitizeBundleIcons } from "@/lib/svg-sanitizer";
 
 export async function GET() {
   try {
@@ -62,12 +63,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name and icons are required" }, { status: 400 });
     }
 
+    const sanitizedIcons = sanitizeBundleIcons(icons);
+    if (!sanitizedIcons) {
+      return NextResponse.json({ error: "icons must be an array of objects" }, { status: 400 });
+    }
+
     // Use atomic RPC to prevent race conditions on bundle limit
     const { data, error } = await supabase.rpc("create_bundle_atomic", {
       p_user_id: user.id,
       p_name: name,
       p_description: description ?? null,
-      p_icons: icons,
+      p_icons: sanitizedIcons,
       p_stroke_preset: stroke_preset ?? null,
       p_normalize_strokes: normalize_strokes ?? false,
       p_target_stroke_width: target_stroke_width ?? null,

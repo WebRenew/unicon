@@ -6,6 +6,7 @@
  */
 
 import type { IconData } from "@/types/icon";
+import { sanitizeSvgContent } from "@/lib/svg-sanitizer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -161,7 +162,7 @@ export function generateRenderableSvg(
     ].join(" ");
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${styleAttrs} aria-hidden="true" focusable="false">${icon.content}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${icon.viewBox}" ${styleAttrs} aria-hidden="true" focusable="false">${sanitizeSvgContent(icon.content)}</svg>`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
