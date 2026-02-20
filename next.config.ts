@@ -57,16 +57,9 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  silent: true,
-
-  // Only upload source maps when all Sentry env vars are set
-  ...(process.env.SENTRY_ORG && {
-    org: process.env.SENTRY_ORG,
-  }),
-  ...(process.env.SENTRY_PROJECT && {
-    project: process.env.SENTRY_PROJECT,
-  }),
-  ...(process.env.SENTRY_AUTH_TOKEN && {
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-  }),
+  org: "webrenew",
+  project: "unicon",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: "/monitoring",
 });
