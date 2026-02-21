@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import * as motion from "motion/react-client";
 import { SearchIcon } from "@/components/icons/ui/search";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { SparklesIcon } from "@/components/icons/ui/sparkles";
@@ -165,13 +164,11 @@ function TypingTerminal() {
   }, []);
 
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.6 }}
+    <button
       onClick={handleCopy}
       aria-label={`Copy command: ${SKILL_COMMAND}`}
-      className="group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg bg-muted/30 border border-border font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors w-full max-w-[40rem] overflow-hidden"
+      className="hero-anim-up group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg bg-muted/30 border border-border font-mono text-sm text-left hover:border-[var(--accent-lavender)]/50 transition-colors w-full max-w-[40rem] overflow-hidden"
+      style={{ animationDelay: "0.6s", animationDuration: "0.5s" }}
     >
       <span className="text-[var(--accent-mint)] select-none shrink-0">$</span>
       <span className="text-foreground/90 truncate">
@@ -196,7 +193,7 @@ function TypingTerminal() {
           50% { opacity: 0; }
         }
       `}</style>
-    </motion.button>
+    </button>
   );
 }
 
@@ -215,19 +212,17 @@ function V0SSEButton() {
   }, []);
 
   return (
-    <motion.button
+    <button
       onClick={handleCopy}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.8 }}
-      className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-foreground/5 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10 transition-colors text-sm"
+      className="hero-anim-up group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-foreground/5 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10 transition-colors text-sm"
+      style={{ animationDelay: "0.8s", animationDuration: "0.5s" }}
     >
       <V0Icon className="w-5 h-5 text-foreground" />
       <span className="text-black/80 dark:text-white/80 font-medium">
         {copied ? "Copied!" : "Add to v0"}
       </span>
       <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
-    </motion.button>
+    </button>
   );
 }
 
@@ -264,23 +259,41 @@ export function MetallicIconBrowserHeader({
 }: MetallicIconBrowserHeaderProps) {
   return (
     <>
-      <motion.h1
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white"
+      <style>{`
+        @keyframes hero-fade-up {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-fade-right {
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .hero-anim-up {
+          opacity: 0;
+          animation-name: hero-fade-up;
+          animation-timing-function: ease-out;
+          animation-fill-mode: forwards;
+        }
+        .hero-anim-right {
+          opacity: 0;
+          animation-name: hero-fade-right;
+          animation-timing-function: ease-out;
+          animation-fill-mode: forwards;
+        }
+      `}</style>
+      <h1
+        className="hero-anim-right font-sans font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-balance tracking-tighter leading-tight pt-8 md:pt-0 text-black dark:text-white"
+        style={{ animationDuration: "0.6s" }}
       >
         Just the icons you need. Zero bloat.
-      </motion.h1>
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-        className="text-black/60 dark:text-white/60 text-sm md:text-base max-w-xl mb-4"
+      </h1>
+      <p
+        className="hero-anim-up text-black/60 dark:text-white/60 text-sm md:text-base max-w-xl mb-4"
+        style={{ animationDuration: "0.6s", animationDelay: "0.3s" }}
       >
         Pick icons from popular libraries, preview styles, copy the code. Like shadcn, but for
         icons.
-      </motion.p>
+      </p>
 
       {/* Hero CTAs */}
       <div className="flex flex-col gap-3 mb-10 pb-8 border-b border-border">
@@ -288,17 +301,15 @@ export function MetallicIconBrowserHeader({
         {/* Second row: Cursor + v0 */}
         <div className="flex flex-row gap-3">
           {/* Cursor MCP Install Button */}
-          <motion.a
+          <a
             href={CURSOR_INSTALL_URL}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/30 hover:border-[var(--accent-aqua)]/60 hover:bg-[var(--accent-aqua)]/20 transition-colors text-sm"
+            className="hero-anim-up group flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--accent-aqua)]/10 border border-[var(--accent-aqua)]/30 hover:border-[var(--accent-aqua)]/60 hover:bg-[var(--accent-aqua)]/20 transition-colors text-sm"
+            style={{ animationDelay: "0.7s", animationDuration: "0.5s" }}
           >
             <CursorIcon className="w-5 h-5 text-[var(--accent-aqua)]" />
             <span className="text-black/80 dark:text-white/80 font-medium">Add to Cursor</span>
             <span className="text-black/40 dark:text-white/40 text-xs hidden sm:inline">MCP</span>
-          </motion.a>
+          </a>
 
           {/* v0 SSE Button */}
           <V0SSEButton />
