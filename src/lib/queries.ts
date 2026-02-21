@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { icons, sources } from "./schema";
 import { eq, like, or, sql, asc } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import type { IconData, SourceData } from "@/types/icon";
 import { expandSearchQuery } from "./icon-aliases";
 
@@ -250,37 +251,70 @@ export async function getIconsByIds(ids: string[]): Promise<IconData[]> {
 /**
  * Get icon count by source.
  */
-export async function getIconCountBySource(): Promise<Record<string, number>> {
-  const results = await db
-    .select({
-      sourceId: icons.sourceId,
-      count: sql<number>`count(*)`,
-    })
-    .from(icons)
-    .groupBy(icons.sourceId);
+const getCachedIconCountBySource = unstable_cache(
+  async () => {
+    const results = await db
+      .select({
+        sourceId: icons.sourceId,
+        count: sql<number>`count(*)`,
+      })
+      .from(icons)
+      .groupBy(icons.sourceId);
 
-  return Object.fromEntries(results.map((r) => [r.sourceId, r.count]));
+    return Object.fromEntries(results.map((r) => [r.sourceId, r.count]));
+  },
+  ["icon-count-by-source-v1"],
+  {
+    revalidate: 60 * 15,
+    tags: ["icon-metadata"],
+  }
+);
+
+export async function getIconCountBySource(): Promise<Record<string, number>> {
+  return getCachedIconCountBySource();
 }
 
 /**
  * Get total icon count.
  */
+const getCachedTotalIconCount = unstable_cache(
+  async () => {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(icons);
+    return result[0]?.count ?? 0;
+  },
+  ["icon-total-count-v1"],
+  {
+    revalidate: 60 * 15,
+    tags: ["icon-metadata"],
+  }
+);
+
 export async function getTotalIconCount(): Promise<number> {
-  const result = await db.select({ count: sql<number>`count(*)` }).from(icons);
-  return result[0]?.count ?? 0;
+  return getCachedTotalIconCount();
 }
 
 /**
  * Get unique categories.
  */
-export async function getCategories(): Promise<string[]> {
-  const results = await db
-    .selectDistinct({ category: icons.category })
-    .from(icons)
-    .where(sql`${icons.category} IS NOT NULL`)
-    .orderBy(asc(icons.category));
+const getCachedCategories = unstable_cache(
+  async () => {
+    const results = await db
+      .selectDistinct({ category: icons.category })
+      .from(icons)
+      .where(sql`${icons.category} IS NOT NULL`)
+      .orderBy(asc(icons.category));
 
-  return results.map((r) => r.category).filter((c): c is string => c !== null);
+    return results.map((r) => r.category).filter((c): c is string => c !== null);
+  },
+  ["icon-categories-v1"],
+  {
+    revalidate: 60 * 15,
+    tags: ["icon-metadata"],
+  }
+);
+
+export async function getCategories(): Promise<string[]> {
+  return getCachedCategories();
 }
 
 
