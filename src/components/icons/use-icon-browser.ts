@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "./styled-icon";
 import type { IconData, IconLibrary } from "@/types/icon";
 
-// Icons per page - sized for large screens (4K: ~50 columns x 8 rows = 400)
-const ICONS_PER_PAGE = 320;
+// Keep homepage payload and first render lighter while preserving dense browsing.
+const ICONS_PER_PAGE = 160;
 
 interface UseIconBrowserParams {
   initialIcons: IconData[];
