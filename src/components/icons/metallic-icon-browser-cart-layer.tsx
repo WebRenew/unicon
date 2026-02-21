@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { AlertTriangleIcon } from "@/components/icons/ui/alert-triangle";
 import {
   Dialog,
@@ -7,8 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { IconCart } from "./icon-cart";
 import type { IconData } from "@/types/icon";
+
+const IconCart = dynamic(
+  () => import("./icon-cart").then((module) => module.IconCart),
+  { ssr: false }
+);
 
 interface MetallicIconBrowserCartLayerProps {
   items: IconData[];
@@ -38,14 +43,16 @@ export function MetallicIconBrowserCartLayer({
   return (
     <>
       {/* Cart Drawer */}
-      <IconCart
-        items={items}
-        onRemove={onRemove}
-        onClear={onClear}
-        onAddPack={onAddPack}
-        isOpen={isCartOpen}
-        onClose={onCartClose}
-      />
+      {isCartOpen && (
+        <IconCart
+          items={items}
+          onRemove={onRemove}
+          onClear={onClear}
+          onAddPack={onAddPack}
+          isOpen={isCartOpen}
+          onClose={onCartClose}
+        />
+      )}
 
       {/* Backdrop */}
       {isCartOpen && (
