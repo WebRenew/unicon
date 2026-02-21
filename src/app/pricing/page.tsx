@@ -1,20 +1,14 @@
-"use client";
-
-import React, { Suspense, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { CheckIcon } from "@/components/icons/ui/check";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { GlobeIcon } from "@/components/icons/ui/globe";
-import { Loader2Icon } from "@/components/icons/ui/loader-2";
 import { ChevronDownIcon } from "@/components/icons/ui/chevron-down";
 import { ScanSearchIcon } from "@/components/icons/ui/scan-search";
 import { WorkflowIcon } from "@/components/icons/ui/workflow";
 import { AiIcon } from "@/components/icons/ui/ai";
-import { LoginDialog } from "@/components/auth/login-dialog";
-import { useAuth } from "@/hooks/use-auth";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { PricingPlanAction } from "@/components/pricing/pricing-plan-action";
+import { PricingCancelNotice } from "@/components/pricing/pricing-cancel-notice";
 
 const FREE_FEATURES = [
   "Browse 10,000+ icons from 50+ libraries",
@@ -37,156 +31,67 @@ const PRO_FEATURES = [
 const FAQ_ITEMS = [
   {
     question: "Do I need Pro to use Unicon?",
-    answer: "No. The Free plan gives you full access to browse, copy, and download icons. Pro is for teams and power users who need unlimited cloud bundles and sharing.",
+    answer:
+      "No. The Free plan gives you full access to browse, copy, and download icons. Pro is for teams and power users who need unlimited cloud bundles and sharing.",
   },
   {
     question: "What counts as a 'saved bundle'?",
-    answer: "A saved bundle is a collection of icons you save to the cloud for easy access across devices. Free users get 3 bundles, Pro users get unlimited. Local downloads don't count toward this limit.",
+    answer:
+      "A saved bundle is a collection of icons you save to the cloud for easy access across devices. Free users get 3 bundles, Pro users get unlimited. Local downloads don't count toward this limit.",
   },
   {
     question: "Can I share bundles with my team?",
-    answer: "Yes! Pro users can generate public sharing links for any bundle. Share a single URL and your team can copy the exact icons you curated—no account required to view.",
+    answer:
+      "Yes! Pro users can generate public sharing links for any bundle. Share a single URL and your team can copy the exact icons you curated—no account required to view.",
   },
   {
     question: "Is there a refund policy?",
-    answer: "Yes. If you're not satisfied within the first 14 days, email us and we'll refund your subscription—no questions asked.",
+    answer:
+      "Yes. If you're not satisfied within the first 14 days, email us and we'll refund your subscription—no questions asked.",
   },
   {
     question: "Can I cancel anytime?",
-    answer: "Absolutely. Cancel your subscription anytime from your account settings. You'll keep Pro access until the end of your billing period.",
+    answer:
+      "Absolutely. Cancel your subscription anytime from your account settings. You'll keep Pro access until the end of your billing period.",
   },
 ];
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div className="border-b border-black/5 dark:border-white/5 last:border-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        className="w-full py-4 flex items-center justify-between text-left hover:text-foreground transition-colors"
-      >
+    <details className="group border-b border-black/5 dark:border-white/5 last:border-0">
+      <summary className="list-none cursor-pointer w-full py-4 flex items-center justify-between text-left hover:text-foreground transition-colors">
         <span className="text-sm font-medium text-foreground pr-4">{question}</span>
         <ChevronDownIcon
-          className={cn(
-            "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200",
-            isOpen && "rotate-180"
-          )}
+          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 group-open:rotate-180"
           aria-hidden="true"
         />
-      </button>
-      <div
-        className={cn(
-          "grid transition-all duration-200 ease-in-out",
-          isOpen ? "grid-rows-[1fr] opacity-100 pb-4" : "grid-rows-[0fr] opacity-0"
-        )}
-      >
-        <div className="overflow-hidden">
-          <p className="text-sm text-muted-foreground leading-relaxed">{answer}</p>
-        </div>
-      </div>
-    </div>
+      </summary>
+      <p className="text-sm text-muted-foreground leading-relaxed pb-4">{answer}</p>
+    </details>
   );
 }
 
-function PricingContent() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDowngrading, setIsDowngrading] = useState(false);
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const { user, isPro, isLoading: isAuthLoading } = useAuth();
-  const searchParams = useSearchParams();
-  const proCardRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-
-  const wasCanceled = searchParams.get("canceled") === "true";
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!proCardRef.current) return;
-    const rect = proCardRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  const handleSubscribe = async () => {
-    if (!user) {
-      setLoginDialogOpen(true);
-      return;
-    }
-
-    if (isPro) {
-      toast.info("You're already subscribed to Pro!");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/stripe/checkout", {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error ?? "Failed to create checkout session");
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to start checkout");
-      setIsLoading(false);
-    }
-  };
-
-  const handleDowngrade = async () => {
-    setIsDowngrading(true);
-    try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to open subscription portal");
-      }
-
-      const data = await res.json();
-      if (!data.url) {
-        throw new Error("Failed to open subscription portal");
-      }
-      window.location.href = data.url;
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to open subscription portal");
-      setIsDowngrading(false);
-    }
-  };
-
+export default function PricingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <div className="flex-1 px-4 lg:px-20 xl:px-40 py-12">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-12">
             <p className="text-sm font-medium text-[var(--accent-mint)] mb-3">Pricing</p>
             <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
               One library. Every icon you need.
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Stop hunting across dozens of icon sites. Unicon brings 10,000+ icons from 50+ libraries into one searchable interface—with CLI and MCP built in.
+              Stop hunting across dozens of icon sites. Unicon brings 10,000+ icons from 50+
+              libraries into one searchable interface—with CLI and MCP built in.
             </p>
-            {wasCanceled && (
-              <p className="mt-4 text-amber-600 dark:text-amber-400 text-sm">
-                Checkout was canceled. No worries, you can try again anytime.
-              </p>
-            )}
+            <Suspense fallback={null}>
+              <PricingCancelNotice />
+            </Suspense>
           </div>
 
-          {/* Pricing Cards */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Free Plan */}
             <div className="flex flex-col rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/[0.02] p-6">
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
@@ -211,60 +116,18 @@ function PricingContent() {
                 ))}
               </ul>
 
-              {user ? (
-                isPro ? (
-                  <button
-                    onClick={handleDowngrade}
-                    disabled={isDowngrading}
-                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                  >
-                    {isDowngrading ? (
-                      <Loader2Icon className="w-4 h-4 animate-spin mx-auto" />
-                    ) : (
-                      "Downgrade"
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    disabled
-                    className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-muted-foreground font-medium cursor-default"
-                  >
-                    Current Plan
-                  </button>
-                )
-              ) : (
-                <button
-                  onClick={() => setLoginDialogOpen(true)}
-                  className="w-full py-3 px-4 rounded-lg border border-black/10 dark:border-white/10 text-foreground font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                >
-                  Get Started
-                </button>
-              )}
+              <PricingPlanAction plan="free" />
             </div>
 
-            {/* Pro Plan */}
-            <div
-              ref={proCardRef}
-              onMouseMove={handleMouseMove}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#141414] p-7 relative overflow-hidden"
-            >
-              {/* Mouse-following aqua glow */}
+            <div className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#141414] p-7 relative overflow-hidden">
               <div
-                className="absolute w-[500px] h-[500px] pointer-events-none transition-opacity duration-300"
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, rgba(127, 211, 230, 0.08) 0%, transparent 70%)',
-                  left: mousePos.x - 250,
-                  top: mousePos.y - 250,
-                  opacity: isHovering ? 1 : 0,
+                  background:
+                    "radial-gradient(circle at 35% 18%, rgba(127, 211, 230, 0.08) 0%, transparent 62%)",
                 }}
               />
-
-              {/* Top gradient line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--accent-aqua)] to-transparent" />
-
-              {/* Badge */}
               <div className="relative inline-flex self-start items-center gap-1.5 px-3 py-1.5 border border-[var(--accent-aqua)] rounded-full text-[0.7rem] font-semibold text-[var(--accent-aqua)] uppercase tracking-wide mb-5">
                 <span aria-hidden="true">✦</span> Most Popular
               </div>
@@ -299,120 +162,122 @@ function PricingContent() {
                 ))}
               </ul>
 
-              {isAuthLoading ? (
-                <button
-                  disabled
-                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30"
-                >
-                  <Loader2Icon className="w-5 h-5 animate-spin mx-auto" />
-                </button>
-              ) : isPro ? (
-                <button
-                  disabled
-                  className="relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white/50 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 cursor-default"
-                >
-                  You&apos;re on Pro!
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubscribe}
-                  disabled={isLoading}
-                  className="group relative w-full py-3.5 px-6 rounded-xl bg-[linear-gradient(to_bottom,#555_0%,#222_8%,#111_100%)] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.4)] border-t border-[#666]/30 transition-all duration-700 ease-in-out hover:scale-[1.03] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.17),0_4px_20px_rgba(255,255,255,0.03),0_0_30px_rgba(255,255,255,0.02)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 overflow-hidden"
-                >
-                  {/* Dark background overlay on hover */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-700 ease-in-out group-hover:opacity-100"
-                    style={{ background: "hsl(0, 0%, 1%)" }}
-                  />
-                  {/* Blur highlight overlay */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-all duration-700 ease-in-out group-hover:opacity-100"
-                    style={{
-                      background: "radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 50%), radial-gradient(circle at 70% 100%, rgba(255, 255, 255, 0.015) 0%, transparent 40%)",
-                    }}
-                  />
-                  <span className="relative z-10 flex items-center justify-center gap-2" style={{ textShadow: "none" }}>
-                    {isLoading ? (
-                      <>
-                        <Loader2Icon className="w-5 h-5 animate-spin" />
-                        Redirecting to checkout...
-                      </>
-                    ) : (
-                      "Upgrade to Pro"
-                    )}
-                  </span>
-                </button>
-              )}
+              <PricingPlanAction plan="pro" />
             </div>
           </div>
 
-          {/* Feature Comparison */}
           <div className="mt-16">
             <h3 className="text-xl font-semibold text-foreground text-center mb-8">
               Compare Plans
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <caption className="sr-only">Feature comparison between Free and Pro plans</caption>
+                <caption className="sr-only">
+                  Feature comparison between Free and Pro plans
+                </caption>
                 <thead>
                   <tr className="border-b border-black/10 dark:border-white/10">
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Feature</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Free</th>
-                    <th className="text-center py-3 px-4 font-medium text-[var(--accent-lavender)]">Pro</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">
+                      Feature
+                    </th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">
+                      Free
+                    </th>
+                    <th className="text-center py-3 px-4 font-medium text-[var(--accent-lavender)]">
+                      Pro
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
                   <tr>
                     <td className="py-3 px-4 text-foreground">Icon browsing & search</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Copy & download</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">CLI access</td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Saved cloud bundles</td>
                     <td className="py-3 px-4 text-center text-muted-foreground">3</td>
-                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] font-medium">Unlimited</td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] font-medium">
+                      Unlimited
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground flex items-center gap-2">
                       <GlobeIcon className="w-4 h-4" aria-hidden="true" />
                       Public sharing links
                     </td>
-                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
-                    <td className="py-3 px-4 text-center"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" /><span className="sr-only">Yes</span></td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">
+                      <span aria-hidden="true">-</span>
+                      <span className="sr-only">No</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <CheckIcon className="w-4 h-4 text-green-500 mx-auto" aria-hidden="true" />
+                      <span className="sr-only">Yes</span>
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Authenticated MCP</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
-                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">
+                      <span aria-hidden="true">-</span>
+                      <span className="sr-only">No</span>
+                    </td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">
+                      Coming soon
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Brand kit</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
-                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">
+                      <span aria-hidden="true">-</span>
+                      <span className="sr-only">No</span>
+                    </td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">
+                      Coming soon
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-foreground">Custom uploads</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground"><span aria-hidden="true">-</span><span className="sr-only">No</span></td>
-                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">Coming soon</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">
+                      <span aria-hidden="true">-</span>
+                      <span className="sr-only">No</span>
+                    </td>
+                    <td className="py-3 px-4 text-center text-[var(--accent-lavender)] text-xs">
+                      Coming soon
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Why Unicon */}
           <div className="mt-20">
             <h3 className="text-xl font-semibold text-foreground text-center mb-3">
               Why teams choose Unicon
@@ -427,7 +292,8 @@ function PricingContent() {
                 </div>
                 <h4 className="font-medium text-foreground mb-2">One search, all icons</h4>
                 <p className="text-sm text-muted-foreground">
-                  Lucide, Heroicons, Phosphor, Tabler, and 50+ more libraries. Search once, find exactly what you need.
+                  Lucide, Heroicons, Phosphor, Tabler, and 50+ more libraries. Search once, find
+                  exactly what you need.
                 </p>
               </div>
               <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
@@ -436,7 +302,8 @@ function PricingContent() {
                 </div>
                 <h4 className="font-medium text-foreground mb-2">Copy-paste to production</h4>
                 <p className="text-sm text-muted-foreground">
-                  Get React components, Vue, SVG, or JSX with one click. No conversion tools needed.
+                  Get React components, Vue, SVG, or JSX with one click. No conversion tools
+                  needed.
                 </p>
               </div>
               <div className="p-5 rounded-xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
@@ -445,13 +312,13 @@ function PricingContent() {
                 </div>
                 <h4 className="font-medium text-foreground mb-2">AI-native workflows</h4>
                 <p className="text-sm text-muted-foreground">
-                  MCP server lets Claude and other AI tools add icons directly. CLI integrates with your build process.
+                  MCP server lets Claude and other AI tools add icons directly. CLI integrates with
+                  your build process.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* FAQ Section */}
           <div className="mt-20">
             <h3 className="text-xl font-semibold text-foreground text-center mb-3">
               Frequently asked questions
@@ -466,7 +333,6 @@ function PricingContent() {
             </div>
           </div>
 
-          {/* Contact */}
           <div className="mt-16 text-center">
             <p className="text-sm text-muted-foreground">
               Still have questions? Email us at{" "}
@@ -477,29 +343,6 @@ function PricingContent() {
           </div>
         </div>
       </div>
-
-      <LoginDialog
-        open={loginDialogOpen}
-        onOpenChange={setLoginDialogOpen}
-        message="Sign in to upgrade to Unicon Pro."
-      />
     </div>
-  );
-}
-
-export default function PricingPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex flex-col">
-          <SiteHeader />
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2Icon className="w-6 h-6 animate-spin text-muted-foreground" />
-          </div>
-        </div>
-      }
-    >
-      <PricingContent />
-    </Suspense>
   );
 }
