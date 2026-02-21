@@ -159,8 +159,8 @@ export function MetallicIconBrowserResults({
           <div ref={gridWrapperRef}>
             {topSpacerHeight > 0 && <div style={{ height: topSpacerHeight }} />}
             <div
-              className="grid gap-3"
-              style={gridStyle}
+              className="grid"
+              style={{ ...gridStyle, gap: `${GRID_GAP_PX}px` }}
             >
               {visibleIcons.map((icon) => (
                 <StyledIcon
