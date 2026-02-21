@@ -1,12 +1,33 @@
 "use client";
 
-import { Toaster as Sonner } from "sonner";
+import { useEffect, useState } from "react";
 
-type ToasterProps = React.ComponentProps<typeof Sonner>;
+type SonnerComponentType = typeof import("sonner")["Toaster"];
+type ToasterProps = React.ComponentProps<SonnerComponentType>;
 
 function Toaster({ ...props }: ToasterProps) {
+  const [SonnerComponent, setSonnerComponent] = useState<SonnerComponentType | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    import("sonner").then((module) => {
+      if (isActive) {
+        setSonnerComponent(() => module.Toaster);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  if (!SonnerComponent) {
+    return null;
+  }
+
   return (
-    <Sonner
+    <SonnerComponent
       theme="dark"
       className="toaster group"
       toastOptions={{
