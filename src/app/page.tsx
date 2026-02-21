@@ -6,11 +6,12 @@ import { unstable_cache } from "next/cache";
 // force-dynamic: CI/build environment has no DB credentials, so prerendering would fail.
 // We still cache homepage DB reads at runtime using unstable_cache below.
 export const dynamic = "force-dynamic";
+const HOME_ICON_PAGE_SIZE = 160;
 
 const getCachedHomePageData = unstable_cache(
   async () => {
     const [icons, totalCount, countBySource, categories] = await Promise.all([
-      searchIcons({ limit: 320 }),
+      searchIcons({ limit: HOME_ICON_PAGE_SIZE }),
       getTotalIconCount(),
       getIconCountBySource(),
       getCategories(),
