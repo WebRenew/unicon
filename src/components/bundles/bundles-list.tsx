@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { BundleCard } from "./bundle-card";
 import { PackageIcon } from "@/components/icons/ui/package";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
@@ -11,14 +11,17 @@ import type { Bundle } from "@/types/database";
 
 interface BundlesListProps {
   isPro: boolean;
+  initialBundles: Bundle[];
 }
 
-export function BundlesList({ isPro }: BundlesListProps) {
-  const [bundles, setBundles] = useState<Bundle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function BundlesList({ isPro, initialBundles }: BundlesListProps) {
+  const [bundles, setBundles] = useState<Bundle[]>(initialBundles);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchBundles = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/bundles");
       if (!response.ok) throw new Error("Failed to fetch bundles");
@@ -30,10 +33,6 @@ export function BundlesList({ isPro }: BundlesListProps) {
       setIsLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    fetchBundles();
-  }, [fetchBundles]);
 
   const handleDelete = (id: string) => {
     setBundles((prev) => prev.filter((b) => b.id !== id));
