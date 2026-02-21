@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
 import { ChevronRightIcon } from "@/components/icons/ui/chevron-right";
 import { Loader2Icon } from "@/components/icons/ui/loader-2";
@@ -21,6 +21,9 @@ interface MetallicIconBrowserResultsProps {
   onPageChange: (page: number) => void;
   onHoverSource?: (source: string | null) => void;
 }
+
+const GRID_GAP_PX = 12;
+const GRID_OVERSCAN_ROWS = 4;
 
 function getVisiblePages(page: number, totalPages: number): number[] {
   if (totalPages <= 0) return [];
@@ -59,6 +62,83 @@ export function MetallicIconBrowserResults({
   onPageChange,
   onHoverSource,
 }: MetallicIconBrowserResultsProps) {
+  const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [columns, setColumns] = useState(1);
+  const [range, setRange] = useState({ start: 0, end: iconsToShow.length });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!gridWrapperRef.current || iconsToShow.length === 0) return;
+
+    let frame = 0;
+
+    const calculateVisibleRange = () => {
+      const wrapper = gridWrapperRef.current;
+      if (!wrapper) return;
+
+      const width = wrapper.clientWidth;
+      const nextColumns = Math.max(1, Math.floor((width + GRID_GAP_PX) / (containerSize + GRID_GAP_PX)));
+      setColumns(nextColumns);
+
+      const totalRows = Math.max(1, Math.ceil(iconsToShow.length / nextColumns));
+      const rowHeight = containerSize + GRID_GAP_PX;
+      const rect = wrapper.getBoundingClientRect();
+      const pageScrollTop = window.scrollY;
+      const gridTop = rect.top + pageScrollTop;
+      const viewportTop = pageScrollTop;
+      const viewportBottom = pageScrollTop + window.innerHeight;
+
+      const firstVisibleRow = Math.floor((viewportTop - gridTop) / rowHeight);
+      const lastVisibleRow = Math.floor((viewportBottom - gridTop) / rowHeight);
+
+      const startRow = Math.max(0, firstVisibleRow - GRID_OVERSCAN_ROWS);
+      const endRow = Math.min(totalRows - 1, lastVisibleRow + GRID_OVERSCAN_ROWS);
+
+      const start = Math.max(0, startRow * nextColumns);
+      const end = Math.min(iconsToShow.length, (endRow + 1) * nextColumns);
+
+      setRange((prev) => {
+        if (prev.start === start && prev.end === end) {
+          return prev;
+        }
+        return { start, end };
+      });
+    };
+
+    const scheduleCalculate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(calculateVisibleRange);
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleCalculate();
+    });
+
+    resizeObserver.observe(gridWrapperRef.current);
+    window.addEventListener("scroll", scheduleCalculate, { passive: true });
+    window.addEventListener("resize", scheduleCalculate);
+    scheduleCalculate();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", scheduleCalculate);
+      window.removeEventListener("resize", scheduleCalculate);
+      resizeObserver.disconnect();
+    };
+  }, [iconsToShow.length, containerSize]);
+
+  const clampedStart = Math.min(range.start, iconsToShow.length);
+  const clampedEnd = Math.min(Math.max(clampedStart, range.end), iconsToShow.length);
+  const visibleIcons = useMemo(
+    () => iconsToShow.slice(clampedStart, clampedEnd),
+    [clampedEnd, clampedStart, iconsToShow]
+  );
+  const startRow = Math.floor(clampedStart / columns);
+  const endRow = Math.ceil(clampedEnd / columns);
+  const totalRows = Math.ceil(iconsToShow.length / columns);
+  const topSpacerHeight = startRow * (containerSize + GRID_GAP_PX);
+  const bottomSpacerHeight = Math.max(0, (totalRows - endRow) * (containerSize + GRID_GAP_PX));
+
   return (
     <>
       {/* Results count */}
@@ -76,23 +156,27 @@ export function MetallicIconBrowserResults({
         </div>
       ) : icons.length > 0 ? (
         <>
-          <div
-            className="grid gap-3"
-            style={gridStyle}
-          >
-            {iconsToShow.map((icon) => (
-              <StyledIcon
-                key={icon.id}
-                icon={icon}
-                style="metal"
-                isSelected={cartItemIds.has(icon.id)}
-                onToggleCart={onToggleCart}
-                strokeWeight={strokeWeight}
-                iconSize={iconSize}
-                containerSize={containerSize}
-                onHoverSource={onHoverSource}
-              />
-            ))}
+          <div ref={gridWrapperRef}>
+            {topSpacerHeight > 0 && <div style={{ height: topSpacerHeight }} />}
+            <div
+              className="grid"
+              style={{ ...gridStyle, gap: `${GRID_GAP_PX}px` }}
+            >
+              {visibleIcons.map((icon) => (
+                <StyledIcon
+                  key={icon.id}
+                  icon={icon}
+                  style="metal"
+                  isSelected={cartItemIds.has(icon.id)}
+                  onToggleCart={onToggleCart}
+                  strokeWeight={strokeWeight}
+                  iconSize={iconSize}
+                  containerSize={containerSize}
+                  onHoverSource={onHoverSource}
+                />
+              ))}
+            </div>
+            {bottomSpacerHeight > 0 && <div style={{ height: bottomSpacerHeight }} />}
           </div>
 
           {/* Pagination */}
