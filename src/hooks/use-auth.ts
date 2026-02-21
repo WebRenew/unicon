@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import type { Profile, Subscription } from "@/types/database";
@@ -13,85 +13,93 @@ interface AuthState {
   isLoading: boolean;
 }
 
-export function useAuth() {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    profile: null,
-    subscription: null,
-    isPro: false,
-    isLoading: true,
-  });
+const INITIAL_AUTH_STATE: AuthState = {
+  user: null,
+  profile: null,
+  subscription: null,
+  isPro: false,
+  isLoading: true,
+};
 
-  // Track request ID to prevent stale responses from overwriting newer data
-  const requestIdRef = useRef(0);
+let authState: AuthState = INITIAL_AUTH_STATE;
+const listeners = new Set<(state: AuthState) => void>();
+let requestId = 0;
+let isInitialized = false;
 
-  const fetchUserData = useCallback(
-    async (user: User | null, requestId: number) => {
-      if (!user) {
-        // Only update if this is still the latest request
-        if (requestId === requestIdRef.current) {
-          setState({
-            user: null,
-            profile: null,
-            subscription: null,
-            isPro: false,
-            isLoading: false,
-          });
-        }
-        return;
-      }
+function emit(next: AuthState) {
+  authState = next;
+  for (const listener of listeners) {
+    listener(next);
+  }
+}
 
-      const supabase = createClient();
-
-      // Fetch profile and subscription in parallel
-      const [profileResult, subscriptionResult] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase.from("subscriptions").select("*").eq("user_id", user.id).single(),
-      ]);
-
-      // Only update state if this is still the latest request
-      // This prevents stale responses from overwriting newer data
-      if (requestId !== requestIdRef.current) {
-        return;
-      }
-
-      const profile = profileResult.data as Profile | null;
-      const subscription = subscriptionResult.data as Subscription | null;
-      const isPro = subscription?.plan === "pro" && subscription?.status === "active";
-
-      setState({
-        user,
-        profile,
-        subscription,
-        isPro,
+async function fetchUserData(user: User | null, currentRequestId: number) {
+  if (!user) {
+    if (currentRequestId === requestId) {
+      emit({
+        user: null,
+        profile: null,
+        subscription: null,
+        isPro: false,
         isLoading: false,
       });
-    },
-    []
-  );
+    }
+    return;
+  }
+
+  const supabase = createClient();
+  const [profileResult, subscriptionResult] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("subscriptions").select("*").eq("user_id", user.id).single(),
+  ]);
+
+  if (currentRequestId !== requestId) {
+    return;
+  }
+
+  const profile = profileResult.data as Profile | null;
+  const subscription = subscriptionResult.data as Subscription | null;
+  const isPro = subscription?.plan === "pro" && subscription?.status === "active";
+
+  emit({
+    user,
+    profile,
+    subscription,
+    isPro,
+    isLoading: false,
+  });
+}
+
+function initializeAuthStore() {
+  if (isInitialized) {
+    return;
+  }
+  isInitialized = true;
+
+  const supabase = createClient();
+
+  const initialRequestId = ++requestId;
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    fetchUserData(user, initialRequestId);
+  });
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const nextRequestId = ++requestId;
+    fetchUserData(session?.user ?? null, nextRequestId);
+  });
+}
+
+export function useAuth() {
+  const [state, setState] = useState<AuthState>(authState);
 
   useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial user
-    const currentRequestId = ++requestIdRef.current;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      fetchUserData(user, currentRequestId);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        // Increment request ID to invalidate any in-flight requests
-        const newRequestId = ++requestIdRef.current;
-        fetchUserData(session?.user ?? null, newRequestId);
-      }
-    );
+    initializeAuthStore();
+    listeners.add(setState);
 
     return () => {
-      subscription.unsubscribe();
+      listeners.delete(setState);
     };
-  }, [fetchUserData]);
+  }, []);
 
   return state;
 }
