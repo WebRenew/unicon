@@ -37,6 +37,39 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+const SUPPORTED_FORMATS = new Set(["react", "svg", "json"]);
+type BundleCodeFormat = "react" | "svg" | "json";
+
+function parseBundleCodeFormat(rawFormat: string | null): BundleCodeFormat | null {
+  if (rawFormat === null || rawFormat === "") {
+    return "react";
+  }
+
+  if (!SUPPORTED_FORMATS.has(rawFormat)) {
+    return null;
+  }
+
+  return rawFormat as BundleCodeFormat;
+}
+
+function parseStrokeWidth(rawStrokeWidth: string | null): number | null {
+  if (rawStrokeWidth === null || rawStrokeWidth.trim() === "") {
+    return 2;
+  }
+
+  const parsed = Number.parseFloat(rawStrokeWidth);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  if (parsed <= 0 || parsed > 10) {
+    return null;
+  }
+
+  return parsed;
+}
+
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -88,9 +121,22 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     // Parse query params
     const url = new URL(request.url);
-    const format = (url.searchParams.get("format") || "react") as "react" | "svg" | "json";
+    const format = parseBundleCodeFormat(url.searchParams.get("format"));
+    if (!format) {
+      return NextResponse.json(
+        { error: "invalid_format", message: "format must be one of: react, svg, json" },
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
+
     const includeCode = url.searchParams.get("code") !== "false";
-    const strokeWidth = parseFloat(url.searchParams.get("strokeWidth") || "2");
+    const strokeWidth = parseStrokeWidth(url.searchParams.get("strokeWidth"));
+    if (strokeWidth === null) {
+      return NextResponse.json(
+        { error: "invalid_stroke_width", message: "strokeWidth must be greater than 0 and less than or equal to 10" },
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
 
     // Fetch the bundle
     const supabase = createAdminClient();
@@ -127,11 +173,12 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     // Fetch full icon data
     const icons = await getIconsByIds(iconIds);
+    const effectiveStrokeWidth = bundle.target_stroke_width ?? strokeWidth;
 
     // Apply normalization if bundle has it configured
     const normalizedIcons = bundle.normalize_strokes
       ? normalizeIcons(icons, { 
-          strokeWidth: bundle.target_stroke_width || strokeWidth,
+          strokeWidth: effectiveStrokeWidth,
           skipFillIcons: true,
         })
       : icons;
@@ -139,8 +186,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Generate code if requested
     let code: string | undefined;
     if (includeCode) {
-      const effectiveStrokeWidth = bundle.target_stroke_width || strokeWidth;
-      
       switch (format) {
         case "react":
           code = generateReactBundle(normalizedIcons, { strokeWidth: effectiveStrokeWidth });
