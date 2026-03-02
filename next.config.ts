@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  outputFileTracingRoot: process.cwd(),
   images: {
     remotePatterns: [
       { hostname: "avatars.githubusercontent.com" },
