@@ -27,11 +27,7 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
-    try {
-      await signOut();
-    } catch {
-      setIsSigningOut(false);
-    }
+    await signOut();
   };
 
   const avatarUrl = profile.avatar_url;
