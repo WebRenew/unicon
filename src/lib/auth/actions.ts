@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Subscription, UserWithSubscription } from "@/types/database";
 
@@ -54,7 +55,11 @@ export async function signInWithGoogle(redirectPath?: string) {
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
+  if (error) {
+    throw new Error(error.message);
+  }
+  revalidatePath("/", "layout");
   redirect("/");
 }
 
