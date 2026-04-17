@@ -29,8 +29,21 @@ export function UserMenu({ profile, isPro }: UserMenuProps) {
     setIsSigningOut(true);
     try {
       await signOut();
-    } catch {
+    } catch (error) {
+      // Next's server-action redirect sentinel has a `digest` prefixed
+      // with NEXT_REDIRECT. Re-throw so the framework can handle it;
+      // reset local state only for genuine failures.
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "digest" in error &&
+        typeof (error as { digest: unknown }).digest === "string" &&
+        (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+      ) {
+        throw error;
+      }
       setIsSigningOut(false);
+      throw error;
     }
   };
 
