@@ -55,7 +55,10 @@ export async function signInWithGoogle(redirectPath?: string) {
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut({ scope: "local" });
+  const { error } = await supabase.auth.signOut({ scope: "local" });
+  if (error) {
+    throw new Error(error.message);
+  }
   revalidatePath("/", "layout");
   redirect("/");
 }
