@@ -46,8 +46,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.66",
-    "@ai-sdk/openai": "^3.0.50",
+    "@ai-sdk/anthropic": "^3.0.74",
+    "@ai-sdk/openai": "^3.0.57",
     "@libsql/client": "^0.17.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@opentelemetry/sdk-trace-node": "^2.6.1",
@@ -69,7 +69,7 @@
     "@vercel/functions": "^3.4.3",
     "@vercel/otel": "^2.1.1",
     "@vercel/speed-insights": "^2.0.0",
-    "ai": "^6.0.146",
+    "ai": "^6.0.173",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
