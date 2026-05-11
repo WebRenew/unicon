@@ -237,9 +237,37 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Track the latest in-flight request so slower stale responses (e.g. an
+  // unfiltered search that resolves after the user picks a library) never
+  // overwrite the current results. Refs are stable across renders.
+  const requestIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+
   // Fetch icons - defined as a useCallback
   const fetchIcons = useCallback(
     async (pageNum: number) => {
+      const requestId = ++requestIdRef.current;
+      const isCurrent = () => requestId === requestIdRef.current;
+
+      const applyResults = (result: {
+        icons: IconData[];
+        searchType?: string;
+        expandedQuery?: string | null;
+        hasMore?: boolean;
+      }) => {
+        if (!isCurrent()) return;
+        setIcons(result.icons);
+        setSearchType(result.searchType ?? "text");
+        setExpandedQuery(result.expandedQuery ?? null);
+        if (!result.hasMore && result.icons.length < ICONS_PER_PAGE) {
+          setTotalResults(pageNum * ICONS_PER_PAGE + result.icons.length);
+        }
+      };
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setIsLoading(true);
       try {
         const cacheKey = {
@@ -252,13 +280,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
 
         const cached = iconSearchCache.get(cacheKey);
         if (cached) {
-          setIcons(cached.icons);
-          setSearchType(cached.searchType ?? "text");
-          setExpandedQuery(cached.expandedQuery ?? null);
-          if (!cached.hasMore && cached.icons.length < ICONS_PER_PAGE) {
-            setTotalResults(pageNum * ICONS_PER_PAGE + cached.icons.length);
-          }
-          setIsLoading(false);
+          applyResults(cached);
           return;
         }
 
@@ -270,7 +292,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
         if (selectedSource !== "all") params.set("source", selectedSource);
         if (selectedCategory !== "all") params.set("category", selectedCategory);
 
-        const res = await fetch(`/api/icons?${params}`);
+        const res = await fetch(`/api/icons?${params}`, { signal: controller.signal });
         const data = await res.json();
 
         iconSearchCache.set(cacheKey, {
@@ -280,16 +302,12 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
           hasMore: data.hasMore,
         });
 
-        setIcons(data.icons);
-        setSearchType(data.searchType ?? "text");
-        setExpandedQuery(data.expandedQuery ?? null);
-        if (!data.hasMore && data.icons.length < ICONS_PER_PAGE) {
-          setTotalResults(pageNum * ICONS_PER_PAGE + data.icons.length);
-        }
+        applyResults(data);
       } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
         logger.error("Failed to fetch icons:", error);
       } finally {
-        setIsLoading(false);
+        if (isCurrent()) setIsLoading(false);
       }
     },
     [debouncedSearch, selectedSource, selectedCategory]
