@@ -50,12 +50,20 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Trigger search when debounced query changes
-  useEffect(() => {
+  // Clear results synchronously when the user empties the search box. The
+  // render-time "compare-prev-value" pattern avoids the setState-in-effect
+  // anti-pattern while keeping the actual fetch logic inside its useEffect.
+  const [prevDebouncedQuery, setPrevDebouncedQuery] = useState(debouncedQuery);
+  if (prevDebouncedQuery !== debouncedQuery) {
+    setPrevDebouncedQuery(debouncedQuery);
     if (!debouncedQuery.trim()) {
       setSearchResults([]);
-      return;
     }
+  }
+
+  // Trigger search when debounced query changes
+  useEffect(() => {
+    if (!debouncedQuery.trim()) return;
 
     // Cancel any in-flight request to prevent stale results
     if (abortControllerRef.current) {

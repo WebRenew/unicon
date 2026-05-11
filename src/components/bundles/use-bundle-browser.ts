@@ -128,10 +128,15 @@ export function useBundleBrowser({
     return () => controller.abort();
   }, [debouncedSearch, selectedSource, selectedCategory, page]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch, selectedSource, selectedCategory]);
+  // Reset page when filters change. React-blessed "compare-prev-value" pattern
+  // avoids the setState-in-effect anti-pattern: React reruns the component
+  // before effects fire, so the fetch effect below already sees page === 0.
+  const filterKey = `${debouncedSearch}|${selectedSource}|${selectedCategory}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    if (page !== 0) setPage(0);
+  }
 
   // Icon operations
   const handleAddIcon = useCallback((icon: IconData) => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { logger } from "@/lib/logger";
 import { iconSearchCache } from "@/lib/search-cache";
 import { useEventListener } from "@/lib/use-event-listener";
@@ -31,6 +31,21 @@ function buildIconSearchParams(opts: {
   return params;
 }
 
+// SSR-safe viewport tracking via useSyncExternalStore — avoids the
+// setState-in-effect anti-pattern while still rendering `null` on the server
+// to match initial client hydration.
+function subscribeViewport(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+function getViewportSnapshot(): number | null {
+  return typeof window === "undefined" ? null : window.innerWidth;
+}
+function getServerViewportSnapshot(): number | null {
+  return null;
+}
+
 export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParams) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -53,7 +68,11 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
   const { icon: iconSize, container: containerSize } = SIZE_PRESETS[sizePreset];
 
   // Estimate columns based on viewport width
-  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
+  const viewportWidth = useSyncExternalStore(
+    subscribeViewport,
+    getViewportSnapshot,
+    getServerViewportSnapshot,
+  );
 
   const estimatedColumns = (() => {
     if (viewportWidth === null) return 10;
@@ -79,28 +98,23 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
   // Hover state for library chip highlighting
   const [hoveredSource, setHoveredSource] = useState<string | null>(null);
 
-  const handleResize = useCallback(() => {
-    setViewportWidth(window.innerWidth);
-  }, []);
-
   const handleOpenCart = useCallback(() => {
     setIsCartOpen(true);
   }, []);
 
-  useEffect(() => {
-    setViewportWidth(window.innerWidth);
-  }, []);
-
-  useEventListener("resize", handleResize);
   useEventListener("openCart", handleOpenCart);
 
-  // Load settings from localStorage on mount
+  // Load settings from localStorage on mount. We intentionally read AFTER
+  // hydration (not via a lazy initializer) so SSR-rendered markup matches the
+  // initial client render — the alternative would cause hydration mismatches
+  // on cart badges/size/stroke UI rendered from initial state.
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem("unicon-bundle");
       if (savedCart) {
         const parsed = JSON.parse(savedCart) as IconData[];
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- post-hydration rehydration of persisted UI state; see comment above.
           setCartItems(parsed);
         }
       }
@@ -334,23 +348,29 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
     [debouncedSearch, selectedSource, selectedCategory]
   );
 
-  // Use a ref for fetchIcons to avoid stale closures in effects
-  // without adding fetchIcons to their dependency arrays (which would cause double-fetching)
+  // Use a ref for fetchIcons to avoid stale closures in effects without adding
+  // fetchIcons to their dependency arrays. The ref is read inside other
+  // effects (after this one commits), so a single-effect sync is safe.
   const fetchIconsRef = useRef(fetchIcons);
-  fetchIconsRef.current = fetchIcons;
-
-  // Refetch when filters change - reset to page 0
   useEffect(() => {
-    setPage(0);
-    fetchIconsRef.current(0);
-  }, [debouncedSearch, selectedSource, selectedCategory]);
+    fetchIconsRef.current = fetchIcons;
+  });
 
-  // Fetch when page changes (but not when filters change, since that's handled above)
+  // Reset to page 0 when filters change, using the React-blessed
+  // "compare-prev-value" pattern so we don't setState inside an effect.
+  const filterKey = `${debouncedSearch}|${selectedSource}|${selectedCategory}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    if (page !== 0) setPage(0);
+  }
+
+  // Fetch whenever filters or page change. The render-time setPage(0) above
+  // collapses a filter-change-at-page-N into a single fetch at page 0 (because
+  // React reruns this component before effects fire).
   useEffect(() => {
-    if (page > 0) {
-      fetchIconsRef.current(page);
-    }
-  }, [page]);
+    fetchIconsRef.current(page);
+  }, [debouncedSearch, selectedSource, selectedCategory, page]);
 
   // Abort any in-flight request on unmount so it can't update state afterwards.
   useEffect(() => () => abortRef.current?.abort(), []);
