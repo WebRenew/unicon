@@ -7,6 +7,15 @@ Sentry.init({
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
   integrations: [Sentry.replayIntegration()],
+  ignoreErrors: [
+    // React 19 hoistable crash: external tools (translation extensions,
+    // in-app webviews, ad blockers) detach document.head, so React's
+    // mountHoistable hits `head.insertBefore` on a null head. Not an app bug
+    // and not fixable in app code — suppress the non-actionable noise.
+    /\.head\.insertBefore/,
+    "(reading 'insertBefore')",
+    "null is not an object (evaluating '(e=e.ownerDocument||e).head.insertBefore')",
+  ],
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
