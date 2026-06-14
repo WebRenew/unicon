@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BundleBrowser } from "./bundle-browser";
 import type { Bundle } from "@/types/database";
@@ -57,6 +57,7 @@ describe("BundleBrowser export", () => {
   });
 
   afterEach(() => {
+    cleanup();
     clickAnchor.mockRestore();
     vi.unstubAllGlobals();
   });
@@ -79,5 +80,35 @@ describe("BundleBrowser export", () => {
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(clickAnchor).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:bundle-export");
+  });
+
+  it("requests fast text mode when searching for icons to add", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ icons: [], total: 0, searchType: "text" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <BundleBrowser
+        bundle={bundle}
+        categories={[]}
+        initialIcons={[]}
+        totalIconCount={0}
+        countBySource={{}}
+        onUpdate={vi.fn()}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText("Search icons to add to your bundle..."), {
+      target: { value: "arrow" },
+    });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [url] = fetchMock.mock.calls[0]!;
+    expect(url).toContain("q=arrow");
+    expect(url).toContain("ai=false");
   });
 });

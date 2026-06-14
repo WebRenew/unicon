@@ -62,6 +62,8 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
   const [isLoading, setIsLoading] = useState(false);
   const [searchType, setSearchType] = useState<string>("text");
   const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
+  const initialPageIconsRef = useRef(initialIcons.slice(0, ICONS_PER_PAGE));
+  const initialTotalCountRef = useRef(totalCount);
 
   // Display presets - persisted to localStorage
   const [strokePreset, setStrokePreset] = useState<StrokePreset>("regular");
@@ -309,10 +311,10 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
         selectedCategory === "all";
 
       if (isDefaultFirstPage) {
-        setIcons(initialIcons.slice(0, ICONS_PER_PAGE));
+        setIcons(initialPageIconsRef.current);
         setSearchType("text");
         setExpandedQuery(null);
-        setTotalResults(totalCount);
+        setTotalResults(initialTotalCountRef.current);
         setIsLoading(false);
         return;
       }
@@ -363,7 +365,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
         if (isCurrent()) setIsLoading(false);
       }
     },
-    [debouncedSearch, selectedSource, selectedCategory, initialIcons, totalCount]
+    [debouncedSearch, selectedSource, selectedCategory]
   );
 
   // Use a ref for fetchIcons to avoid stale closures in effects without adding
