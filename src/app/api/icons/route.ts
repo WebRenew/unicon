@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const { limit, offset } = parsedPagination;
-  const useAI = searchParams.get("ai") !== "false"; // AI search enabled by default
+  const useAI = searchParams.get("ai") !== "false"; // API clients get semantic search by default; app UIs can opt out.
 
   try {
     // If names parameter is provided, fetch icons by exact name match
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         }
       );
     }
-    // If there's a search query, use AI-powered semantic search
+    // If there's a search query, use AI-powered semantic search unless ai=false.
     if (queryParam && queryParam.trim().length >= 3 && useAI) {
       const aiResults = await aiSemanticSearch(
         queryParam.trim(),

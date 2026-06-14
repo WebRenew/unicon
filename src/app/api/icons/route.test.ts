@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 import { db } from "@/lib/db";
+import { searchIcons } from "@/lib/queries";
 import { checkPublicRateLimit } from "@/lib/rate-limit";
 import { getCachedSearchResults, setCachedSearchResults } from "@/lib/ai";
+import type { IconData } from "@/types/icon";
 
 const semanticCache = vi.hoisted(() => new Map<string, unknown>());
 
@@ -74,8 +76,27 @@ function makeSemanticRow(index: number) {
   };
 }
 
-describe("GET /api/icons semantic cache pagination", () => {
+function makeIconRow(index: number): IconData {
+  return {
+    id: `icon-${index}`,
+    name: `Icon ${index}`,
+    normalizedName: `icon-${index}`,
+    sourceId: "lucide",
+    category: "general",
+    tags: [],
+    viewBox: "0 0 24 24",
+    content: "<path d='M1 1h22v22H1z'/>",
+    pathData: null,
+    defaultStroke: true,
+    defaultFill: false,
+    strokeWidth: "2",
+    brandColor: null,
+  };
+}
+
+describe("GET /api/icons search performance paths", () => {
   const dbAllMock = vi.mocked(db.all);
+  const searchIconsMock = vi.mocked(searchIcons);
   const checkPublicRateLimitMock = vi.mocked(checkPublicRateLimit);
   const getCachedSearchResultsMock = vi.mocked(getCachedSearchResults);
   const setCachedSearchResultsMock = vi.mocked(setCachedSearchResults);
@@ -92,9 +113,29 @@ describe("GET /api/icons semantic cache pagination", () => {
     });
 
     dbAllMock.mockResolvedValue([makeSemanticRow(1), makeSemanticRow(2), makeSemanticRow(3)]);
+    searchIconsMock.mockResolvedValue([makeIconRow(1), makeIconRow(2), makeIconRow(3)]);
   });
 
-  it("stores hasMore in cache and returns consistent hasMore on cache hits", async () => {
+  it("uses fast text search when semantic search is disabled", async () => {
+    const request = new Request("https://example.com/api/icons?q=arrow&limit=2&offset=0&ai=false");
+
+    const response = await GET(request as never);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      hasMore: true,
+      searchType: "text",
+    });
+    expect(searchIconsMock).toHaveBeenCalledWith({
+      query: "arrow",
+      limit: 3,
+      offset: 0,
+    });
+    expect(dbAllMock).not.toHaveBeenCalled();
+    expect(getCachedSearchResultsMock).not.toHaveBeenCalled();
+  });
+
+  it("stores hasMore in cache and returns consistent hasMore on semantic cache hits", async () => {
     const request = new Request("https://example.com/api/icons?q=arrow&limit=2&offset=0");
 
     const firstResponse = await GET(request as never);
@@ -122,7 +163,7 @@ describe("GET /api/icons semantic cache pagination", () => {
     expect(dbAllMock).not.toHaveBeenCalled();
   });
 
-  it("defaults legacy cache entries without hasMore to hasMore=false", async () => {
+  it("defaults legacy semantic cache entries without hasMore to hasMore=false", async () => {
     semanticCache.set("search:arrow:all:2:0", {
       icons: [makeSemanticRow(1)],
       searchType: "semantic",

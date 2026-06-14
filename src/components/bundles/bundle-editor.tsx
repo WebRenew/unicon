@@ -46,7 +46,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300);
+    }, 150);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -76,7 +76,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
     const doSearch = async () => {
       setIsSearching(true);
       try {
-        const params = new URLSearchParams({ q: debouncedQuery, limit: "50" });
+        const params = new URLSearchParams({ q: debouncedQuery, limit: "50", ai: "false" });
         const res = await fetch(`/api/icons?${params}`, {
           signal: controller.signal,
         });

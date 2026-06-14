@@ -59,47 +59,85 @@ describe("useIconBrowser request sequencing", () => {
     iconSearchCache.clear();
   });
 
-  it("ignores a stale unfiltered response that resolves after a newer filtered one", async () => {
-    const { result } = renderHook(() => useIconBrowser({ initialIcons: [], totalCount: 0 }));
+  it("uses the server-rendered first page without a duplicate fetch", async () => {
+    const initialIcons = [makeIcon("lucide-a", "lucide"), makeIcon("tabler-b", "tabler")];
 
-    // Mount triggers the initial, unfiltered fetch.
-    await waitFor(() => expect(pending).toHaveLength(1));
-    const staleRequest = pending[0]!;
-    expect(staleRequest.url).not.toContain("source=");
-
-    // User picks a library while the first request is still in flight.
-    await act(async () => {
-      result.current.setSelectedSource("remix");
-    });
-    await waitFor(() => expect(pending).toHaveLength(2));
-    const remixRequest = pending[1]!;
-    expect(remixRequest.url).toContain("source=remix");
-
-    // The newer (filtered) request resolves first.
-    await act(async () => {
-      remixRequest.resolve([makeIcon("remix-a", "remix"), makeIcon("remix-b", "remix")]);
-    });
-    await waitFor(() =>
-      expect(result.current.icons.map((icon) => icon.id)).toEqual(["remix-a", "remix-b"]),
+    const { result } = renderHook(() =>
+      useIconBrowser({ initialIcons, totalCount: initialIcons.length }),
     );
 
-    // The older (unfiltered) request resolves afterwards — it must not clobber state.
+    expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a", "tabler-b"]);
+
     await act(async () => {
-      staleRequest.resolve([makeIcon("lucide-x", "lucide"), makeIcon("tabler-y", "tabler")]);
       await tick();
     });
 
-    expect(result.current.icons.map((icon) => icon.id)).toEqual(["remix-a", "remix-b"]);
-    expect(result.current.icons.every((icon) => icon.sourceId === "remix")).toBe(true);
+    expect(pending).toHaveLength(0);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("requests fast text mode for typed searches", async () => {
+    const { result } = renderHook(() => useIconBrowser({ initialIcons: [], totalCount: 0 }));
+
+    await act(async () => {
+      result.current.setSearch("arrow");
+    });
+
+    await waitFor(() => expect(pending).toHaveLength(1));
+    expect(pending[0]!.url).toContain("q=arrow");
+    expect(pending[0]!.url).toContain("ai=false");
+
+    await act(async () => {
+      pending[0]!.resolve([makeIcon("arrow", "lucide")]);
+    });
+  });
+
+  it("ignores a stale filtered response that resolves after a newer filtered one", async () => {
+    const { result } = renderHook(() => useIconBrowser({ initialIcons: [], totalCount: 0 }));
+
+    await act(async () => {
+      result.current.setSelectedSource("remix");
+    });
+    await waitFor(() => expect(pending).toHaveLength(1));
+    const staleRequest = pending[0]!;
+    expect(staleRequest.url).toContain("source=remix");
+
+    await act(async () => {
+      result.current.setSelectedSource("lucide");
+    });
+    await waitFor(() => expect(pending).toHaveLength(2));
+    const lucideRequest = pending[1]!;
+    expect(lucideRequest.url).toContain("source=lucide");
+
+    // The newer (filtered) request resolves first.
+    await act(async () => {
+      lucideRequest.resolve([makeIcon("lucide-a", "lucide"), makeIcon("lucide-b", "lucide")]);
+    });
+    await waitFor(() =>
+      expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a", "lucide-b"]),
+    );
+
+    // The older filtered request resolves afterwards — it must not clobber state.
+    await act(async () => {
+      staleRequest.resolve([makeIcon("remix-x", "remix"), makeIcon("remix-y", "remix")]);
+      await tick();
+    });
+
+    expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a", "lucide-b"]);
+    expect(result.current.icons.every((icon) => icon.sourceId === "lucide")).toBe(true);
     expect(result.current.isLoading).toBe(false);
   });
 
   it("swallows AbortError from a superseded request and applies the current one", async () => {
     const { result } = renderHook(() => useIconBrowser({ initialIcons: [], totalCount: 0 }));
-    await waitFor(() => expect(pending).toHaveLength(1));
 
     await act(async () => {
       result.current.setSelectedSource("remix");
+    });
+    await waitFor(() => expect(pending).toHaveLength(1));
+
+    await act(async () => {
+      result.current.setSelectedSource("lucide");
     });
     await waitFor(() => expect(pending).toHaveLength(2));
 
@@ -111,9 +149,9 @@ describe("useIconBrowser request sequencing", () => {
 
     // The current request still resolves and updates state normally.
     await act(async () => {
-      pending[1]!.resolve([makeIcon("remix-a", "remix")]);
+      pending[1]!.resolve([makeIcon("lucide-a", "lucide")]);
     });
-    await waitFor(() => expect(result.current.icons.map((icon) => icon.id)).toEqual(["remix-a"]));
+    await waitFor(() => expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a"]));
     expect(result.current.isLoading).toBe(false);
   });
 });
