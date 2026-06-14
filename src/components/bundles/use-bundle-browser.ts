@@ -67,7 +67,7 @@ export function useBundleBrowser({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 300);
+    }, 150);
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -97,7 +97,10 @@ export function useBundleBrowser({
           limit: String(ICONS_PER_PAGE),
           offset: String(page * ICONS_PER_PAGE),
         });
-        if (debouncedSearch.trim()) params.set("q", debouncedSearch);
+        if (debouncedSearch.trim()) {
+          params.set("q", debouncedSearch);
+          params.set("ai", "false");
+        }
         if (selectedSource !== "all") params.set("source", selectedSource);
         if (selectedCategory !== "all") params.set("category", selectedCategory);
 

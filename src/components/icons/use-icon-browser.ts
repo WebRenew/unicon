@@ -25,7 +25,10 @@ function buildIconSearchParams(opts: {
     limit: String(opts.limit),
     offset: String(opts.offset),
   });
-  if (opts.query) params.set("q", opts.query);
+  if (opts.query) {
+    params.set("q", opts.query);
+    params.set("ai", "false");
+  }
   if (opts.source && opts.source !== "all") params.set("source", opts.source);
   if (opts.category && opts.category !== "all") params.set("category", opts.category);
   return params;
@@ -264,7 +267,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 300);
+    }, 150);
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -298,6 +301,21 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
       // A newer request supersedes any in-flight one.
       abortRef.current?.abort();
       abortRef.current = null;
+
+      const isDefaultFirstPage =
+        pageNum === 0 &&
+        debouncedSearch.length === 0 &&
+        selectedSource === "all" &&
+        selectedCategory === "all";
+
+      if (isDefaultFirstPage) {
+        setIcons(initialIcons.slice(0, ICONS_PER_PAGE));
+        setSearchType("text");
+        setExpandedQuery(null);
+        setTotalResults(totalCount);
+        setIsLoading(false);
+        return;
+      }
 
       const cacheKey = {
         q: debouncedSearch || '',
@@ -345,7 +363,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
         if (isCurrent()) setIsLoading(false);
       }
     },
-    [debouncedSearch, selectedSource, selectedCategory]
+    [debouncedSearch, selectedSource, selectedCategory, initialIcons, totalCount]
   );
 
   // Use a ref for fetchIcons to avoid stale closures in effects without adding
