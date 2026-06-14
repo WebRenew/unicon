@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@/components/icons/ui/arrow-left";
 import { PackageIcon } from "@/components/icons/ui/package";
@@ -15,6 +16,9 @@ import { ChevronsUpDownIcon } from "@/components/icons/ui/chevrons-up-down";
 import { DownloadIcon } from "@/components/icons/ui/download";
 import { ChevronLeftIcon } from "@/components/icons/ui/chevron-left";
 import { ChevronRightIcon } from "@/components/icons/ui/chevron-right";
+import { CopyIcon } from "@/components/icons/ui/copy";
+import { FileCodeIcon } from "@/components/icons/ui/file-code";
+import { FileJsonIcon } from "@/components/icons/ui/file-json";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
@@ -25,6 +29,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { StyledIcon, SIZE_PRESETS, STROKE_PRESETS, type SizePreset, type StrokePreset } from "@/components/icons/styled-icon";
+import { generateBundleExport, type BundleExportFormat } from "@/lib/bundle-export";
+import { toast } from "sonner";
 import type { Bundle } from "@/types/database";
 import type { IconData, IconLibrary } from "@/types/icon";
 import { useBundleBrowser } from "./use-bundle-browser";
@@ -80,6 +86,8 @@ function toTitleCase(value: string): string {
 }
 
 export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount, countBySource, onUpdate }: BundleBrowserProps) {
+  const [exportFormat, setExportFormat] = useState<BundleExportFormat>("react");
+  const [copiedExport, setCopiedExport] = useState(false);
   const {
     bundleIcons,
     normalizeStrokes,
@@ -128,6 +136,46 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
     handleSave,
     renderBundleIcon,
   } = useBundleBrowser({ bundle, initialIcons, totalIconCount, onUpdate });
+
+  const createExport = () => generateBundleExport(bundle.name, {
+    icons: bundleIcons,
+    format: exportFormat,
+    normalizeStrokes,
+    targetStrokeWidth,
+    normalizeViewbox,
+  });
+
+  const handleCopyExport = async () => {
+    const exportResult = createExport();
+    if (exportResult.exportedIconCount === 0) {
+      toast.error("No exportable icons in this bundle");
+      return;
+    }
+
+    await navigator.clipboard.writeText(exportResult.content);
+    setCopiedExport(true);
+    setTimeout(() => setCopiedExport(false), 2000);
+    toast.success("Bundle copied");
+  };
+
+  const handleDownloadExport = () => {
+    const exportResult = createExport();
+    if (exportResult.exportedIconCount === 0) {
+      toast.error("No exportable icons in this bundle");
+      return;
+    }
+
+    const blob = new Blob([exportResult.content], { type: exportResult.mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = exportResult.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${exportResult.fileName}`);
+  };
 
   return (
     <div className="min-h-screen px-4 lg:px-20 xl:px-40">
@@ -226,13 +274,73 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
             </label>
           )}
 
-          {/* Export button */}
-          <button
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors ml-auto"
-          >
-            <DownloadIcon className="w-4 h-4" />
-            Export
-          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                disabled={bundleIcons.length === 0}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+              >
+                <DownloadIcon className="w-4 h-4" />
+                Export
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72 p-3">
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setExportFormat("react")}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-mono transition-colors ${
+                      exportFormat === "react"
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <FileCodeIcon className="w-3.5 h-3.5" />
+                    React
+                  </button>
+                  <button
+                    onClick={() => setExportFormat("svg")}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-mono transition-colors ${
+                      exportFormat === "svg"
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <FileCodeIcon className="w-3.5 h-3.5" />
+                    SVG
+                  </button>
+                  <button
+                    onClick={() => setExportFormat("json")}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-mono transition-colors ${
+                      exportFormat === "json"
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <FileJsonIcon className="w-3.5 h-3.5" />
+                    JSON
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopyExport}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 transition-colors"
+                  >
+                    <CopyIcon className="w-4 h-4" />
+                    {copiedExport ? "Copied" : "Copy"}
+                  </button>
+                  <button
+                    onClick={handleDownloadExport}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 transition-colors"
+                  >
+                    <DownloadIcon className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
