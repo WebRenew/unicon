@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const { limit, offset } = parsedPagination;
-  const useAI = searchParams.get("ai") !== "false"; // API clients get semantic search by default; app UIs can opt out.
+  const useAI = searchParams.get("ai") !== "false"; // GET /api/icons is semantic by default; pass ai=false for low-latency text search.
 
   try {
     // If names parameter is provided, fetch icons by exact name match

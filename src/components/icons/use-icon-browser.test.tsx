@@ -62,8 +62,11 @@ describe("useIconBrowser request sequencing", () => {
   it("uses the server-rendered first page without a duplicate fetch", async () => {
     const initialIcons = [makeIcon("lucide-a", "lucide"), makeIcon("tabler-b", "tabler")];
 
-    const { result } = renderHook(() =>
-      useIconBrowser({ initialIcons, totalCount: initialIcons.length }),
+    const { result, rerender } = renderHook(
+      ({ icons, totalCount }) => useIconBrowser({ initialIcons: icons, totalCount }),
+      {
+        initialProps: { icons: initialIcons, totalCount: initialIcons.length },
+      },
     );
 
     expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a", "tabler-b"]);
@@ -72,6 +75,13 @@ describe("useIconBrowser request sequencing", () => {
       await tick();
     });
 
+    rerender({ icons: [...initialIcons], totalCount: initialIcons.length });
+
+    await act(async () => {
+      await tick();
+    });
+
+    expect(result.current.icons.map((icon) => icon.id)).toEqual(["lucide-a", "tabler-b"]);
     expect(pending).toHaveLength(0);
     expect(global.fetch).not.toHaveBeenCalled();
   });
