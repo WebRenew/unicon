@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "pnpm schema:check:production && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -40,6 +40,7 @@
     "embeddings:stats": "tsx scripts/generate-embeddings.ts --stats",
     "cache:warm": "tsx scripts/warm-cache.ts",
     "cache:warm:prod": "tsx scripts/warm-cache.ts --url=https://unicon.sh",
+    "schema:check:production": "tsx scripts/check-production-schema.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
@@ -131,7 +132,7 @@
       "qs": "6.15.2",
       "ip-address": "10.1.1",
       "postcss": "8.5.15",
-      "brace-expansion": "5.0.6",
+      "brace-expansion": "5.0.7",
       "yaml": "2.9.0",
       "ajv@^6": "6.14.0",
       "@opentelemetry/core@<2.8.0": ">=2.8.0"
