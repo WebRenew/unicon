@@ -1,6 +1,8 @@
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import {
+  collectStaticSupabasePathsFromSource,
+  collectSupabaseSchemaPaths,
+} from "../../../scripts/lib/supabase-source-contract";
 import {
   checkProductionSupabaseSchema,
   REQUIRED_SUPABASE_PATHS,
@@ -22,43 +24,36 @@ const productionEnvironment = {
   SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
 };
 
+describe("Supabase source contract scanner", () => {
+  it("collects multiline and static template-literal arguments", () => {
+    const paths = collectStaticSupabasePathsFromSource(`
+      supabase.from(
+        "multiline_table"
+      );
+      supabase.rpc(\`static_rpc\`);
+    `);
+
+    expect([...paths].sort()).toEqual(["/multiline_table", "/rpc/static_rpc"]);
+  });
+
+  it.each([
+    ["a variable", 'const table = "profiles"; supabase.from(table);', ".from()"],
+    ["an interpolated template", "supabase.rpc(`lookup_${kind}`);", ".rpc()"],
+  ])("fails closed when a Supabase call uses %s", (_description, source, method) => {
+    expect(() => collectStaticSupabasePathsFromSource(source, "dynamic-call.ts")).toThrow(
+      `Supabase ${method} in dynamic-call.ts:1 must use a static string literal`
+    );
+  });
+});
+
 describe("checkProductionSupabaseSchema", () => {
   it("covers every Supabase table and RPC referenced by application code", () => {
-    const storageBuckets = new Set(["team-logos"]);
-    const sourceFiles: string[] = [];
-    const collectSourceFiles = (directory: string) => {
-      for (const entry of readdirSync(directory, { withFileTypes: true })) {
-        const path = join(directory, entry.name);
-        if (entry.isDirectory()) {
-          collectSourceFiles(path);
-        } else if (/\.(ts|tsx)$/.test(entry.name) && !/\.test\.(ts|tsx)$/.test(entry.name)) {
-          sourceFiles.push(path);
-        }
-      }
-    };
-    collectSourceFiles(join(process.cwd(), "src"));
-
-    const runtimePaths = new Set<string>();
-    for (const file of sourceFiles) {
-      const source = readFileSync(file, "utf8");
-      for (const match of source.matchAll(/\.from\(["']([^"']+)["']\)/g)) {
-        const table = match[1];
-        if (table && !storageBuckets.has(table)) {
-          runtimePaths.add(`/${table}`);
-        }
-      }
-      for (const match of source.matchAll(/\.rpc\(["']([^"']+)["']/g)) {
-        const rpc = match[1];
-        if (rpc) {
-          runtimePaths.add(`/rpc/${rpc}`);
-        }
-      }
-    }
+    const runtimePaths = collectSupabaseSchemaPaths(process.cwd());
 
     const requiredPaths = new Set<string>(REQUIRED_SUPABASE_PATHS);
     const missingContractPaths = [...runtimePaths].filter((path) => !requiredPaths.has(path)).sort();
     expect(missingContractPaths).toEqual([]);
-  });
+  }, 15_000);
 
   it("skips live schema access outside production deployments", async () => {
     const fetchImpl = vi.fn();
