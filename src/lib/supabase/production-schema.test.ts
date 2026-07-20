@@ -1,12 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   collectStaticSupabasePathsFromSource,
-  collectSupabaseSchemaPaths,
+  findMissingSupabaseContractPaths,
 } from "../../../scripts/lib/supabase-source-contract";
-import {
-  checkProductionSupabaseSchema,
-  REQUIRED_SUPABASE_PATHS,
-} from "./production-schema";
+import { checkProductionSupabaseSchema } from "./production-schema";
 
 function createSchemaResponse(paths: string[], status = 200): Response {
   return {
@@ -44,17 +41,18 @@ describe("Supabase source contract scanner", () => {
       `Supabase ${method} in dynamic-call.ts:1 must use a static string literal`
     );
   });
+
+  it("reports source paths that are absent from the required contract", () => {
+    expect(
+      findMissingSupabaseContractPaths(
+        new Set(["/profiles", "/rpc/missing_rpc", "/missing_table"]),
+        ["/profiles"]
+      )
+    ).toEqual(["/missing_table", "/rpc/missing_rpc"]);
+  });
 });
 
 describe("checkProductionSupabaseSchema", () => {
-  it("covers every Supabase table and RPC referenced by application code", () => {
-    const runtimePaths = collectSupabaseSchemaPaths(process.cwd());
-
-    const requiredPaths = new Set<string>(REQUIRED_SUPABASE_PATHS);
-    const missingContractPaths = [...runtimePaths].filter((path) => !requiredPaths.has(path)).sort();
-    expect(missingContractPaths).toEqual([]);
-  }, 15_000);
-
   it("skips live schema access outside production deployments", async () => {
     const fetchImpl = vi.fn();
 

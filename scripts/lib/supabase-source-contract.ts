@@ -78,6 +78,14 @@ export function collectStaticSupabasePathsFromSource(
   return collectPathsFromSourceFile(sourceFile, () => true);
 }
 
+export function findMissingSupabaseContractPaths(
+  runtimePaths: Iterable<string>,
+  requiredPaths: readonly string[]
+): string[] {
+  const requiredPathSet = new Set(requiredPaths);
+  return [...runtimePaths].filter((path) => !requiredPathSet.has(path)).sort();
+}
+
 function isApplicationSourceFile(fileName: string, sourceRoot: string): boolean {
   const relativePath = relative(sourceRoot, fileName);
   return (
