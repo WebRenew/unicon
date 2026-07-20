@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "pnpm schema:check:production && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -40,6 +40,7 @@
     "embeddings:stats": "tsx scripts/generate-embeddings.ts --stats",
     "cache:warm": "tsx scripts/warm-cache.ts",
     "cache:warm:prod": "tsx scripts/warm-cache.ts --url=https://unicon.sh",
+    "schema:check:production": "tsx scripts/check-production-schema.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
