@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 import { db } from "@/lib/db";
-import { searchIcons } from "@/lib/queries";
+import { getSearchCount, searchIcons } from "@/lib/queries";
 import { checkPublicRateLimit } from "@/lib/rate-limit";
 import { getCachedSearchResults, setCachedSearchResults } from "@/lib/ai";
 import type { IconData } from "@/types/icon";
@@ -10,6 +10,7 @@ const semanticCache = vi.hoisted(() => new Map<string, unknown>());
 
 vi.mock("@/lib/queries", () => ({
   searchIcons: vi.fn(),
+  getSearchCount: vi.fn(),
   getIconsByNames: vi.fn(),
 }));
 
@@ -97,6 +98,7 @@ function makeIconRow(index: number): IconData {
 describe("GET /api/icons search performance paths", () => {
   const dbAllMock = vi.mocked(db.all);
   const searchIconsMock = vi.mocked(searchIcons);
+  const getSearchCountMock = vi.mocked(getSearchCount);
   const checkPublicRateLimitMock = vi.mocked(checkPublicRateLimit);
   const getCachedSearchResultsMock = vi.mocked(getCachedSearchResults);
   const setCachedSearchResultsMock = vi.mocked(setCachedSearchResults);
@@ -114,6 +116,7 @@ describe("GET /api/icons search performance paths", () => {
 
     dbAllMock.mockResolvedValue([makeSemanticRow(1), makeSemanticRow(2), makeSemanticRow(3)]);
     searchIconsMock.mockResolvedValue([makeIconRow(1), makeIconRow(2), makeIconRow(3)]);
+    getSearchCountMock.mockResolvedValue(4_985);
   });
 
   it("uses fast text search when semantic search is disabled", async () => {
@@ -125,11 +128,15 @@ describe("GET /api/icons search performance paths", () => {
     await expect(response.json()).resolves.toMatchObject({
       hasMore: true,
       searchType: "text",
+      total: 4_985,
     });
     expect(searchIconsMock).toHaveBeenCalledWith({
       query: "arrow",
       limit: 3,
       offset: 0,
+    });
+    expect(getSearchCountMock).toHaveBeenCalledWith({
+      query: "arrow",
     });
     expect(dbAllMock).not.toHaveBeenCalled();
     expect(getCachedSearchResultsMock).not.toHaveBeenCalled();

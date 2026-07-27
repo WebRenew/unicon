@@ -93,4 +93,5 @@ export const iconSearchCache = new SearchCache<{
   searchType?: string;
   expandedQuery?: string | null;
   hasMore: boolean;
+  total?: number;
 }>(5 * 60 * 1000, 100); // 5 minute TTL, 100 max entries
