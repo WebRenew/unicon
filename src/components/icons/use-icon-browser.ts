@@ -290,13 +290,24 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
         searchType?: string;
         expandedQuery?: string | null;
         hasMore?: boolean;
+        total?: number;
       }) => {
         if (!isCurrent()) return;
         setIcons(result.icons);
         setSearchType(result.searchType ?? "text");
         setExpandedQuery(result.expandedQuery ?? null);
-        if (!result.hasMore && result.icons.length < ICONS_PER_PAGE) {
-          setTotalResults(pageNum * ICONS_PER_PAGE + result.icons.length);
+        if (
+          typeof result.total === "number" &&
+          Number.isSafeInteger(result.total) &&
+          result.total >= 0
+        ) {
+          setTotalResults(result.total);
+        } else {
+          // Older cached responses may not include `total`. Keep pagination
+          // usable by tracking the number of results proven by this page.
+          setTotalResults(
+            pageNum * ICONS_PER_PAGE + result.icons.length + (result.hasMore ? 1 : 0),
+          );
         }
       };
 
@@ -355,6 +366,7 @@ export function useIconBrowser({ initialIcons, totalCount }: UseIconBrowserParam
           searchType: data.searchType,
           expandedQuery: data.expandedQuery,
           hasMore: data.hasMore,
+          total: data.total,
         });
 
         applyResults(data);

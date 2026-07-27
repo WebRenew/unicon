@@ -24,7 +24,10 @@ function makeIcon(id: string, sourceId: string): IconData {
 
 interface PendingRequest {
   url: string;
-  resolve: (icons: IconData[]) => void;
+  resolve: (
+    icons: IconData[],
+    metadata?: { hasMore?: boolean; total?: number },
+  ) => void;
   reject: (error: unknown) => void;
 }
 
@@ -36,17 +39,26 @@ describe("useIconBrowser request sequencing", () => {
   beforeEach(() => {
     iconSearchCache.clear();
     pending = [];
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input.toString();
       return new Promise<Response>((resolveResponse, rejectResponse) => {
         pending.push({
           url,
-          resolve: (icons) =>
+          resolve: (icons, metadata = {}) =>
             resolveResponse(
-              new Response(JSON.stringify({ icons, searchType: "text", hasMore: false }), {
-                status: 200,
-                headers: { "Content-Type": "application/json" },
-              }),
+              new Response(
+                JSON.stringify({
+                  icons,
+                  searchType: "text",
+                  hasMore: metadata.hasMore ?? false,
+                  ...(metadata.total === undefined ? {} : { total: metadata.total }),
+                }),
+                {
+                  status: 200,
+                  headers: { "Content-Type": "application/json" },
+                },
+              ),
             ),
           reject: rejectResponse,
         });
@@ -100,6 +112,30 @@ describe("useIconBrowser request sequencing", () => {
     await act(async () => {
       pending[0]!.resolve([makeIcon("arrow", "lucide")]);
     });
+  });
+
+  it("uses the filtered result total to keep pagination enabled after a zero-result state", async () => {
+    const { result } = renderHook(() => useIconBrowser({ initialIcons: [], totalCount: 0 }));
+
+    await act(async () => {
+      result.current.setSelectedSource("tabler");
+    });
+    await waitFor(() => expect(pending).toHaveLength(1));
+
+    const firstPage = Array.from({ length: 160 }, (_, index) =>
+      makeIcon(`tabler-${index}`, "tabler"),
+    );
+    await act(async () => {
+      pending[0]!.resolve(firstPage, { hasMore: true, total: 4_985 });
+    });
+
+    await waitFor(() => expect(result.current.totalResults).toBe(4_985));
+    expect(result.current.totalPages).toBe(32);
+
+    act(() => {
+      result.current.goToPage(1);
+    });
+    expect(result.current.page).toBe(1);
   });
 
   it("ignores a stale filtered response that resolves after a newer filtered one", async () => {

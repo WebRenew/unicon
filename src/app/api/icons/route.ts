@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchIcons, getIconsByNames } from "@/lib/queries";
+import { getIconsByNames, getSearchCount, searchIcons } from "@/lib/queries";
 import { db } from "@/lib/db";
 import { getEmbedding, embeddingToVectorString, expandQueryWithAI, generateSearchCacheKey, getCachedSearchResults, setCachedSearchResults } from "@/lib/ai";
 import { sql } from "drizzle-orm";
@@ -132,25 +132,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Otherwise use standard text search or browse
-    const params: {
+    const filters: {
       query?: string;
       sourceId?: string;
       category?: string;
-      limit: number;
-      offset: number;
-    } = {
-      limit,
-      offset,
-    };
+    } = {};
 
-    if (queryParam) params.query = queryParam;
-    if (sourceParam && sourceParam !== "all") params.sourceId = sourceParam;
-    if (categoryParam && categoryParam !== "all") params.category = categoryParam;
+    if (queryParam) filters.query = queryParam;
+    if (sourceParam && sourceParam !== "all") filters.sourceId = sourceParam;
+    if (categoryParam && categoryParam !== "all") filters.category = categoryParam;
 
-    const iconRows = await searchIcons({
-      ...params,
-      limit: limit + 1,
-    });
+    const [iconRows, total] = await Promise.all([
+      searchIcons({
+        ...filters,
+        limit: limit + 1,
+        offset,
+      }),
+      getSearchCount(filters),
+    ]);
     const { items: icons, hasMore } = sliceForPagination(iconRows, limit);
 
     // Log analytics for text search (fire-and-forget, waitUntil ensures completion after response)
@@ -166,7 +165,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { icons, hasMore, searchType: "text" },
+      { icons, hasMore, total, searchType: "text" },
       {
         headers: {
           ...CORS_HEADERS,
