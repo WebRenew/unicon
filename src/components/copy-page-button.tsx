@@ -41,15 +41,18 @@ export function CopyPageButton({ markdown, className }: CopyPageButtonProps) {
       )}
       aria-label={copied ? "Copied page content" : "Copy page as Markdown"}
     >
+      {/* Text nodes are wrapped in spans so DOM-mutating extensions (e.g. Google
+          Translate wrapping text in <font> tags) can't detach React's node
+          references and crash reconciliation with removeChild/insertBefore. */}
       {copied ? (
         <>
           <CheckIcon className="w-3.5 h-3.5" />
-          Copied!
+          <span>Copied!</span>
         </>
       ) : (
         <>
           <CopyIcon className="w-3.5 h-3.5" />
-          Copy Page
+          <span>Copy Page</span>
         </>
       )}
     </button>

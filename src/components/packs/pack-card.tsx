@@ -103,10 +103,12 @@ export function PackCard({ pack, onAddPack }: PackCardProps) {
             <TerminalIcon className="w-3.5 h-3.5 text-black/40 dark:text-white/40 group-hover/cmd:text-black/60 dark:group-hover/cmd:text-white/60 shrink-0" />
           )}
           <span className="text-[11px] font-mono text-black/50 dark:text-white/50 truncate">
-            {copiedCommand ? "Copied!" : (
+            {copiedCommand ? (
+              <span>Copied!</span>
+            ) : (
               <>
                 <span className="dark:text-[var(--accent-mint)]">npx</span>
-                {command.slice(3)}
+                <span>{command.slice(3)}</span>
               </>
             )}
           </span>

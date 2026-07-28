@@ -222,7 +222,7 @@ export function BundleBrowser({ bundle, categories, initialIcons, totalIconCount
               ) : (
                 <CheckIcon className="w-4 h-4" />
               )}
-              Save changes
+              <span>Save changes</span>
             </button>
           )}
         </div>
