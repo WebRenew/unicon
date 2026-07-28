@@ -586,7 +586,7 @@ export function IconCart({ items, onRemove, onClear, onAddPack, isOpen, onClose 
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 text-black dark:text-white rounded-lg text-sm font-mono transition-colors"
             >
               {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-              {copied ? "Copied!" : "Copy"}
+              <span>{copied ? "Copied!" : "Copy"}</span>
             </button>
             <button
               onClick={handleDownload}

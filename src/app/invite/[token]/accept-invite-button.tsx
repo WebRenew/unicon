@@ -62,7 +62,7 @@ export function AcceptInviteButton({ token, teamName }: AcceptInviteButtonProps)
         {status === "loading" ? (
           <Loader2Icon className="w-4 h-4 animate-spin" />
         ) : null}
-        Accept Invite
+        <span>Accept Invite</span>
       </button>
       {error && (
         <p className="text-xs text-red-600 dark:text-red-400">{error}</p>

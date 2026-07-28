@@ -314,7 +314,7 @@ export function BundleEditor({ bundle, onUpdate }: BundleEditorProps) {
             ) : (
               <CheckIcon className="w-4 h-4" />
             )}
-            Save changes
+            <span>Save changes</span>
           </button>
         )}
       </div>

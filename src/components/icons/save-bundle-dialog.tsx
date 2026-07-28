@@ -152,12 +152,12 @@ export function SaveBundleDialog({
             {isSaving ? (
               <>
                 <Loader2Icon className="w-4 h-4 animate-spin" />
-                Saving...
+                <span>Saving...</span>
               </>
             ) : (
               <>
                 <PackageIcon className="w-4 h-4" />
-                Save Bundle
+                <span>Save Bundle</span>
               </>
             )}
           </button>

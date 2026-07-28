@@ -298,12 +298,12 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
                 {isSelected ? (
                   <>
                     <MinusIcon className="mr-2 h-4 w-4" />
-                    Remove from bundle
+                    <span>Remove from bundle</span>
                   </>
                 ) : (
                   <>
                     <PlusIcon className="mr-2 h-4 w-4" />
-                    Add to bundle
+                    <span>Add to bundle</span>
                   </>
                 )}
               </ContextMenuItem>
@@ -316,7 +316,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
             ) : (
               <CopyIcon className="mr-2 h-4 w-4" />
             )}
-            Copy SVG
+            <span>Copy SVG</span>
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyComponent}>
             {copied === "component" ? (
@@ -324,7 +324,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
             ) : (
               <CopyIcon className="mr-2 h-4 w-4" />
             )}
-            Copy React component
+            <span>Copy React component</span>
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyUsage}>
             {copied === "usage" ? (
@@ -332,7 +332,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
             ) : (
               <CopyIcon className="mr-2 h-4 w-4" />
             )}
-            Copy usage example
+            <span>Copy usage example</span>
           </ContextMenuItem>
           {icon.brandColor && (
             <ContextMenuItem onClick={() => icon.brandColor && handleCopy(icon.brandColor, "color")}>
@@ -344,7 +344,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
                   style={{ backgroundColor: icon.brandColor }}
                 />
               )}
-              Copy brand color
+              <span>Copy brand color</span>
             </ContextMenuItem>
           )}
           <ContextMenuSeparator />
@@ -354,7 +354,7 @@ export function ${componentName}({ className, ...props }: SVGProps<SVGSVGElement
             ) : (
               <SparklesIcon className="mr-2 h-4 w-4" />
             )}
-            Copy prompt
+            <span>Copy prompt</span>
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleOpenInV0}>

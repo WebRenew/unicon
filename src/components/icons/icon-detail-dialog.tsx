@@ -305,7 +305,7 @@ defineProps<{
                 ) : (
                   <CopyIcon className="mr-2 h-4 w-4" />
                 )}
-                SVG
+                <span>SVG</span>
               </Button>
 
               <Button
@@ -318,7 +318,7 @@ defineProps<{
                 ) : (
                   <CopyIcon className="mr-2 h-4 w-4" />
                 )}
-                React
+                <span>React</span>
               </Button>
 
               <Button
@@ -331,7 +331,7 @@ defineProps<{
                 ) : (
                   <CopyIcon className="mr-2 h-4 w-4" />
                 )}
-                Vue
+                <span>Vue</span>
               </Button>
 
               <Button
@@ -344,7 +344,7 @@ defineProps<{
                 ) : (
                   <CopyIcon className="mr-2 h-4 w-4" />
                 )}
-                Svelte
+                <span>Svelte</span>
               </Button>
             </div>
 
@@ -358,7 +358,7 @@ defineProps<{
               ) : (
                 <CopyIcon className="mr-2 h-4 w-4" />
               )}
-              Usage Example
+              <span>Usage Example</span>
             </Button>
           </div>
 
