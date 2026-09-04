@@ -13,6 +13,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 vi.mock("@/lib/stripe", () => ({
+  STRIPE_API_VERSION: "2026-08-26.dahlia",
   stripe: {
     webhooks: {
       constructEvent: vi.fn(),
@@ -69,17 +70,68 @@ function createWebhookEventsTableMock({
   };
 }
 
+function createSubscriptionsTableMock(updateResult: { error: { message: string } | null } = { error: null }) {
+  const updateBuilder = {
+    eq: vi.fn().mockReturnThis(),
+    or: vi.fn().mockResolvedValue(updateResult),
+  };
+  const update = vi.fn().mockReturnValue(updateBuilder);
+  return { update, updateBuilder };
+}
+
+function mockAdminClient(
+  createAdminClientMock: ReturnType<typeof vi.mocked<typeof createAdminClient>>,
+  eventsTable: ReturnType<typeof createWebhookEventsTableMock>,
+  subscriptionsTable?: ReturnType<typeof createSubscriptionsTableMock>
+) {
+  createAdminClientMock.mockReturnValue({
+    from: vi.fn((table: string) => {
+      if (table === "stripe_webhook_events") {
+        return {
+          insert: eventsTable.insert,
+          select: eventsTable.select,
+          update: eventsTable.update,
+          delete: eventsTable.del,
+        };
+      }
+
+      if (table === "subscriptions" && subscriptionsTable) {
+        return { update: subscriptionsTable.update };
+      }
+
+      throw new Error(`Unexpected table: ${table}`);
+    }),
+  } as unknown as ReturnType<typeof createAdminClient>);
+}
+
+// Dahlia-shaped subscription: the billing period lives on the item only.
+const PERIOD_END_SECONDS = 1790350444;
+const PERIOD_END_ISO = new Date(PERIOD_END_SECONDS * 1000).toISOString();
+
+function dahliaSubscription(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "sub_1",
+    status: "active",
+    items: { data: [{ id: "si_1", current_period_end: PERIOD_END_SECONDS }] },
+    ...overrides,
+  };
+}
+
 describe("POST /api/webhooks/stripe", () => {
   const headersMock = vi.mocked(headers);
   const createAdminClientMock = vi.mocked(createAdminClient);
   const constructEventMock = vi.mocked(stripe.webhooks.constructEvent);
+  const retrieveSubscriptionMock = vi.mocked(stripe.subscriptions.retrieve);
   const originalWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    warnSpy.mockRestore();
     if (originalWebhookSecret === undefined) {
       delete process.env.STRIPE_WEBHOOK_SECRET;
     } else {
@@ -207,5 +259,169 @@ describe("POST /api/webhooks/stripe", () => {
     await expect(response.json()).resolves.toEqual({ received: true, skipped: true });
     expect(eventsTable.select).toHaveBeenCalledTimes(1);
     expect(eventsTable.update).not.toHaveBeenCalled();
+  });
+
+  describe("subscription period end", () => {
+    it("should activate the user from the item period end on checkout.session.completed", async () => {
+      process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+      headersMock.mockResolvedValue(new Headers({ "stripe-signature": "sig" }));
+      constructEventMock.mockReturnValue({
+        id: "evt_checkout",
+        type: "checkout.session.completed",
+        api_version: "2026-08-26.dahlia",
+        data: {
+          object: { metadata: { userId: "user_1" }, subscription: "sub_1", customer: "cus_1" },
+        },
+      } as never);
+      retrieveSubscriptionMock.mockResolvedValue(dahliaSubscription() as never);
+
+      const eventsTable = createWebhookEventsTableMock({
+        insertResult: { error: null },
+        updateResults: [{ data: { event_id: "evt_checkout" }, error: null }],
+      });
+      const subscriptionsTable = createSubscriptionsTableMock();
+      mockAdminClient(createAdminClientMock, eventsTable, subscriptionsTable);
+
+      const response = await POST(
+        new Request("https://example.com/api/webhooks/stripe", { method: "POST", body: "{}" })
+      );
+
+      expect(response.status).toBe(200);
+      expect(retrieveSubscriptionMock).toHaveBeenCalledWith("sub_1");
+      expect(subscriptionsTable.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "active",
+          plan: "pro",
+          provider_subscription_id: "sub_1",
+          provider_customer_id: "cus_1",
+          current_period_end: PERIOD_END_ISO,
+        })
+      );
+      expect(subscriptionsTable.updateBuilder.eq).toHaveBeenCalledWith("user_id", "user_1");
+      expect(subscriptionsTable.updateBuilder.or).toHaveBeenCalledWith(
+        `current_period_end.is.null,current_period_end.lt.${PERIOD_END_ISO}`
+      );
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it("should update status and period end from the item on customer.subscription.updated", async () => {
+      process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+      headersMock.mockResolvedValue(new Headers({ "stripe-signature": "sig" }));
+      constructEventMock.mockReturnValue({
+        id: "evt_updated",
+        type: "customer.subscription.updated",
+        api_version: "2026-08-26.dahlia",
+        data: { object: dahliaSubscription({ status: "past_due" }) },
+      } as never);
+
+      const eventsTable = createWebhookEventsTableMock({
+        insertResult: { error: null },
+        updateResults: [{ data: { event_id: "evt_updated" }, error: null }],
+      });
+      const subscriptionsTable = createSubscriptionsTableMock();
+      mockAdminClient(createAdminClientMock, eventsTable, subscriptionsTable);
+
+      const response = await POST(
+        new Request("https://example.com/api/webhooks/stripe", { method: "POST", body: "{}" })
+      );
+
+      expect(response.status).toBe(200);
+      expect(retrieveSubscriptionMock).not.toHaveBeenCalled();
+      expect(subscriptionsTable.update).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "past_due", current_period_end: PERIOD_END_ISO })
+      );
+      expect(subscriptionsTable.updateBuilder.eq).toHaveBeenCalledWith(
+        "provider_subscription_id",
+        "sub_1"
+      );
+    });
+
+    it("should fail the event and release the claim when no item carries a period end", async () => {
+      process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+      headersMock.mockResolvedValue(new Headers({ "stripe-signature": "sig" }));
+      constructEventMock.mockReturnValue({
+        id: "evt_no_period",
+        type: "customer.subscription.updated",
+        api_version: "2026-08-26.dahlia",
+        data: { object: dahliaSubscription({ items: { data: [] } }) },
+      } as never);
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const eventsTable = createWebhookEventsTableMock({ insertResult: { error: null } });
+      const subscriptionsTable = createSubscriptionsTableMock();
+      mockAdminClient(createAdminClientMock, eventsTable, subscriptionsTable);
+
+      const response = await POST(
+        new Request("https://example.com/api/webhooks/stripe", { method: "POST", body: "{}" })
+      );
+
+      expect(response.status).toBe(500);
+      expect(subscriptionsTable.update).not.toHaveBeenCalled();
+      expect(eventsTable.del).toHaveBeenCalledTimes(1);
+      expect(errorSpy).toHaveBeenCalledWith(
+        "Webhook handler error:",
+        expect.objectContaining({ message: expect.stringContaining("no item period end") })
+      );
+      errorSpy.mockRestore();
+    });
+  });
+
+  describe("webhook endpoint API version drift", () => {
+    it("should warn with the event and both versions when the endpoint renders another version", async () => {
+      process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+      headersMock.mockResolvedValue(new Headers({ "stripe-signature": "sig" }));
+      constructEventMock.mockReturnValue({
+        id: "evt_drift",
+        type: "customer.subscription.updated",
+        api_version: "2025-12-15.clover",
+        data: { object: dahliaSubscription() },
+      } as never);
+
+      const eventsTable = createWebhookEventsTableMock({
+        insertResult: { error: null },
+        updateResults: [{ data: { event_id: "evt_drift" }, error: null }],
+      });
+      const subscriptionsTable = createSubscriptionsTableMock();
+      mockAdminClient(createAdminClientMock, eventsTable, subscriptionsTable);
+
+      const response = await POST(
+        new Request("https://example.com/api/webhooks/stripe", { method: "POST", body: "{}" })
+      );
+
+      expect(response.status).toBe(200);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "Stripe webhook endpoint API version differs from the SDK pin",
+        {
+          eventId: "evt_drift",
+          eventType: "customer.subscription.updated",
+          endpointApiVersion: "2025-12-15.clover",
+          sdkApiVersion: "2026-08-26.dahlia",
+        }
+      );
+      expect(subscriptionsTable.update).toHaveBeenCalledTimes(1);
+    });
+
+    it("should stay silent when the endpoint version matches the SDK pin", async () => {
+      process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+      headersMock.mockResolvedValue(new Headers({ "stripe-signature": "sig" }));
+      constructEventMock.mockReturnValue({
+        id: "evt_match",
+        type: "invoice.created",
+        api_version: "2026-08-26.dahlia",
+      } as never);
+
+      const eventsTable = createWebhookEventsTableMock({
+        insertResult: { error: null },
+        updateResults: [{ data: { event_id: "evt_match" }, error: null }],
+      });
+      mockAdminClient(createAdminClientMock, eventsTable);
+
+      const response = await POST(
+        new Request("https://example.com/api/webhooks/stripe", { method: "POST", body: "{}" })
+      );
+
+      expect(response.status).toBe(200);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
   });
 });

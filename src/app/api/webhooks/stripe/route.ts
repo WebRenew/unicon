@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { stripe } from "@/lib/stripe";
+import { stripe, STRIPE_API_VERSION } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
-import { mapStripeSubscriptionStatus } from "@/lib/stripe-webhook";
+import {
+  getEndpointApiVersionDrift,
+  getSubscriptionPeriodEnd,
+  mapStripeSubscriptionStatus,
+} from "@/lib/stripe-webhook";
 import type Stripe from "stripe";
 
 const EVENT_CLAIM_STALE_MS = 5 * 60 * 1000; // 5 minutes
@@ -41,6 +45,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  const drift = getEndpointApiVersionDrift(event, STRIPE_API_VERSION);
+  if (drift) {
+    logger.warn("Stripe webhook endpoint API version differs from the SDK pin", drift);
+  }
+
   const supabase = createAdminClient();
   const claim = await claimEventForProcessing(supabase, event.id);
 
@@ -70,7 +79,12 @@ export async function POST(request: Request) {
           session.subscription as string
         );
 
-        const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
+        const periodEnd = getSubscriptionPeriodEnd(subscription);
+        if (periodEnd === null) {
+          throw new Error(
+            `Subscription ${subscription.id} has no item period end; cannot activate user ${userId}`
+          );
+        }
 
         // Use updated_at for optimistic locking - only update if not already updated
         // by a more recent event
@@ -100,7 +114,10 @@ export async function POST(request: Request) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
+        const periodEnd = getSubscriptionPeriodEnd(subscription);
+        if (periodEnd === null) {
+          throw new Error(`Subscription ${subscription.id} has no item period end; cannot update`);
+        }
         const periodEndDate = new Date(periodEnd * 1000).toISOString();
 
         const newStatus = mapStripeSubscriptionStatus(subscription.status);

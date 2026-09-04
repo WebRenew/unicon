@@ -2,13 +2,27 @@ import Stripe from "stripe";
 
 let stripeClient: Stripe | null = null;
 
+/**
+ * The Stripe API version every outbound request is made under.
+ *
+ * `satisfies Stripe.LatestApiVersion` is a deliberate tripwire: a stripe-node
+ * minor that moves the SDK's latest version fails typecheck here instead of
+ * silently changing response shapes on the billing path. Adopting a new
+ * version is a reviewed change — diff the release's breaking changes against
+ * `src/app/api/webhooks/stripe/route.ts`, then re-create the webhook endpoint
+ * on the same version after the code deploys (its `api_version` is create-only
+ * and independent of this constant; the route warns on every event where the
+ * two differ).
+ */
+export const STRIPE_API_VERSION = "2026-08-26.dahlia" satisfies Stripe.LatestApiVersion;
+
 export function getStripe(): Stripe {
   if (!stripeClient) {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error("STRIPE_SECRET_KEY is not set");
     }
     stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2026-06-24.dahlia",
+      apiVersion: STRIPE_API_VERSION,
       typescript: true,
     });
   }
